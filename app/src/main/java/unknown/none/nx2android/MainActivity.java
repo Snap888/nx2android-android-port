@@ -225,7 +225,7 @@ public class MainActivity extends Activity {
                         Toast.makeText(MainActivity.this, "Game APK is not installed. Use Install APK + data first.", Toast.LENGTH_LONG).show();
                         return;
                     }
-                    launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                     startActivity(launch);
                 } catch (Exception e) {
                     Toast.makeText(MainActivity.this, "Could not launch game: " + e.getMessage(), Toast.LENGTH_LONG).show();
