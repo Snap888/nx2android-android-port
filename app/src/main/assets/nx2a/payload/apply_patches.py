@@ -335,3 +335,9 @@ patch('NGR per-game overlay assets', 'nxnative/dm/android/overlay_theme.c', 'NX2
 ("static uint8_t *asset(const char *name, size_t *n) {   // the whole asset, NUL-terminated (malloc), NULL when the APK has none\n    AAssetManager *am = dm_front_assets(); AAsset *a = am ? AAssetManager_open(am, name, AASSET_MODE_BUFFER) : NULL;",
  "static uint8_t *asset(const char *name, size_t *n) {   // NX2A_GAME_ASSETS: per-game assets take precedence over the NGR shell APK\n    const char *root = getenv(\"DM_GAME_DIR\");\n    if (root && *root) { char path[1200]; snprintf(path, sizeof path, \"%s/assets/%s\", root, name); FILE *f = fopen(path, \"rb\"); if (f) { if (fseek(f, 0, SEEK_END)) { fclose(f); return NULL; } long len = ftell(f); if (len < 0 || fseek(f, 0, SEEK_SET)) { fclose(f); return NULL; } uint8_t *b = malloc((size_t)len + 1); if (!b) { fclose(f); return NULL; } size_t got = fread(b, 1, (size_t)len, f); fclose(f); if (got != (size_t)len) { free(b); return NULL; } b[len] = 0; *n = (size_t)len; return b; } }\n    AAssetManager *am = dm_front_assets(); AAsset *a = am ? AAssetManager_open(am, name, AASSET_MODE_BUFFER) : NULL;"),
 ])
+
+# 8. Keep game saves and temporary files isolated in NGR's private storage per game.
+patch('NGR per-game save roots', 'nxnative/dm/android/front_android.c', 'NX2A_GAME_SAVE_ROOT', [
+("    snprintf(p, sizeof p, \"%s/save\", act->internalDataPath); mkdir(p, 0700); setenv(\"DM_SAVE\", p, 0);\n    snprintf(p, sizeof p, \"%s/temp\", act->internalDataPath); mkdir(p, 0700); setenv(\"DM_TEMP\", p, 0);",
+ "    const char *ngr_private_root = getenv(\"NGR_PRIVATE_GAME_DIR\"); if (!ngr_private_root || !*ngr_private_root) ngr_private_root = act->internalDataPath;\n    snprintf(p, sizeof p, \"%s/save\", ngr_private_root); mkdir(p, 0700); setenv(\"DM_SAVE\", p, 0);\n    snprintf(p, sizeof p, \"%s/temp\", ngr_private_root); mkdir(p, 0700); setenv(\"DM_TEMP\", p, 0); // NX2A_GAME_SAVE_ROOT"),
+])
