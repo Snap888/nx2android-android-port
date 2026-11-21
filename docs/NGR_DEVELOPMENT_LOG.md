@@ -59,3 +59,32 @@
 - Device test: install APK + data through Library, launch game, verify `/Android/data/<package>/files/nx2a-data.json`, `RomFS`, `mods`, and `shaders.dmsv` are present and readable.
 - Device test: launch an already-installed game directly from Library.
 - If the game uses an external `DM_ROMFS` folder instead of the app-owned data pack, verify the game's own **All files access** toggle is enabled. This is distinct from nx2android's storage permission.
+
+## 2026-11-22 — Single NGR APK runtime dispatcher
+
+### User-reported failure
+- Library launch showed `Invalid game package name`. The Java bridge had a malformed escaped-dot regular expression and still attempted to launch a separately installed game package.
+- The previous workflow required ADB to install the per-game APK and copy its data into that package's `Android/data` directory. This did not meet the requested one-app launcher design.
+
+### Implemented
+- Added an NDK/CMake-built `libngrhost.so` to the NGR application. The app's own `android.app.NativeActivity` receives the stable library game ID and dispatches into the selected game's native host library.
+- The Java bridge now validates the 20-character catalog ID and starts NGR's own NativeActivity. It no longer validates package names or calls `getLaunchIntentForPackage`.
+- On successful port, the backend extracts all arm64 native libraries from the temporary build APK into the game's data pack, extracts per-game APK assets (including the gamepad overlay theme), and deletes the per-game APK. It is not installed and is not retained as a library launch target.
+- Added an upstream porter patch so `front_android.c` uses `DM_GAME_DIR` as the selected game's data root. Game RomFS, save inputs, shaders, env and cache paths are now isolated per game.
+- The NGR native dispatcher copies game `.so` files from app-specific external storage into NGR's private internal files directory before `dlopen`; this avoids attempting executable mappings from shared storage.
+- Added a no-ADB runtime installer. Proot runs under the NGR app UID and copies the data pack into NGR's own `Android/data/unknown.none.nx2android/files/games/<id>` directory. Copy uses a staging folder and rename, verifies the runtime/data manifest, and retains the previous payload if promotion fails.
+- Updated the overlay theme loader to read per-game theme assets from `DM_GAME_DIR/assets` instead of depending on the old per-game APK's AssetManager.
+- The library now distinguishes a built runtime payload from a runtime installed into NGR. Successful install updates the catalog's `runtime_installed` flag.
+- Bumped app versionCode to 2/versionName 0.2.0 and pinned NDK r27c. GitHub Actions built the shared dispatcher APK successfully in run 44952528283.
+
+### Architecture status / explicit limitation
+- The installed Android application is now a single NGR APK; game-specific APKs are temporary packaging containers only and are deleted after native library/assets extraction.
+- The native game host itself is still compiled with game-specific profile headers. This first dispatcher stage removes per-game APK installation, but it is not yet the final profile-agnostic single `libdmhost.so`.
+- Next native stage: serialize every `game_profile.h` / `android_profile.h` field into validated JSON, migrate consumers incrementally, then compile one common host with no game-specific profile header.
+
+### Device acceptance tests still required
+- Recompile a game; verify no game APK remains in output and the library shows `RUNTIME BUILT`.
+- Tap Install runtime + data with wireless debugging disabled; verify the game payload is copied into NGR's app-specific files directory and catalog changes to `NGR READY`.
+- Launch from Library; verify dispatcher log, successful private-library staging, game-specific `DM_GAME_DIR`, RomFS and theme loading.
+- Repeat for a second game and verify no save/cache/RomFS cross-contamination.
+- Confirm Vulkan, input, gamepad theme, pause/resume, storage use and clean process exit on the target phone.
