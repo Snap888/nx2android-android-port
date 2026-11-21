@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """nx2android phone GUI: a local web app (stdlib only) that drives `python -m porter`. Only the app itself can use it: a random token, a Host check and a same-site cookie guard every request."""
-import contextlib, glob, hashlib, hmac, http.cookies, io, json, mimetypes, os, re, signal, subprocess, sys, threading, time
+import contextlib, glob, hashlib, hmac, http.cookies, io, json, mimetypes, os, re, signal, subprocess, sys, threading, time, zipfile, shutil
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
@@ -86,8 +86,34 @@ def library_update(game_id, mutate):
     return None
 
 
+def extract_runtime_libraries(apk_path, data_dir):
+    """Extract the native runtime from the porter's build output; the game APK is never installed or retained."""
+    apk = Path(apk_path)
+    data = Path(data_dir)
+    if not apk.is_file() or not data.is_dir():
+        raise FileNotFoundError(f'game build output missing: APK={apk}, data={data}')
+    names = []
+    with zipfile.ZipFile(apk) as z:
+        libs = [n for n in z.namelist() if n.startswith('lib/arm64-v8a/') and n.endswith('.so') and Path(n).name.startswith('lib')]
+        if not any(Path(n).name == 'libdmhost.so' for n in libs):
+            raise ValueError('built APK has no lib/arm64-v8a/libdmhost.so')
+        for name in libs:
+            base = Path(name).name
+            if base in ('.', '..') or '/' in base or '\\\\' in base:
+                raise ValueError(f'unsafe native library name: {name}')
+            target = data / base
+            tmp = target.with_suffix(target.suffix + '.tmp')
+            with z.open(name) as src, tmp.open('wb') as dst:
+                shutil.copyfileobj(src, dst)
+            tmp.replace(target)
+            names.append(base)
+    # This APK was only a build container for the native library. NGR owns the sole installable APK.
+    apk.unlink()
+    return sorted(names)
+
+
 def register_port_result(lines):
-    """Add a successfully ported game to the launcher catalog without changing the legacy APK build/install flow."""
+    """Register a port as a game payload in NGR; extract its native library and discard the per-game APK."""
     result = None
     for line in reversed(lines):
         if line.startswith('{'):
@@ -107,11 +133,25 @@ def register_port_result(lines):
     catalog = library_read()
     existing = next((g for g in catalog['games'] if g.get('id') == game_id), None)
     title = str(result.get('name') or result.get('app_name') or Path(str(result['apk'])).stem)
+    runtime_libs = []
+    runtime_error = ''
+    try:
+        runtime_libs = extract_runtime_libraries(result['apk'], data_path)
+        if 'libdmhost.so' not in runtime_libs:
+            raise ValueError('libdmhost.so was not extracted')
+    except Exception as e:
+        runtime_error = str(e)
+        JOB['lines'].append(f'[NGR runtime] extraction failed: {runtime_error}')
+    ready = not runtime_error
     item = {
         'id': game_id, 'title': title, 'platform': 'switch',
-        'package': package, 'apk_path': str(result['apk']), 'data_path': data_path,
+        'package': package, 'apk_path': '', 'data_path': data_path,
+        'runtime_so_path': str(Path(data_path) / 'libdmhost.so') if ready else '',
+        'runtime_libs': runtime_libs, 'runtime_ready': ready,
         'source_folder': JOB.get('source_folder', ''),
-        'status': 'legacy_apk', 'settings': (existing or {}).get('settings', {
+        'status': 'runtime_ready' if ready else 'runtime_extract_failed',
+        'runtime_error': runtime_error,
+        'settings': (existing or {}).get('settings', {
             'touch': bool(JOB.get('port_options', {}).get('touch')),
             'fps60': bool(JOB.get('port_options', {}).get('fps60')),
             'vulkan_driver': str(JOB.get('port_options', {}).get('vulkan_driver') or '')
@@ -125,6 +165,8 @@ def register_port_result(lines):
     else:
         catalog['games'].append(item)
     library_write(catalog)
+    if ready:
+        JOB['lines'].append(f'[NGR runtime] extracted {len(runtime_libs)} native libraries; per-game APK discarded. Install this game payload into NGR to launch it.')
 
 
 def job_env():
@@ -215,7 +257,7 @@ def start_job(argv, kind=''):
 
     def run():
         try:
-            if kind in ('port', 'tools', 'install'):
+            if kind in ('port', 'tools', 'install', 'runtime_install'):
                 JOB['lines'].append('preparing: the porter...'); need_porter()
             if kind in ('port', 'tools'):
                 JOB['lines'].append('preparing: the .NET tools...'); need_dotnet()   # the ready-made tools first: with them active the porter does not download the 1.5 GB .NET SDK
@@ -532,6 +574,20 @@ class H(BaseHTTPRequestHandler):
             JOB['source_folder'] = norm_path(str(o.get('folder') or ''))
             JOB['port_options'] = {k: o.get(k) for k in ('touch', 'fps60', 'vulkan_driver')}
             return self.j({'started': start_job([sys.executable, '-m', 'porter', *args], 'port')})
+        if u.path == '/api/runtime/install':
+            game_id = str(o.get('id') or '')
+            if not re.fullmatch(r'[0-9a-f]{20}', game_id): return self.j({'started': False, 'error': 'Invalid game ID.'}, 400)
+            game = next((g for g in library_read()['games'] if g.get('id') == game_id), None)
+            if not game: return self.j({'started': False, 'error': 'Game not found in the library.'}, 404)
+            data = Path(game.get('data_path') or '')
+            if not game.get('runtime_ready') or not (data / 'libdmhost.so').is_file():
+                return self.j({'started': False, 'error': game.get('runtime_error') or 'This game has no extracted NGR runtime. Recompile it with the latest NGR build.'})
+            adb = str(cfg().get('adb') or shutil.which('adb', path=ENV.get('PATH', '')) or '')
+            if not adb: return self.j({'started': False, 'error': 'ADB executable not found. Set it in Device settings.'})
+            argv = [sys.executable, str(HERE.parent / 'runtime_install.py'), '--adb', adb, '--data', str(data), '--game-id', game_id, '--package', 'unknown.none.nx2android']
+            serial = str(cfg().get('device') or '')
+            if serial: argv += ['--serial', serial]
+            return self.j({'started': start_job(argv, 'runtime_install')})
         if u.path == '/api/install':   # the game data (and the APK, if it is not on the phone yet) over adb: the one way Android lets this app put files into Android/data
             if not adb_ready(): return self.j({'started': False, 'error': 'No adb device is connected. Open the Device tab: pair, connect, List devices, then try again.'})
             d = Path(o.get('data') or '')
