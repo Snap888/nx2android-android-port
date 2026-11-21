@@ -56,3 +56,14 @@ A full port of Dark Souls: Remastered has completed on a Poco X6 with these tool
 
 ## Not yet tested on a real device
 The proot build taken from the Termux repository, the Ubuntu release download, and first-run setup on devices other than the author's. If the first start fails, tap *Copy log* and open an issue with it.
+
+
+## NGR universal game library (development branch)
+
+The `feature/ngr-universal-library` branch evolves this existing Android app into the NGR launcher. It keeps the proven Java/WebView + ProotService + Ubuntu + on-device porter architecture instead of introducing a second Android application module.
+
+The first library milestone adds a persistent game catalog, automatic registration after a successful port, cover selection, per-game settings storage, search, and a direct route from the Library screen to the existing recompiler. Library entries are shortcuts: removing one never deletes the APK or game data.
+
+**Important architecture status:** the current nx2android porter still builds a game-specific APK and embeds profile configuration into the native host. The new library records these as `legacy_apk`; it does not claim they can run inside one shared APK yet. The next native milestone is a versioned runtime-loaded game-profile ABI and a shared `libdmhost.so`, followed by a launch dispatcher. Until that migration passes device tests, the legacy port/install path remains available.
+
+Payload-only UI/backend updates must be followed by `python3 tools/make_manifest.py --bump`. The manifest hash check is part of CI.
