@@ -72,7 +72,7 @@ def library_read():
 def library_write(value):
     LIBRARY.parent.mkdir(parents=True, exist_ok=True)
     tmp = LIBRARY.with_suffix('.json.tmp')
-    tmp.write_text(json.dumps(value, ensure_ascii=False, indent=2) + '\\n')
+    tmp.write_text(json.dumps(value, ensure_ascii=False, indent=2) + '\n')
     os.replace(tmp, LIBRARY)
 
 
