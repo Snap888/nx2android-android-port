@@ -135,7 +135,7 @@ async function tick(){const r=await api('/api/job?since='+since);since=r.next;
    else if(ev.ev=='progress'&&ev.frac!=null)$('pb').style.width=Math.min(100,100*ev.frac)+'%';
    else if(ev.ev=='stage_end'){$('out').textContent+=(ev.ok?'✓ ':'✗ ')+ev.name+(ev.summary?' — '+ev.summary:'')+'\n';$('pb').style.width='0'}
    else if(ev.ev=='say'&&ev.msg)$('out').textContent+=String(ev.msg).replace(/\[(RED|GREEN|YELLOW|CYAN|BOLD|DIM|RESET)\]/g,'')+'\n';
-   else if(ev.ev=='result'){$('apkpath').value=ev.apk||'';$('datapath').value=ev.data||'';$('out').textContent+='Done: '+ev.apk+'\n'+ev.data+'\nPackage: '+ev.package+'\n'}
+    else if(ev.ev=='result'){$('apkpath').value='';$('datapath').value=ev.data||'';$('out').textContent+='NGR game payload: '+ev.data+'\nNative runtime is extracted into the data pack; no per-game APK is installed.\nPackage profile: '+ev.package+'\n'}
   }else $('out').textContent+=ln+'\n'}
  $('out').scrollTop=1e9;if(r.done){clearInterval(timer);$('stage').textContent=(r.code===0?'finished':'stopped (exit '+r.code+')');if(r.code!==0)details()}}
 async function details(){try{const d=await api('/api/lastlog');if(d.file){const t='--- '+d.file+' (last lines)\n'+d.tail+'\n';raw.push(t);$('out').textContent+='\n'+t;$('out').scrollTop=1e9}}catch(e){}}
