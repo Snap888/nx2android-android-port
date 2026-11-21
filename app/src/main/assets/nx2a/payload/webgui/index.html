@@ -115,7 +115,7 @@ async function fm(path){fmCur=path||fmCur;const r=await api('/api/ls?path='+enco
  $('flist').querySelectorAll('[data-p]').forEach(e=>e.onclick=()=>{if(e.dataset.d=='true')fm(e.dataset.p)});fmodal.style.display='block'}
 function fmAll(){const c=[...$('flist').querySelectorAll('[data-c]')];const on=c.some(x=>!x.checked);c.forEach(x=>x.checked=on)}
 async function fmDel(){const sel=[...$('flist').querySelectorAll('[data-c]:checked')].map(x=>x.dataset.c);if(!sel.length){$('fmsg').textContent='Nothing selected';return}
- if(!await ask('Delete '+sel.length+' item(s) for good?\n\n'+sel.slice(0,8).map(p=>p.split('/').pop()).join('\n')+(sel.length>8?'\n…':''),'Delete'))return;
+ if(!await ask('Delete '+sel.length+' item(s) for good?\n\n'+sel.slice(0,8).map(p=>p.split(/\s+/).pop()).join('\n')+(sel.length>8?'\n…':''),'Delete'))return;
  $('fmsg').textContent='deleting…';const r=await api('/api/rm',{paths:sel});if(r.error){$('fmsg').textContent=r.error;return}
  const bad=r.results.filter(x=>x[1]!='ok');await fm(fmCur);$('fmsg').textContent=(r.results.length-bad.length)+' deleted'+(bad.length?'; '+bad.map(x=>x[0].split('/').pop()+': '+x[1]).join('; '):'')}
 async function port(){drvSave();const o={folder:$('folder').value,app_name:$('app_name').value,package:$('package').value,jobs:$('jobs').value,vulkan_driver:$('vkdriver').value,keep_work:$('keep_work').checked};['touch','fps60','experimental','install','replace_signer'].forEach(k=>o[k]=$(k).checked);
