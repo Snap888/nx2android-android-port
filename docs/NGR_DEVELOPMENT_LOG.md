@@ -17,7 +17,7 @@
 - Branch: `feature/ngr-universal-library`
 - Library UI/catalog: first implementation committed.
 - Recompiler: existing on-device porter retained and opened from Add Game.
-- Per-game settings: persisted in catalog; not yet all applied to native runtime.
+- Per-game settings: persisted in catalog; saved touch and 60 FPS options are carried back into the existing recompiler form. Resolution/graphics/controller runtime application remains pending shared-runtime integration.
 - Cover selection: implemented for shared-storage PNG/JPG/WebP.
 - Shared runtime/profile loader: not implemented.
 - Launch dispatcher: not implemented; Run is intentionally disabled.
@@ -34,3 +34,5 @@
 6. Implement library launch dispatcher and test two games in one installed APK.
 
 - CI note: Python and WebView JavaScript syntax checks passed; final manifest validation is pending for the corrected payload commit.
+
+- Latest UI adjustment: saving Touch / 60 FPS now maps those options back to the existing porter when Recompile / update is selected; other visual/runtime presets remain catalog-only until native integration.
