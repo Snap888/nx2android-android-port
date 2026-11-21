@@ -317,3 +317,10 @@ subprocess.run = _retry_run
 ])
 
 sys.exit(1 if failed else 0)
+
+# 6. NGR shared launcher: keep each game's files in its own directory under the single NGR app.
+# The common NativeActivity dispatcher sets DM_GAME_DIR before forwarding ANativeActivity_onCreate.
+patch('NGR per-game data root', 'nxnative/dm/android/front_android.c', 'NX2A_GAME_DIR', [
+("    snprintf(g_root, sizeof g_root, \"%s\", act->externalDataPath ? act->externalDataPath : act->internalDataPath);",
+ "    const char *ngr_game_dir = getenv(\"DM_GAME_DIR\");\n    if (ngr_game_dir && *ngr_game_dir) snprintf(g_root, sizeof g_root, \"%s\", ngr_game_dir);\n    else snprintf(g_root, sizeof g_root, \"%s\", act->externalDataPath ? act->externalDataPath : act->internalDataPath); // NX2A_GAME_DIR"),
+])
