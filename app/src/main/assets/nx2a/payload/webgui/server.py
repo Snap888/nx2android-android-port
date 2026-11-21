@@ -257,7 +257,7 @@ def start_job(argv, kind=''):
 
     def run():
         try:
-            if kind in ('port', 'tools', 'install', 'runtime_install'):
+            if kind in ('port', 'tools', 'install'):
                 JOB['lines'].append('preparing: the porter...'); need_porter()
             if kind in ('port', 'tools'):
                 JOB['lines'].append('preparing: the .NET tools...'); need_dotnet()   # the ready-made tools first: with them active the porter does not download the 1.5 GB .NET SDK
@@ -278,6 +278,10 @@ def start_job(argv, kind=''):
                 elif ln.strip(): JOB['stage'] = ln.strip()[:70]
             except ValueError: pass
         JOB['code'] = p.wait()
+        if JOB['kind'] == 'runtime_install' and JOB['code'] == 0:
+            gid = JOB.get('runtime_game_id', '')
+            library_update(gid, lambda g: g.update(runtime_installed=True, runtime_installed_at=int(time.time()), updated_at=int(time.time())))
+            JOB['lines'].append('[NGR runtime] installed and verified; launch is now available from Library.')
         if JOB['kind'] == 'tools' and JOB['code'] == 0:     # check right away that .NET starts on this phone
             try:
                 JOB['lines'].append('ready-made .NET tools:'); JOB['lines'].extend('  ' + l for l in prebuilt.install())
@@ -582,12 +586,12 @@ class H(BaseHTTPRequestHandler):
             data = Path(game.get('data_path') or '')
             if not game.get('runtime_ready') or not (data / 'libdmhost.so').is_file():
                 return self.j({'started': False, 'error': game.get('runtime_error') or 'This game has no extracted NGR runtime. Recompile it with the latest NGR build.'})
-            adb = str(cfg().get('adb') or shutil.which('adb', path=ENV.get('PATH', '')) or '')
-            if not adb: return self.j({'started': False, 'error': 'ADB executable not found. Set it in Device settings.'})
-            argv = [sys.executable, str(HERE.parent / 'runtime_install.py'), '--adb', adb, '--data', str(data), '--game-id', game_id, '--package', 'unknown.none.nx2android']
-            serial = str(cfg().get('device') or '')
-            if serial: argv += ['--serial', serial]
-            return self.j({'started': start_job(argv, 'runtime_install')})
+            if (not data.is_dir()) or not (data / 'nx2a-data.json').is_file():
+                return self.j({'started': False, 'error': 'The completed game data pack is missing. Recompile/update this game.'})
+            argv = [sys.executable, str(HERE.parent / 'runtime_install.py'), '--data', str(data), '--game-id', game_id, '--package', 'unknown.none.nx2android']
+            JOB['runtime_game_id'] = game_id
+            started = start_job(argv, 'runtime_install')
+            return self.j({'started': started, 'error': None if started else 'Another job is already running.'})
         if u.path == '/api/install':   # the game data (and the APK, if it is not on the phone yet) over adb: the one way Android lets this app put files into Android/data
             if not adb_ready(): return self.j({'started': False, 'error': 'No adb device is connected. Open the Device tab: pair, connect, List devices, then try again.'})
             d = Path(o.get('data') or '')
