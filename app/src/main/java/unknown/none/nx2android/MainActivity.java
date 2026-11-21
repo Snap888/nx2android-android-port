@@ -212,6 +212,27 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface public void installApk(String path) { runOnUiThread(() -> doInstall(path)); }
 
+        /** Launch the already-installed per-game NativeActivity from the NGR library. */
+        @JavascriptInterface public void launchGame(String packageName) {
+            runOnUiThread(() -> {
+                if (packageName == null || !packageName.matches("[A-Za-z0-9_]+(\\\\.[A-Za-z0-9_]+)+")) {
+                    Toast.makeText(MainActivity.this, "Invalid game package name", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                try {
+                    Intent launch = getPackageManager().getLaunchIntentForPackage(packageName);
+                    if (launch == null) {
+                        Toast.makeText(MainActivity.this, "Game APK is not installed. Use Install APK + data first.", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(launch);
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "Could not launch game: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+
         @JavascriptInterface public void quit() {
             runOnUiThread(() -> {
                 stopService(new Intent(MainActivity.this, ProotService.class));
