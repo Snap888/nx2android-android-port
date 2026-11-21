@@ -36,3 +36,5 @@
 - CI note: Python and WebView JavaScript syntax checks passed; final manifest validation is pending for the corrected payload commit.
 
 - Latest UI adjustment: saving Touch / 60 FPS now maps those options back to the existing porter when Recompile / update is selected; other visual/runtime presets remain catalog-only until native integration.
+
+- CI follow-up: Python and JavaScript syntax checks are green. The previous manifest failure was for the preceding commit; the branch now contains the exact `make_manifest.py` hash (`284875cc…`) for the latest UI file and is being revalidated.
