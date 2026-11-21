@@ -29,9 +29,13 @@ def main():
     destination = root / a.game_id
     staging = root / (a.game_id + ".staging")
     backup = root / (a.game_id + ".previous")
-    for stale in (staging, backup):
-        if stale.exists():
-            shutil.rmtree(stale)
+    if backup.exists():
+        if not destination.exists():
+            backup.rename(destination)
+        else:
+            shutil.rmtree(backup)
+    if staging.exists():
+        shutil.rmtree(staging)
     print(f"[NGR runtime] copying game payload from {source}", flush=True)
     shutil.copytree(source, staging, copy_function=shutil.copy2, symlinks=False)
     if not (staging / "libdmhost.so").is_file() or not (staging / "nx2a-data.json").is_file():
