@@ -33,6 +33,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="android.app.NativeActivity"
+            android:label="NGR Game Runtime"
+            android:exported="false"
+            android:screenOrientation="sensorLandscape"
+            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|uiMode|density|layoutDirection|colorMode">
+            <meta-data android:name="android.app.lib_name" android:value="ngrhost" />
+        </activity>
         <service android:name=".ProotService" android:exported="false" />
         <provider
             android:name="androidx.core.content.FileProvider"
