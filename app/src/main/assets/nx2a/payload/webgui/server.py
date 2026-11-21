@@ -161,7 +161,7 @@ def register_port_result(lines):
         'id': game_id, 'title': title, 'platform': 'switch',
         'package': package, 'apk_path': '', 'data_path': data_path,
         'runtime_so_path': str(Path(data_path) / 'libdmhost.so') if ready else '',
-        'runtime_libs': runtime_libs, 'runtime_ready': ready,
+        'runtime_libs': runtime_libs, 'runtime_ready': ready, 'runtime_installed': False,
         'source_folder': JOB.get('source_folder', ''),
         'status': 'runtime_ready' if ready else 'runtime_extract_failed',
         'runtime_error': runtime_error,
