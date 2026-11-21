@@ -527,6 +527,7 @@ class H(BaseHTTPRequestHandler):
         if u.path == '/api/port':
             try: args = build_port_args(o)
             except (ValueError, OSError, Exception) as e: return self.j({'started': False, 'error': str(e)})
+            if (not JOB['done']) or JOB.get('starting'): return self.j({'started': False, 'error': 'A job is already running.'})
             JOB['keep'] = bool(o.get('keep_work')); JOB['fps60'] = bool(o.get('fps60'))
             JOB['source_folder'] = norm_path(str(o.get('folder') or ''))
             JOB['port_options'] = {k: o.get(k) for k in ('touch', 'fps60', 'vulkan_driver')}
