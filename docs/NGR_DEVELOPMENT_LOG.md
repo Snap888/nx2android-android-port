@@ -21,7 +21,7 @@
 - Cover selection: implemented for shared-storage PNG/JPG/WebP.
 - Shared runtime/profile loader: not implemented.
 - Launch dispatcher: not implemented; Run is intentionally disabled.
-- APK/CI: feature-branch workflow triggered; result pending at last check.
+- APK/CI: feature-branch workflow triggered. The first manifest check caught stale SHA-256 entries; hashes were corrected to the exact values emitted by `tools/make_manifest.py`. A follow-up validation run is pending.
 - Device validation: not performed in this development session.
 
 ## Next steps
