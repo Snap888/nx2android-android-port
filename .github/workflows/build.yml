@@ -12,6 +12,7 @@ on:
     - cron: '17 */6 * * *'
 jobs:
   tools:
+    if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -25,6 +26,7 @@ jobs:
           gh release create tools --prerelease --title "Build tools (trimmed Android NDK)" --notes "Only the parts of NDK r27c that the ARM host build reads. Made by tools/make_ndk_lite.sh." 2>/dev/null || true
           gh release upload tools /tmp/ndk-lite-r27c.tar.xz /tmp/ndk-lite-r27c.tar.xz.sha256 --clobber
   prebuilt:
+    if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
     runs-on: ubuntu-24.04-arm
     continue-on-error: true
     steps:
