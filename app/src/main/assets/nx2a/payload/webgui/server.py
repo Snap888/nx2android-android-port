@@ -110,7 +110,12 @@ def register_port_result(lines):
     item = {
         'id': game_id, 'title': title, 'platform': 'switch',
         'package': package, 'apk_path': str(result['apk']), 'data_path': data_path,
-        'status': 'legacy_apk', 'settings': (existing or {}).get('settings', {}),
+        'source_folder': JOB.get('source_folder', ''),
+        'status': 'legacy_apk', 'settings': (existing or {}).get('settings', {
+            'touch': bool(JOB.get('port_options', {}).get('touch')),
+            'fps60': bool(JOB.get('port_options', {}).get('fps60')),
+            'vulkan_driver': str(JOB.get('port_options', {}).get('vulkan_driver') or '')
+        }),
         'cover_path': (existing or {}).get('cover_path', ''),
         'created_at': (existing or {}).get('created_at', int(time.time())),
         'updated_at': int(time.time())
@@ -523,6 +528,8 @@ class H(BaseHTTPRequestHandler):
             try: args = build_port_args(o)
             except (ValueError, OSError, Exception) as e: return self.j({'started': False, 'error': str(e)})
             JOB['keep'] = bool(o.get('keep_work')); JOB['fps60'] = bool(o.get('fps60'))
+            JOB['source_folder'] = norm_path(str(o.get('folder') or ''))
+            JOB['port_options'] = {k: o.get(k) for k in ('touch', 'fps60', 'vulkan_driver')}
             return self.j({'started': start_job([sys.executable, '-m', 'porter', *args], 'port')})
         if u.path == '/api/install':   # the game data (and the APK, if it is not on the phone yet) over adb: the one way Android lets this app put files into Android/data
             if not adb_ready(): return self.j({'started': False, 'error': 'No adb device is connected. Open the Device tab: pair, connect, List devices, then try again.'})
