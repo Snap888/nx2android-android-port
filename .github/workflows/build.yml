@@ -66,6 +66,15 @@ jobs:
           bash tools/fetch_rootfs.sh
       - name: Check Python payload syntax
         run: python3 -m py_compile app/src/main/assets/nx2a/payload/webgui/server.py app/src/main/assets/nx2a/launcher.py
+      - name: Check WebView JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          source = Path('app/src/main/assets/nx2a/payload/webgui/index.html').read_text()
+          script = source.split('<script>', 1)[1].split('</script>', 1)[0]
+          Path('/tmp/nx2a-webgui.js').write_text(script)
+          PY
+          node --check /tmp/nx2a-webgui.js
       - name: The payload manifest must match the payload files
         run: |
           python3 tools/make_manifest.py
