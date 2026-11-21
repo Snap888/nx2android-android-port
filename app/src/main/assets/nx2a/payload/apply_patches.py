@@ -324,3 +324,10 @@ patch('NGR per-game data root', 'nxnative/dm/android/front_android.c', 'NX2A_GAM
 ("    snprintf(g_root, sizeof g_root, \"%s\", act->externalDataPath ? act->externalDataPath : act->internalDataPath);",
  "    const char *ngr_game_dir = getenv(\"DM_GAME_DIR\");\n    if (ngr_game_dir && *ngr_game_dir) snprintf(g_root, sizeof g_root, \"%s\", ngr_game_dir);\n    else snprintf(g_root, sizeof g_root, \"%s\", act->externalDataPath ? act->externalDataPath : act->internalDataPath); // NX2A_GAME_DIR"),
 ])
+
+# 7. NGR NativeActivity uses the one NGR APK's AssetManager. Game-specific overlay themes
+# are therefore unpacked beside the game payload and read from DM_GAME_DIR/assets.
+patch('NGR per-game overlay assets', 'nxnative/dm/android/overlay_theme.c', 'NX2A_GAME_ASSETS', [
+("static uint8_t *asset(const char *name, size_t *n) {   // the whole asset, NUL-terminated (malloc), NULL when the APK has none\n    AAssetManager *am = dm_front_assets(); AAsset *a = am ? AAssetManager_open(am, name, AASSET_MODE_BUFFER) : NULL;",
+ "static uint8_t *asset(const char *name, size_t *n) {   // NX2A_GAME_ASSETS: per-game assets take precedence over the NGR shell APK\n    const char *root = getenv(\"DM_GAME_DIR\");\n    if (root && *root) { char path[1200]; snprintf(path, sizeof path, \"%s/assets/%s\", root, name); FILE *f = fopen(path, \"rb\"); if (f) { if (fseek(f, 0, SEEK_END)) { fclose(f); return NULL; } long len = ftell(f); if (len < 0 || fseek(f, 0, SEEK_SET)) { fclose(f); return NULL; } uint8_t *b = malloc((size_t)len + 1); if (!b) { fclose(f); return NULL; } size_t got = fread(b, 1, (size_t)len, f); fclose(f); if (got != (size_t)len) { free(b); return NULL; } b[len] = 0; *n = (size_t)len; return b; } }\n    AAssetManager *am = dm_front_assets(); AAsset *a = am ? AAssetManager_open(am, name, AASSET_MODE_BUFFER) : NULL;"),
+])
