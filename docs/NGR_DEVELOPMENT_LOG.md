@@ -32,3 +32,5 @@
 4. Introduce versioned runtime profile serialization and validation.
 5. Refactor the host to a shared runtime without generated per-game headers.
 6. Implement library launch dispatcher and test two games in one installed APK.
+
+- CI note: Python and WebView JavaScript syntax checks passed; final manifest validation is pending for the corrected payload commit.
