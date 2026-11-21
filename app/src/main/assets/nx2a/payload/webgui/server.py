@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """nx2android phone GUI: a local web app (stdlib only) that drives `python -m porter`. Only the app itself can use it: a random token, a Host check and a same-site cookie guard every request."""
-import contextlib, glob, hmac, http.cookies, io, json, os, re, signal, subprocess, sys, threading, time
+import contextlib, glob, hashlib, hmac, http.cookies, io, json, mimetypes, os, re, signal, subprocess, sys, threading, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
@@ -44,6 +44,7 @@ HOSTS = {f'127.0.0.1:{PORT}', f'localhost:{PORT}'}
 ENV = {k: v for k, v in os.environ.items() if k != 'NX2A_TOKEN'}
 ENV.update(PYTHONUNBUFFERED='1', PYTHONIOENCODING='utf-8', DOTNET_EnableWriteXorExecute='0', DOTNET_SYSTEM_GLOBALIZATION_INVARIANT='1')
 CFG = Path(os.environ.get('XDG_CONFIG_HOME') or Path.home() / '.config') / 'nx2android' / 'config.json'
+LIBRARY = CFG.parent / 'library.json'
 GAMES = Path(os.environ.get('NX2A_GAMES', '/root/games'))
 OTA = Path(os.environ.get('NX2A_OTA', '/root/ota'))
 STATUS = Path(os.environ.get('NX2A_STATUS', '/root/patch_status.txt'))
@@ -56,6 +57,69 @@ LOCK = threading.Lock()
 def cfg():
     try: return json.loads(CFG.read_text())
     except (OSError, ValueError): return {}
+
+
+def library_read():
+    try:
+        value = json.loads(LIBRARY.read_text())
+        if value.get('schema_version') == 1 and isinstance(value.get('games'), list):
+            return value
+    except (OSError, ValueError, AttributeError):
+        pass
+    return {'schema_version': 1, 'games': []}
+
+
+def library_write(value):
+    LIBRARY.parent.mkdir(parents=True, exist_ok=True)
+    tmp = LIBRARY.with_suffix('.json.tmp')
+    tmp.write_text(json.dumps(value, ensure_ascii=False, indent=2) + '\\n')
+    os.replace(tmp, LIBRARY)
+
+
+def library_update(game_id, mutate):
+    catalog = library_read()
+    for game in catalog['games']:
+        if game.get('id') == game_id:
+            mutate(game)
+            library_write(catalog)
+            return game
+    return None
+
+
+def register_port_result(lines):
+    """Add a successfully ported game to the launcher catalog without changing the legacy APK build/install flow."""
+    result = None
+    for line in reversed(lines):
+        if line.startswith('{'):
+            try:
+                event = json.loads(line)
+                if event.get('ev') == 'result':
+                    result = event
+                    break
+            except ValueError:
+                pass
+    if not result or not result.get('apk') or not result.get('data'):
+        return
+    package = str(result.get('package') or '')
+    data_path = str(result['data'])
+    identity = package or data_path
+    game_id = hashlib.sha256(identity.encode('utf-8')).hexdigest()[:20]
+    catalog = library_read()
+    existing = next((g for g in catalog['games'] if g.get('id') == game_id), None)
+    title = str(result.get('name') or result.get('app_name') or Path(str(result['apk'])).stem)
+    item = {
+        'id': game_id, 'title': title, 'platform': 'switch',
+        'package': package, 'apk_path': str(result['apk']), 'data_path': data_path,
+        'status': 'legacy_apk', 'settings': (existing or {}).get('settings', {}),
+        'cover_path': (existing or {}).get('cover_path', ''),
+        'created_at': (existing or {}).get('created_at', int(time.time())),
+        'updated_at': int(time.time())
+    }
+    if existing:
+        catalog['games'] = [item if g.get('id') == game_id else g for g in catalog['games']]
+    else:
+        catalog['games'].append(item)
+    library_write(catalog)
 
 
 def job_env():
@@ -183,6 +247,9 @@ def start_job(argv, kind=''):
                 elif devfail and JOB['code'] != 0:
                     JOB['lines'].append('HINT: this game\'s shaders need a device connected over adb. Device tab: pair (Settings > Developer options > Wireless debugging > Pair with code), connect, List devices; then port again.')
             except Exception: pass
+        if JOB['kind'] == 'port' and JOB['code'] == 0:
+            try: register_port_result(JOB['lines'])
+            except Exception as e: JOB['lines'].append(f'Could not add game to library: {e}')
         if JOB['kind'] == 'port' and JOB['code'] == 0 and not JOB.get('keep'):
             try:
                 res = next((json.loads(l) for l in reversed(JOB['lines']) if l.startswith('{"ev": "result"')), {})
@@ -382,6 +449,17 @@ class H(BaseHTTPRequestHandler):
             try: return self.j({'checks': json.loads(out)})
             except ValueError: return self.j({'error': (err or out)[-600:]})
         if u.path == '/api/config': return self.j(cfg())
+        if u.path == '/api/library': return self.j(library_read())
+        if u.path == '/api/cover':
+            game = next((g for g in library_read()['games'] if g.get('id') == q.get('id', [''])[0]), None)
+            path = Path(game.get('cover_path', '')) if game else Path('/')
+            try:
+                resolved = path.resolve(strict=True)
+                if not (str(resolved).startswith('/sdcard/') or str(resolved).startswith('/storage/')) or not resolved.is_file() or resolved.stat().st_size > 8 * 1024 * 1024:
+                    raise OSError('invalid cover')
+                return self.send(resolved.read_bytes(), mimetypes.guess_type(str(resolved))[0] or 'application/octet-stream')
+            except OSError:
+                return self.send(b'', 'application/octet-stream', 404)
         if u.path == '/api/lastlog': return self.j(last_build_log())
         if u.path == '/api/work': return self.j({'bytes': sum(dir_size(d) for d in build_dirs()), 'dirs': [d.name for d in build_dirs()]})
         if u.path == '/api/summary': return self.j({'running': not JOB['done'], 'kind': JOB['kind'], 'stage': JOB['stage'], 'frac': JOB['frac'], 'code': JOB['code'], 'seq': JOB['seq']})
@@ -412,6 +490,30 @@ class H(BaseHTTPRequestHandler):
         if u.path == '/api/config':
             if o.get('key') not in ('keys', 'out'): return self.j({'ok': False, 'msg': 'unknown setting'})
             out, err, c = porter('config', o['key'], o['value']); return self.j({'ok': c == 0, 'msg': (err or out)[-300:]})
+        if u.path == '/api/library/settings':
+            settings = o.get('settings')
+            if not isinstance(settings, dict): return self.j({'ok': False, 'error': 'settings must be an object'}, 400)
+            allowed = {'resolution', 'graphics', 'fps', 'controller', 'vulkan_driver', 'touch', 'fps60'}
+            clean = {k: v for k, v in settings.items() if k in allowed and isinstance(v, (str, int, bool))}
+            game = library_update(str(o.get('id', '')), lambda g: g.update(settings=clean, updated_at=int(time.time())))
+            return self.j({'ok': game is not None, 'game': game})
+        if u.path == '/api/library/cover':
+            path = Path(norm_path(str(o.get('path', ''))))
+            try:
+                resolved = path.resolve(strict=True)
+                if not (str(resolved).startswith('/sdcard/') or str(resolved).startswith('/storage/')) or not resolved.is_file() or resolved.suffix.lower() not in ('.png', '.jpg', '.jpeg', '.webp'):
+                    raise ValueError('Choose a PNG, JPG or WebP image in shared storage.')
+                if resolved.stat().st_size > 8 * 1024 * 1024: raise ValueError('Cover image must be 8 MB or smaller.')
+                game = library_update(str(o.get('id', '')), lambda g: g.update(cover_path=str(resolved), updated_at=int(time.time())))
+                return self.j({'ok': game is not None, 'error': None if game else 'Game not found'})
+            except (OSError, ValueError) as e:
+                return self.j({'ok': False, 'error': str(e)})
+        if u.path == '/api/library/remove':
+            catalog = library_read()
+            before = len(catalog['games'])
+            catalog['games'] = [g for g in catalog['games'] if g.get('id') != str(o.get('id', ''))]
+            library_write(catalog)
+            return self.j({'ok': len(catalog['games']) != before, 'files_deleted': False})
         if u.path == '/api/tools': return self.j({'started': start_job([sys.executable, str(HERE.parent / 'fast_tools.py')], 'tools')})
         if u.path == '/api/inspect':
             out, err, c = porter('inspect', stage_folder(o['folder']), '--json')
