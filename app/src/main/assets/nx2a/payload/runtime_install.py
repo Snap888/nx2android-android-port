@@ -36,16 +36,14 @@ def main():
         raise SystemExit(f"not a completed nx2android data pack: {data}")
     if not (data / "libdmhost.so").is_file():
         raise SystemExit("libdmhost.so is missing; recompile this game with the NGR runtime build")
-    adb = [a.adb]
-    if a.serial:
-        adb += ["-s", a.serial]
-    devices = run(adb + ["devices"], "checking the connected Android device", timeout=40)
+    devices = run([a.adb, "devices"], "checking the connected Android device", timeout=40)
     connected = [line.split()[0] for line in devices.splitlines()[1:] if len(line.split()) >= 2 and line.split()[1] == "device"]
     if a.serial and a.serial not in connected:
         raise SystemExit(f"configured ADB device is not connected: {a.serial}")
     if not a.serial:
         if len(connected) != 1:
             raise SystemExit(f"expected one connected ADB device, found {len(connected)}; select a device in the Device tab")
+    adb = [a.adb] + (["-s", a.serial] if a.serial else [])
     remote = f"/sdcard/Android/data/{a.package}/files/games/{a.game_id}"
     run(adb + ["shell", "mkdir", "-p", remote], "preparing the NGR game directory", timeout=60)
     run(adb + ["push", str(data) + "/.", remote + "/"], "copying game data and native runtime to NGR", timeout=3600)
