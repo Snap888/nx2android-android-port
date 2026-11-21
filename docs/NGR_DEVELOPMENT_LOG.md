@@ -38,3 +38,24 @@
 - Latest UI adjustment: saving Touch / 60 FPS now maps those options back to the existing porter when Recompile / update is selected; other visual/runtime presets remain catalog-only until native integration.
 
 - CI follow-up: Python and JavaScript syntax checks are green. The previous manifest failure was for the preceding commit; the branch now contains the exact `make_manifest.py` hash (`284875cc…`) for the latest UI file and is being revalidated.
+
+## 2026-11-21 — Library launch and game-data deployment fix
+
+### Confirmed defects
+- The game details dialog explicitly disabled Run while shared-runtime migration was pending, even though the legacy per-game APK is already built and registered in the catalog.
+- The APK and its data pack are separate outputs. Unless the data pack is installed/copied into `/sdcard/Android/data/<package>/files/`, the NativeActivity cannot find its `RomFS`, modules, shaders and environment files.
+- The existing `porter install` path already knows how to install the APK and copy the data pack over adb; the Library did not expose that workflow.
+- The generated per-game APK manifest already declares `MANAGE_EXTERNAL_STORAGE` and the Android 10 legacy read permission. Native code checks access when `DM_ROMFS` points outside the app-owned files folder. The normal app-owned data-pack path does not require broad storage access; it requires the data pack to be copied to the package's own files directory.
+
+### Changes
+- Added a real Library **Launch game** action through the Android bridge. It starts the installed package's launcher activity and reports clearly when the APK is not installed.
+- Added Android package visibility for launcher activities so Android 11+ can discover the installed game package.
+- Added **Install APK + data (ADB)** in each game's details dialog. It calls the existing validated `/api/install` flow with that game's recorded APK and data-pack paths. This installs the APK if needed and copies the data pack into the app-owned directory.
+- Updated `docs/COPY_DATA.md` to document the one-tap Library workflow and retained manual-copy instructions for users without adb.
+- Updated the OTA payload manifest for the changed WebView file.
+
+### Validation still required
+- CI must compile Java, validate Python/WebView syntax and OTA hashes, then produce a new APK.
+- Device test: install APK + data through Library, launch game, verify `/Android/data/<package>/files/nx2a-data.json`, `RomFS`, `mods`, and `shaders.dmsv` are present and readable.
+- Device test: launch an already-installed game directly from Library.
+- If the game uses an external `DM_ROMFS` folder instead of the app-owned data pack, verify the game's own **All files access** toggle is enabled. This is distinct from nx2android's storage permission.
