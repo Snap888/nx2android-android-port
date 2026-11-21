@@ -17,7 +17,7 @@ This is a better base than a new app module: it already has the real Android-sid
 
 ## Current port architecture (source-derived)
 
-The current pipeline still creates a separate APK and data pack for each game. The porter result event contains `title_id`, `name`, `package`, `version`, `display`, `language`, `apk` and `data`. The Android host build also consumes profile-generated compile-time headers. The current native host therefore is not yet a single profile-agnostic runtime that can load arbitrary game profiles.
+The current upstream porter compiles a game-specific `libdmhost.so` against profile-generated headers and wraps it in an APK. NGR now treats that APK only as a temporary build container: it extracts the arm64 native libraries into the data pack, deletes the per-game APK, and never asks Android to install a game-specific package. The NGR app itself is the only installed APK. The next native migration removes the remaining game-specific profile compilation and replaces it with a single profile-agnostic host.
 
 The new library must not label these legacy outputs as shared-runtime-ready. The legacy Port / Install flow remains intact while the runtime ABI migration is developed and tested.
 
@@ -41,6 +41,16 @@ The new library must not label these legacy outputs as shared-runtime-ready. The
 - Cover paths are restricted to shared storage and image extensions; cover size is capped.
 - A successful porter result is recorded before optional cleanup of working files.
 
+### Single-APK runtime dispatch (first implementation stage)
+- The NGR APK now bundles a small `libngrhost.so` NativeActivity dispatcher.
+- The Library's Run action passes the stable 20-character game ID to NGR's own `android.app.NativeActivity`; it no longer validates or launches the per-game Android package.
+- Successful port results are unpacked: `libdmhost.so` and companion arm64 `.so` libraries are extracted from the temporary build APK into the game's data pack. The temporary per-game APK is deleted after successful extraction.
+- Added `runtime_install.py` and `/api/runtime/install`: ADB copies the game payload into `Android/data/unknown.none.nx2android/files/games/<id>`, owned by the single NGR package.
+- `libngrhost.so` stages native libraries from shared app-specific external storage into NGR's private internal files directory before `dlopen` (external storage is not a safe executable-library location). Game data remains isolated under the selected game's external directory.
+- The upstream Android frontend patch reads `DM_GAME_DIR` so the selected game's RomFS, environment, shaders and files do not collide with another game's data.
+- This is deliberately an intermediate architecture: one installable NGR APK and no per-game APK installation, but the game native host is still compiled per profile. The JSON profile ABI conversion remains required for a truly shared, profile-agnostic `libdmhost.so`.
+- Device validation is still required for Android linker namespace behavior, game library dependencies, large payload copying, Vulkan initialization and two-game isolation.
+
 ### OTA / CI
 - Updated the OTA payload manifest and hashes (payload version 95).
 - CI now watches this feature branch and validates Python syntax and payload hashes.
@@ -48,10 +58,10 @@ The new library must not label these legacy outputs as shared-runtime-ready. The
 
 ## Not yet implemented
 
-- Runtime-loaded native game-profile ABI.
-- Removal of per-game compile-time profile dependencies from the shared host.
-- One reusable `libdmhost.so` / NGR runtime that accepts a validated per-game profile and payload.
-- Runtime launch dispatcher from a library entry.
+- Runtime-loaded native game-profile ABI (still pending).
+- Removal of per-game compile-time profile dependencies from the shared host (still pending).
+- One reusable profile-agnostic `libdmhost.so` (still pending; current dispatcher loads a per-game host library inside the NGR process).
+- Physical-device validation of the new NGR NativeActivity dispatcher and runtime install path.
 - Per-game graphics/controller settings applied to the native runtime.
 - Import/migration of previously ported games not yet represented by a new successful port result.
 - Android device tests for catalog, covers, persistence, runtime launch and two-game isolation.
