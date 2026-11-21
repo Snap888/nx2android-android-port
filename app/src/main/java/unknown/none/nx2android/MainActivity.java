@@ -212,23 +212,20 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface public void installApk(String path) { runOnUiThread(() -> doInstall(path)); }
 
-        /** Launch the already-installed per-game NativeActivity from the NGR library. */
-        @JavascriptInterface public void launchGame(String packageName) {
+        /** Launch a game through NGR's own NativeActivity; no per-game Android package is installed. */
+        @JavascriptInterface public void launchGame(String gameId) {
             runOnUiThread(() -> {
-                if (packageName == null || !packageName.matches("[A-Za-z0-9_]+(\\\\.[A-Za-z0-9_]+)+")) {
-                    Toast.makeText(MainActivity.this, "Invalid game package name", Toast.LENGTH_LONG).show();
+                if (gameId == null || !gameId.matches("[0-9a-f]{20}")) {
+                    Toast.makeText(MainActivity.this, "Invalid game shortcut ID", Toast.LENGTH_LONG).show();
                     return;
                 }
                 try {
-                    Intent launch = getPackageManager().getLaunchIntentForPackage(packageName);
-                    if (launch == null) {
-                        Toast.makeText(MainActivity.this, "Game APK is not installed. Use Install APK + data first.", Toast.LENGTH_LONG).show();
-                        return;
-                    }
+                    Intent launch = new Intent(MainActivity.this, android.app.NativeActivity.class);
+                    launch.putExtra("game_id", gameId);
                     launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                     startActivity(launch);
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Could not launch game: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "Could not start NGR runtime: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 }
             });
         }
