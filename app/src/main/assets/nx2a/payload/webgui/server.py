@@ -107,6 +107,20 @@ def extract_runtime_libraries(apk_path, data_dir):
                 shutil.copyfileobj(src, dst)
             tmp.replace(target)
             names.append(base)
+        # The touch-gamepad theme is an APK asset, not a shared host resource. Move it into the game payload
+        # because NGR's shell APK has a different AssetManager from the old per-game APK.
+        for name in z.namelist():
+            if not name.startswith('assets/') or name.endswith('/'):
+                continue
+            rel = Path(name[len('assets/'):])
+            if not rel.parts or any(part in ('', '.', '..') for part in rel.parts):
+                raise ValueError(f'unsafe APK asset path: {name}')
+            target = data / 'assets' / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            tmp = target.with_suffix(target.suffix + '.tmp')
+            with z.open(name) as src, tmp.open('wb') as dst:
+                shutil.copyfileobj(src, dst)
+            tmp.replace(target)
     # This APK was only a build container for the native library. NGR owns the sole installable APK.
     apk.unlink()
     return sorted(names)
