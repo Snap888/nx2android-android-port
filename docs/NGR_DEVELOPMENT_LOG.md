@@ -88,3 +88,7 @@
 - Launch from Library; verify dispatcher log, successful private-library staging, game-specific `DM_GAME_DIR`, RomFS and theme loading.
 - Repeat for a second game and verify no save/cache/RomFS cross-contamination.
 - Confirm Vulkan, input, gamepad theme, pause/resume, storage use and clean process exit on the target phone.
+
+### Runtime process and save isolation follow-up
+- Registered NGR's NativeActivity in the dedicated Android process `:game`. Upstream's NativeActivity teardown uses `_exit(0)`; without process isolation this would kill the launcher and ProotService as well as the game. The separate process keeps the Library alive and lets the game process exit cleanly.
+- Added `NGR_PRIVATE_GAME_DIR` and patched `front_android.c` so each title gets its own private `save/` and `temp/` directories alongside staged native libraries. Game files, shaders and overlay assets remain under that game's external files directory.
