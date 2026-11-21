@@ -43,9 +43,9 @@ The new library must not label these legacy outputs as shared-runtime-ready. The
 
 ### Single-APK runtime dispatch (first implementation stage)
 - The NGR APK now bundles a small `libngrhost.so` NativeActivity dispatcher.
-- The Library's Run action passes the stable 20-character game ID to NGR's own `android.app.NativeActivity`; it no longer validates or launches the per-game Android package.
+- The Library's Run action passes the stable 20-character game ID to NGR's own `android.app.NativeActivity`; it no longer validates or launches the per-game Android package. This also removes the earlier Java package-name regex failure.
 - Successful port results are unpacked: `libdmhost.so` and companion arm64 `.so` libraries are extracted from the temporary build APK into the game's data pack. The temporary per-game APK is deleted after successful extraction.
-- Added `runtime_install.py` and `/api/runtime/install`: ADB copies the game payload into `Android/data/unknown.none.nx2android/files/games/<id>`, owned by the single NGR package.
+- Added `runtime_install.py` and `/api/runtime/install`: the NGR process copies the game payload directly into its own `Android/data/unknown.none.nx2android/files/games/<id>` directory. No ADB pairing or per-game APK installation is required.
 - `libngrhost.so` stages native libraries from shared app-specific external storage into NGR's private internal files directory before `dlopen` (external storage is not a safe executable-library location). Game data remains isolated under the selected game's external directory.
 - The upstream Android frontend patch reads `DM_GAME_DIR` so the selected game's RomFS, environment, shaders and files do not collide with another game's data.
 - This is deliberately an intermediate architecture: one installable NGR APK and no per-game APK installation, but the game native host is still compiled per profile. The JSON profile ABI conversion remains required for a truly shared, profile-agnostic `libdmhost.so`.
