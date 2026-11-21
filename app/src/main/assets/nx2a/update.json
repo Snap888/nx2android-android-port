@@ -1,1 +1,5 @@
-{"repo": "A2redweb/nx2android-android-port", "branch": "main", "path": "app/src/main/assets/nx2a/payload"}
+{
+ "repo": "Snap888/nx2android-android-port",
+ "branch": "feature/ngr-universal-library",
+ "path": "app/src/main/assets/nx2a/payload"
+}
