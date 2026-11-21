@@ -325,8 +325,8 @@ patch('NGR per-game data root', 'nxnative/dm/android/front_android.c', 'NX2A_GAM
  "    const char *ngr_game_dir = getenv(\"DM_GAME_DIR\");\n    if (ngr_game_dir && *ngr_game_dir) snprintf(g_root, sizeof g_root, \"%s\", ngr_game_dir);\n    else snprintf(g_root, sizeof g_root, \"%s\", act->externalDataPath ? act->externalDataPath : act->internalDataPath); // NX2A_GAME_DIR"),
 ])
 
-patch('NGR overlay asset stdio', 'nxnative/dm/android/overlay_theme.c', 'NX2A_GAME_ASSETS_STDIO', [
-("#include <stdlib.h>", "#include <stdio.h> /* NX2A_GAME_ASSETS_STDIO */\n#include <stdlib.h>"),
+patch('NGR overlay asset stdio', 'nxnative/dm/android/overlay_theme.c', 'NX2A_ASSET_STDIO', [
+("#include <stdlib.h>", "#include <stdio.h> /* NX2A_ASSET_STDIO */\n#include <stdlib.h>"),
 ])
 
 # 7. NGR NativeActivity uses the one NGR APK's AssetManager. Game-specific overlay themes
