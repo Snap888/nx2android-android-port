@@ -168,6 +168,7 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     }
 
     setenv("DM_GAME_DIR", game_dir, 1);
+    setenv("NGR_PRIVATE_GAME_DIR", private_dir, 1);
     setenv("NGR_GAME_ID", id, 1);
     LOGI("starting game %s; data=%s; native runtime=%s", id, game_dir, lib_path);
     preload_game_dependencies(private_dir);
