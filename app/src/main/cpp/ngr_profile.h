@@ -17,6 +17,7 @@ typedef struct {
  * Returns 0 on success, -1 with a readable error in error_out otherwise. */
 int ngr_profile_validate(const char *profile_json, size_t profile_size,
                          const char *manifest_json, size_t manifest_size,
+                         const char *expected_game_id,
                          ngr_profile_summary *summary,
                          char *error_out, size_t error_capacity);
 
