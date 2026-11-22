@@ -240,6 +240,16 @@ public class MainActivity extends Activity {
                     byte[] buffer = new byte[64 * 1024]; int n;
                     while ((n = in.read(buffer)) > 0) out.write(buffer, 0, n);
                 }
+                File lifecycle = new File(dir, "android-lifecycle.log");
+                out.write("\n\n===== Persistent Android process/activity lifecycle =====\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                if (lifecycle.isFile()) {
+                    try (java.io.FileInputStream lifecycleIn = new java.io.FileInputStream(lifecycle)) {
+                        byte[] lifecycleBuffer = new byte[32 * 1024]; int lifecycleN;
+                        while ((lifecycleN = lifecycleIn.read(lifecycleBuffer)) > 0) out.write(lifecycleBuffer, 0, lifecycleN);
+                    }
+                } else {
+                    out.write("[No Application/Activity lifecycle marker was written]\\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                }
                 File pidFile = new File(dir, gameId + ".pid");
                 String pid = "";
                 if (pidFile.isFile()) pid = new String(java.nio.file.Files.readAllBytes(pidFile.toPath()), java.nio.charset.StandardCharsets.UTF_8).trim();
