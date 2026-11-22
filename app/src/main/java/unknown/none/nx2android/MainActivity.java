@@ -244,7 +244,6 @@ public class MainActivity extends Activity {
                     String message = deleted + " log file(s) deleted";
                     if (failed > 0) message += "; " + failed + " could not be deleted";
                     Toast.makeText(this, message, failed > 0 ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show();
-                    appendRuntimeLog(gameId, "Log clear requested; deleted=" + deleted + " failed=" + failed);
                 })
                 .show();
     }
