@@ -44,7 +44,7 @@ class ProfileExportTests(unittest.TestCase):
 def load(path):
     return FakeGame(path)
 def header(game):
-    return b'game-header-v1'
+    return 'game-header-v1'
 BUILD_TABLES = {'fps_locks.tsv': None}
 def build_table(game, name):
     return [['0123456789abcdef0123456789abcdef', 'main', '0x10']]
@@ -68,7 +68,7 @@ def build_table(game, name):
 def AndroidProfile(game):
     return FakeAndroid(game)
 def header(profile):
-    return b'android-header-v1'
+    return 'android-header-v1'
 """)
         (self.data / "nx2a-data.json").write_text(json.dumps({
             "title_id": self.game_id,
