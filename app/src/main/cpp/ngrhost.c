@@ -37,7 +37,7 @@ static void runtime_log_emit(int priority, const char *fmt, ...) {
     char stamp[64];
     strftime(stamp, sizeof(stamp), "%Y-%m-%d %H:%M:%S", &tmv);
     char line[4352];
-    int len = snprintf(line, sizeof(line), "%s.%03ld [%s] pid=%ld %s\\n",
+    int len = snprintf(line, sizeof(line), "%s.%03ld [%s] pid=%ld %s\n",
         stamp, ts.tv_nsec / 1000000L, priority >= ANDROID_LOG_ERROR ? "E" : "I",
         (long)getpid(), message);
     if (len <= 0) return;
@@ -123,7 +123,7 @@ static int runtime_log_init(const char *internal_root, const char *game_id) {
     if (n > 0 && (size_t)n < sizeof(pid_path)) {
         int fd = open(pid_path, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC | O_NOFOLLOW, 0600);
         if (fd >= 0) {
-            char pid[48]; int plen = snprintf(pid, sizeof(pid), "%ld\\n", (long)getpid());
+            char pid[48]; int plen = snprintf(pid, sizeof(pid), "%ld\n", (long)getpid());
             if (plen > 0) (void)write(fd, pid, (size_t)plen);
             close(fd);
         }
@@ -318,7 +318,7 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
         __android_log_print(ANDROID_LOG_ERROR, TAG, "cannot initialize persistent runtime log under %s: %s", internal ? internal : "(null)", strerror(errno));
     }
     LOGI("============================================================");
-    LOGI("NGR launch session started: game_id=%s sdk=%d abi=arm64-v8a", id, (int)android_get_device_api_level());
+    LOGI("NGR launch session started: game_id=%s sdk=%d abi=arm64-v8a", id, activity->sdkVersion);
     LOGI("NativeActivity paths: internal=%s external=%s", internal ? internal : "(null)", external ? external : "(null)");
     char game_dir[1024], private_dir[1024], lib_path[1200], external_lib[1200];
     int a = snprintf(game_dir, sizeof(game_dir), "%s/games/%s", external, id);
