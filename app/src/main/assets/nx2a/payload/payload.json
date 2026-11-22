@@ -1,5 +1,5 @@
 {
- "version": 105,
+ "version": 107,
  "setup": 3,
  "porter_sha": "468937822219a56eb81da1aa2e40f05e8c453af2",
  "files": {
@@ -12,7 +12,7 @@
   "prebuilt.py": "b12ea35546333547930dac17203f57b9d7f33f7c031c2a8c839033ceb5ff3129",
   "prebuilt_key.py": "7b15021b38f7fcecf4a7d6e016a4a0aaa21c77d8b33dc375338b53fb423999e5",
   "profiles/runefactoryguardiansofazuma.android.tsv": "78b445b4164356419ff1c67e4af9c71471b986b36c93964846addb15f65acf22",
-  "runtime_install.py": "81c100ae9694d797ccf8aca77ca7cd4150128c4209ac05d623479b6d81cea4bc",
+  "runtime_install.py": "870beb015914778a7eeea5790f013712acd85b75edf4a6911cddd2ea89a19622",
   "server_state.py": "43eb08dbb456841f78cb56efc902a6642412b07431ae36fc61e4abbe78884802",
   "webgui/index.html": "82260348aa87c1fe5d9a6f3245e57a90e04ab1b4399946255511792500267d23",
   "webgui/server.py": "79302462385fdc64296d483394515476ec1610a6c2fc7408bb2d606cabb7ae00"
