@@ -482,7 +482,13 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     LOGI("[stage 3/8] dependency preload finished: %d companion libraries", preloaded);
 
     LOGI("[stage 4/8] inspecting main runtime ELF before dlopen: %s", lib_path);
-    log_runtime_elf_metadata(lib_path);
+    if (log_runtime_elf_metadata(lib_path) != 0) {
+        LOGE("[stage 4/8] runtime ELF preflight rejected the library");
+        toast(activity, "Game runtime ELF is invalid. See NGR runtime log.");
+        (*activity->env)->ReleaseStringUTFChars(activity->env, jid, id);
+        ANativeActivity_finish(activity);
+        return;
+    }
     LOGI("[stage 4/8] main runtime dlopen begin: %s (RTLD_LAZY|RTLD_LOCAL)", lib_path);
     dlerror();
     /* Defer function relocations until first use. This avoids resolving optional
