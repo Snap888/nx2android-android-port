@@ -318,7 +318,7 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
         __android_log_print(ANDROID_LOG_ERROR, TAG, "cannot initialize persistent runtime log under %s: %s", internal ? internal : "(null)", strerror(errno));
     }
     LOGI("============================================================");
-    LOGI("NGR launch session started: game_id=%s sdk=%d abi=arm64-v8a", id, activity->sdkVersion);
+    LOGI("NGR launch session started: game_id=%s sdk=%s abi=arm64-v8a", id, activity->sdkVersion ? activity->sdkVersion : "unknown");
     LOGI("NativeActivity paths: internal=%s external=%s", internal ? internal : "(null)", external ? external : "(null)");
     char game_dir[1024], private_dir[1024], lib_path[1200], external_lib[1200];
     int a = snprintf(game_dir, sizeof(game_dir), "%s/games/%s", external, id);
