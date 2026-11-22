@@ -9,6 +9,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -44,6 +45,9 @@ def export_profile(repo, game_id, data_dir, source_folder=""):
     expected_hash = manifest.get("profile_h")
     if not expected_hash:
         raise ValueError("nx2a-data.json has no profile_h; this build cannot be mapped safely to a runtime profile")
+    library_id = str(manifest.get("game_id") or "")
+    if not re.fullmatch(r"[0-9a-f]{20}", library_id):
+        raise ValueError("nx2a-data.json has no valid 20-character NGR game_id")
 
     dm = repo / "nxnative" / "dm"
     sys.path.insert(0, str(dm / "games"))
@@ -97,7 +101,7 @@ def export_profile(repo, game_id, data_dir, source_folder=""):
         "schema_version": 1,
         "identity": {
             "game_id": g.id,
-            "library_id": manifest.get("game_id", ""),
+            "library_id": library_id,
             "name": g.get("name", g.id),
             "title_id": f"{g.title_id:016X}",
             "program_id": f"{int(g.get('program_id'), 16):016X}",
