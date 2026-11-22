@@ -35,7 +35,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="android.app.NativeActivity"
+            android:name=".NgrGameActivity"
             android:label="NGR Game Runtime"
             android:exported="false"
             android:process=":game"
