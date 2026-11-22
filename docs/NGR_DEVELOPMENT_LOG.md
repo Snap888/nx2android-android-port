@@ -92,3 +92,24 @@
 ### Runtime process and save isolation follow-up
 - Registered NGR's NativeActivity in the dedicated Android process `:game`. Upstream's NativeActivity teardown uses `_exit(0)`; without process isolation this would kill the launcher and ProotService as well as the game. The separate process keeps the Library alive and lets the game process exit cleanly.
 - Added `NGR_PRIVATE_GAME_DIR` and patched `front_android.c` so each title gets its own private `save/` and `temp/` directories alongside staged native libraries. Game files, shaders and overlay assets remain under that game's external files directory.
+
+
+## 2026-11-22 — Runtime dispatcher hardening and installer tests
+
+### Changes
+- Hardened `libngrhost.so` native-library staging: source and destination files are opened with no-follow semantics, copies handle interrupted reads/writes, and the dispatcher verifies the extracted main library is a 64-bit little-endian AArch64 ELF before calling the Android linker.
+- Added explicit path-length and installed-payload marker checks. Incomplete installs now fail before attempting `dlopen`, with actionable log/toast messages.
+- Reworked companion-library loading to retry unresolved libraries in multiple passes. This avoids depending on the order in which native libraries appear in the temporary APK ZIP.
+- Increased the tracked native-handle table and added bounds checks so an unexpectedly large native library set cannot corrupt memory.
+- Refactored `runtime_install.py` into a testable transactional installer. It validates the game ID and NGR package name, restores an interrupted previous payload, stages the new payload, verifies required files, atomically promotes it, and rolls back on failure.
+- Added Python unit tests for initial install, replacement, interrupted-install recovery, invalid game IDs and incomplete payload rejection.
+- CI now runs the installer unit tests and compiles the runtime installer during payload validation. Test-only changes do not trigger an unnecessary Android APK rebuild.
+- Bumped OTA payload version to 107 for the installer update.
+
+### Validation status
+- Python unit tests and Android native compilation are now part of the active GitHub Actions run; the current run must complete before this stage is called build-verified.
+- No physical-device result is claimed. The next device test must install runtime + data with ADB/Wireless debugging disabled, then launch from Library and collect the NGRRuntime + dmhost logs if it fails.
+
+### Architecture boundary
+- Still one installed NGR APK and no per-game APK installation.
+- The native host library is still compiled per game against generated profile headers. The true shared/profile-agnostic host remains the next major milestone; the current dispatcher is not being mislabeled as that completed architecture.
