@@ -285,7 +285,7 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
             ngr_profile_summary summary;
             char profile_error[256] = {0};
             if (ngr_profile_validate(profile_json, profile_size, manifest_json, manifest_size,
-                                     &summary, profile_error, sizeof(profile_error)) == 0) {
+                                     id, &summary, profile_error, sizeof(profile_error)) == 0) {
                 LOGI("[NGR profile] schema v%d validated: title=%s modules=%zu rows=%zu build-table-rows=%zu overlay=%zu",
                      summary.schema_version, summary.title_id, summary.module_count,
                      summary.profile_row_count, summary.game_table_row_count, summary.overlay_count);
