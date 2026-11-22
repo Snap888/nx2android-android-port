@@ -113,3 +113,28 @@
 ### Architecture boundary
 - Still one installed NGR APK and no per-game APK installation.
 - The native host library is still compiled per game against generated profile headers. The true shared/profile-agnostic host remains the next major milestone; the current dispatcher is not being mislabeled as that completed architecture.
+
+
+## 2026-11-22 — Versioned runtime profile JSON export (schema v1)
+
+### Source audit
+- Re-audited the live porter source at upstream main `581ca540f7b2214d47aee1e9be6156fc36809426`, because it has advanced beyond the earlier pinned profile audit.
+- Added the missing profile fields to the migration inventory: FPS ceiling, loopback sockets, sparse small virtual pools, CPU-uncached textures, NVN order-keep, and the per-build FPS-lock / Unreal allocator tables.
+- Added the newer Android profile fields: ROMFS compression, Vulkan-driver preference, pacing presets, frame-counter settings and README metadata.
+
+### Implementation
+- Added `profile_export.py`. It imports the exact porter `game.py` and `android_profile.py` parsers and exports the parsed source rows plus normalized runtime data to `profile.json` schema v1.
+- The JSON includes game identity, modules, build/version map, per-build tables, Android profile settings, resolved pacing/environment, ROMFS/Vulkan choices and the complete tablet/phone overlay layout.
+- Exporter verifies `nx2a-data.json.profile_h` against a freshly generated `game_profile.h` hash. It searches the base repository profile and the build's provisional/derived/memory profile folders. A mismatched profile is refused rather than silently attached to the wrong native library.
+- Profile export is optional for the current legacy compiled host: failures are reported in the Recompiler log, while the existing native host payload remains usable.
+- Library details now show whether the exact profile JSON was captured. This is not yet a claim that the native host consumes JSON.
+
+### Validation
+- Added three profile-export tests (exact hash match and serialization, mismatched profile rejection, missing hash rejection).
+- Combined with the five transactional installer tests, all 8 Python tests pass in GitHub Actions.
+- WebView JavaScript syntax and OTA payload manifest validation pass.
+- OTA payload is version 109. The profile exporter and backend/UI changes are delivered by the existing branch OTA mechanism; the shared dispatcher APK does not need rebuilding for payload-only changes.
+
+### Remaining native migration
+- The dispatcher still loads a per-game compiled `libdmhost.so`; the JSON file is not parsed by native code yet.
+- Next: add a bounded/versioned C JSON parser, define `dm_game_profile`, and convert the host/HLE/NVN consumers in groups while preserving legacy macro builds for A/B verification.
