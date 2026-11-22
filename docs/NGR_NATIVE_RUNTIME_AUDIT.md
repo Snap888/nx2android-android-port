@@ -119,3 +119,20 @@ The original memory, module, startup, frame pacing, overlay, texture/shader work
 4. Convert HLE and NVN flags, frame pacing and per-build tables without changing defaults.
 5. Replace `DM_AOV_N` static overlay arrays with validated runtime-owned overlay rows.
 6. Build a profile-agnostic host and run two materially different game profiles from the same installed NGR APK.
+
+
+## Native JSON validation stage — 2026-11-22
+
+The dispatcher now compiles `ngr_profile.c/.h` and validates the schema-v1 document before loading the native game library:
+
+- 4 MiB maximum per JSON file; bounded token count and nesting depth.
+- Requires schema version 1 and an object root with no trailing data.
+- Requires a 16-digit profile title ID that matches the data-pack manifest.
+- Requires the JSON's 64-character `game_profile_sha256` to match `nx2a-data.json.profile_h`.
+- Bounds module count, profile rows, repeated row values, per-build table row/column counts and overlay control count.
+- Validates Android settings/environment/requirements container shapes.
+- Missing or invalid JSON is logged and the compiled-profile host remains the compatibility fallback; no runtime fields have been switched from macros yet.
+
+Native C tests cover valid JSON, mismatched compiled-header hash, unsupported schema and malformed JSON. GitHub Actions compiles the parser with strict host compiler warnings and runs those tests. Android Release compilation also passed.
+
+**Important:** This stage proves the JSON artifact is well-formed and belongs to the compiled game profile. It does not yet make `libdmhost.so` profile-agnostic. The following work still has to move every macro consumer to a runtime-owned profile context.
