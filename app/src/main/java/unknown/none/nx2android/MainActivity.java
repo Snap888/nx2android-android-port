@@ -329,7 +329,6 @@ public class MainActivity extends Activity {
                     }
                     Intent launch = new Intent().setComponent(gameComponent);
                     launch.putExtra("game_id", gameId);
-                    launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                     appendRuntimeLog(gameId, "Starting explicit component " + launch.getComponent()
                             + " with game_id=" + launch.getStringExtra("game_id"));
                     startActivity(launch);
