@@ -296,8 +296,13 @@ static int log_runtime_elf_metadata(const char *path) {
                                    rela_ent == sizeof(Elf64_Rela) &&
                                    rela_size % sizeof(Elf64_Rela) == 0 &&
                                    rela_off != UINT64_MAX;
+            int missing_constructor_reloc = 0;
             if (rela_addr && !rela_table_valid)
                 LOGE("[ELF preflight] DT_RELA table has invalid bounds/entry size");
+            if (rela_table_valid)
+                LOGI("[ELF preflight] DT_RELA mapped file offset=0x%llx entries=%llu",
+                     (unsigned long long)rela_off,
+                     (unsigned long long)(rela_size / sizeof(Elf64_Rela)));
             for (uint64_t i = 0; i < count; ++i) {
                 Elf64_Addr value = 0;
                 uint64_t slot_vaddr = array_addr + i * sizeof(value);
@@ -319,12 +324,19 @@ static int log_runtime_elf_metadata(const char *path) {
                         }
                     }
                 }
-                LOGI("[ELF preflight] init_array[%llu] raw=0x%llx rela=%s",
-                     (unsigned long long)i, (unsigned long long)value,
+                if (value && !found && !relr_size) missing_constructor_reloc = 1;
+                LOGI("[ELF preflight] init_array[%llu] slot=0x%llx raw=0x%llx rela=%s",
+                     (unsigned long long)i, (unsigned long long)slot_vaddr,
+                     (unsigned long long)value,
                      found ? "present" : (relr_size ? "not-in-RELA-check-RELR-may-cover" : "MISSING"));
             }
             if (relr_size)
                 LOGI("[ELF preflight] packed RELR relocations present; init-array coverage requires RELR decoding");
+            if (missing_constructor_reloc) {
+                LOGE("[ELF preflight] refusing malformed shared object: non-null init_array entries have no dynamic relocation");
+                close(fd);
+                return -1;
+            }
         }
     } else if (array_size) {
         LOGE("[ELF preflight] unusual init array size=%llu", (unsigned long long)array_size);
