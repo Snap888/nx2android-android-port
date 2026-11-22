@@ -1,5 +1,7 @@
 #include "ngr_profile.h"
 
+/* NGR feature-branch APK build trigger: keep native profile validation in the test APK. */
+
 #include <ctype.h>
 #include <stdint.h>
 #include <stdio.h>
