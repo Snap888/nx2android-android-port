@@ -31,7 +31,7 @@ int main(void) {
     char error[256] = {0};
     int rc = ngr_profile_validate(profile_json, strlen(profile_json),
                                   manifest_json, strlen(manifest_json),
-                                  &summary, error, sizeof(error));
+                                  "1234567890abcdef1234", &summary, error, sizeof(error));
     if (rc) fprintf(stderr, "valid profile rejected: %s\n", error);
     assert(rc == 0);
     assert(summary.schema_version == 1);
@@ -46,7 +46,7 @@ int main(void) {
         "\"profile_h\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"}";
     rc = ngr_profile_validate(profile_json, strlen(profile_json),
                               bad_manifest, strlen(bad_manifest),
-                              &summary, error, sizeof(error));
+                              "1234567890abcdef1234", &summary, error, sizeof(error));
     assert(rc != 0);
     assert(strstr(error, "does not match") != NULL);
 
@@ -54,14 +54,14 @@ int main(void) {
         "{\"schema_version\":2,\"identity\":{},\"source\":{},\"game\":{},\"android\":null}";
     rc = ngr_profile_validate(bad_schema, strlen(bad_schema),
                               manifest_json, strlen(manifest_json),
-                              &summary, error, sizeof(error));
+                              "1234567890abcdef1234", &summary, error, sizeof(error));
     assert(rc != 0);
     assert(strstr(error, "schema_version") != NULL);
 
     const char *bad_json = "{\"schema_version\":1,";
     rc = ngr_profile_validate(bad_json, strlen(bad_json),
                               manifest_json, strlen(manifest_json),
-                              &summary, error, sizeof(error));
+                              "1234567890abcdef1234", &summary, error, sizeof(error));
     assert(rc != 0);
 
     puts("NGR profile JSON validator tests passed");
