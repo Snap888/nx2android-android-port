@@ -85,3 +85,11 @@ The new library must not label these legacy outputs as shared-runtime-ready. The
 4. Implement the profile serializer and a native validation test target while preserving the legacy build.
 5. Build the first shared host prototype and compare it byte/behavior-wise against a legacy profile build.
 6. Connect the library Run button only after the shared host is genuinely launchable.
+
+
+## 2026-11-22 runtime reliability update
+
+- The NGR NativeActivity dispatcher now validates the installed payload marker and the main runtime's ELF class, byte order and AArch64 machine type before loading it.
+- Native library copies reject symlinks and handle EINTR; companion libraries are retried across passes instead of relying on APK ZIP entry order. Handle-table capacity is checked before storing every loaded library.
+- The runtime installer is now factored into a transactional function with explicit validation and rollback. Its Python unit tests run in CI.
+- A successful Android build or CI unit test still does not prove that a particular game's native dependency graph is loadable on a phone. The physical-device launch gate remains open.
