@@ -218,6 +218,80 @@ static int valid_aarch64_elf(const char *path) {
            eh.e_machine == EM_AARCH64;
 }
 
+
+/* Inspect the generated runtime before handing it to bionic's linker. This is
+ * deliberately read-only: malformed constructor metadata must be diagnosed
+ * before dlopen can execute it and take down the Android process. */
+static uint64_t elf_vaddr_to_offset(const Elf64_Phdr *phdrs, size_t phnum,
+                                    uint64_t vaddr, uint64_t length) {
+    for (size_t i = 0; i < phnum; ++i) {
+        const Elf64_Phdr *p = &phdrs[i];
+        if (p->p_type != PT_LOAD || vaddr < p->p_vaddr) continue;
+        uint64_t delta = vaddr - p->p_vaddr;
+        if (delta <= p->p_filesz && length <= p->p_filesz - delta)
+            return p->p_offset + delta;
+    }
+    return UINT64_MAX;
+}
+
+static void log_runtime_elf_metadata(const char *path) {
+    int fd = open(path, O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
+    if (fd < 0) { LOGE("[ELF preflight] open failed: %s", strerror(errno)); return; }
+    Elf64_Ehdr eh;
+    if (pread(fd, &eh, sizeof(eh), 0) != (ssize_t)sizeof(eh) ||
+        memcmp(eh.e_ident, ELFMAG, SELFMAG) != 0 ||
+        eh.e_ident[EI_CLASS] != ELFCLASS64 || eh.e_machine != EM_AARCH64 ||
+        eh.e_phentsize != sizeof(Elf64_Phdr) || eh.e_phnum == 0 || eh.e_phnum > 128) {
+        LOGE("[ELF preflight] invalid ELF/program-header table");
+        close(fd); return;
+    }
+    LOGI("[ELF preflight] type=%u machine=%u entry=0x%llx phnum=%u",
+         eh.e_type, eh.e_machine, (unsigned long long)eh.e_entry, eh.e_phnum);
+    if (eh.e_type != ET_DYN) {
+        LOGE("[ELF preflight] refusing non-ET_DYN runtime (type=%u)", eh.e_type);
+        close(fd); return;
+    }
+    Elf64_Phdr phdrs[128];
+    size_t phbytes = (size_t)eh.e_phnum * sizeof(Elf64_Phdr);
+    if (pread(fd, phdrs, phbytes, (off_t)eh.e_phoff) != (ssize_t)phbytes) {
+        LOGE("[ELF preflight] cannot read program headers");
+        close(fd); return;
+    }
+    uint64_t init_addr = 0, array_addr = 0, array_size = 0;
+    for (size_t i = 0; i < eh.e_phnum; ++i) {
+        if (phdrs[i].p_type != PT_DYNAMIC) continue;
+        uint64_t off = phdrs[i].p_offset, size = phdrs[i].p_filesz;
+        for (uint64_t pos = 0; pos + sizeof(Elf64_Dyn) <= size; pos += sizeof(Elf64_Dyn)) {
+            Elf64_Dyn dyn;
+            if (pread(fd, &dyn, sizeof(dyn), (off_t)(off + pos)) != (ssize_t)sizeof(dyn)) break;
+            if (dyn.d_tag == DT_NULL) break;
+            if (dyn.d_tag == DT_INIT) init_addr = dyn.d_un.d_ptr;
+            else if (dyn.d_tag == DT_INIT_ARRAY) array_addr = dyn.d_un.d_ptr;
+            else if (dyn.d_tag == DT_INIT_ARRAYSZ) array_size = dyn.d_un.d_val;
+        }
+    }
+    LOGI("[ELF preflight] DT_INIT=0x%llx INIT_ARRAY=0x%llx INIT_ARRAYSZ=%llu",
+         (unsigned long long)init_addr, (unsigned long long)array_addr,
+         (unsigned long long)array_size);
+    if (array_size && array_size <= 4096 && array_size % sizeof(Elf64_Addr) == 0) {
+        uint64_t array_off = elf_vaddr_to_offset(phdrs, eh.e_phnum, array_addr, array_size);
+        if (array_off == UINT64_MAX) {
+            LOGE("[ELF preflight] init array is outside file-backed PT_LOAD segments");
+        } else {
+            for (uint64_t i = 0; i < array_size / sizeof(Elf64_Addr); ++i) {
+                Elf64_Addr value = 0;
+                if (pread(fd, &value, sizeof(value),
+                          (off_t)(array_off + i * sizeof(value))) != (ssize_t)sizeof(value)) break;
+                LOGI("[ELF preflight] init_array[%llu]=0x%llx (on-disk; relocations may apply)",
+                     (unsigned long long)i, (unsigned long long)value);
+            }
+        }
+    } else if (array_size) {
+        LOGE("[ELF preflight] unusual init array size=%llu", (unsigned long long)array_size);
+    }
+    close(fd);
+}
+
 static int game_library_loaded(const char *name) {
     for (size_t i = 0; i < g_game_handle_count; ++i)
         if (!strcmp(g_game_loaded_names[i], name)) return 1;
@@ -406,6 +480,8 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     int preloaded = preload_game_dependencies(private_dir);
     LOGI("[stage 3/8] dependency preload finished: %d companion libraries", preloaded);
 
+    LOGI("[stage 4/8] inspecting main runtime ELF before dlopen: %s", lib_path);
+    log_runtime_elf_metadata(lib_path);
     LOGI("[stage 4/8] main runtime dlopen begin: %s (RTLD_LAZY|RTLD_LOCAL)", lib_path);
     dlerror();
     /* Defer function relocations until first use. This avoids resolving optional
