@@ -138,30 +138,37 @@ def register_port_result(lines):
                     break
             except ValueError:
                 pass
-    if not result or not result.get('apk') or not result.get('data'):
+    if not result or not result.get('data'):
         return
-    package = str(result.get('package') or '')
+    package = str(result.get('package') or 'unknown.none.nx2android')
     data_path = str(result['data'])
-    identity = package or data_path
+    title_id = str(result.get('title_id') or '')
+    identity = 'switch:' + title_id.upper() if re.fullmatch(r'[0-9A-Fa-f]{16}', title_id) else (package + ':' + data_path)
     game_id = hashlib.sha256(identity.encode('utf-8')).hexdigest()[:20]
     catalog = library_read()
     existing = next((g for g in catalog['games'] if g.get('id') == game_id), None)
-    title = str(result.get('name') or result.get('app_name') or Path(str(result['apk'])).stem)
+    title = str(result.get('name') or result.get('app_name') or Path(data_path).name.removesuffix('-data'))
     runtime_libs = []
     runtime_error = ''
     try:
-        runtime_libs = extract_runtime_libraries(result['apk'], data_path)
+        data_dir = Path(data_path)
+        if result.get('runtime') and (data_dir / 'libdmhost.so').is_file():
+            runtime_libs = sorted(p.name for p in data_dir.glob('*.so') if p.is_file())
+        elif result.get('apk'):
+            # Backward compatibility for a port built by an older, already-synced porter.
+            runtime_libs = extract_runtime_libraries(result['apk'], data_path)
+        else:
+            raise ValueError('porter did not emit libdmhost.so directly into the game data pack')
         if 'libdmhost.so' not in runtime_libs:
-            raise ValueError('libdmhost.so was not extracted')
+            raise ValueError('libdmhost.so is missing from the game data pack')
     except Exception as e:
         runtime_error = str(e)
-        JOB['lines'].append(f'[NGR runtime] extraction failed: {runtime_error}')
+        JOB['lines'].append(f'[NGR runtime] native runtime missing: {runtime_error}')
 
     # Export the exact profile header used by the native build. This is the first
     # versioned JSON ABI artifact; the current host still uses its compiled macros.
     profile_ready = False
     profile_error = ''
-    title_id = str(result.get('title_id') or '')
     if re.fullmatch(r'[0-9A-Fa-f]{16}', title_id):
         exporter = HERE.parent / 'profile_export.py'
         try:
@@ -210,7 +217,7 @@ def register_port_result(lines):
         catalog['games'].append(item)
     library_write(catalog)
     if ready:
-        JOB['lines'].append(f'[NGR runtime] extracted {len(runtime_libs)} native libraries; per-game APK discarded. Install this game payload into NGR to launch it.')
+        JOB['lines'].append(f'[NGR runtime] {len(runtime_libs)} native libraries are already in the game data pack; no per-game APK was generated.')
 
 
 def job_env():
