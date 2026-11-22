@@ -206,6 +206,58 @@ public class MainActivity extends Activity {
         web.evaluateJavascript("nx2aPicked(" + org.json.JSONObject.quote(pickId) + "," + org.json.JSONObject.quote(p) + ")", null);
     }
 
+    /** Share the per-game native log plus this runtime process's Logcat (linker/Vulkan/driver messages). */
+    private void exportRuntimeLog(String gameId) {
+        if (gameId == null || !gameId.matches("[0-9a-f]{20}")) {
+            Toast.makeText(this, "Invalid game ID", Toast.LENGTH_LONG).show();
+            return;
+        }
+        File dir = new File(getFilesDir(), "ngr-logs");
+        File source = new File(dir, gameId + ".log");
+        if (!source.isFile() || source.length() == 0) {
+            Toast.makeText(this, "No runtime log yet. Try launching the game first.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        File exported = new File(dir, gameId + "-export.log");
+        try {
+            dir.mkdirs();
+            try (java.io.FileOutputStream out = new java.io.FileOutputStream(exported, false)) {
+                out.write(("NGR runtime diagnostic export\\nGame ID: " + gameId + "\\n\\n===== Native dispatcher + game stdout/stderr =====\\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                try (java.io.FileInputStream in = new java.io.FileInputStream(source)) {
+                    byte[] buffer = new byte[64 * 1024]; int n;
+                    while ((n = in.read(buffer)) > 0) out.write(buffer, 0, n);
+                }
+                File pidFile = new File(dir, gameId + ".pid");
+                String pid = "";
+                if (pidFile.isFile()) pid = new String(java.nio.file.Files.readAllBytes(pidFile.toPath()), java.nio.charset.StandardCharsets.UTF_8).trim();
+                if (pid.matches("[0-9]+")) {
+                    out.write("\\n\\n===== Android Logcat (game process pid " + pid + ") =====\\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                    try {
+                        Process p = new ProcessBuilder("logcat", "-d", "-v", "threadtime", "--pid=" + pid).redirectErrorStream(true).start();
+                        try (java.io.InputStream logs = p.getInputStream()) {
+                            byte[] buffer = new byte[64 * 1024]; int n;
+                            while ((n = logs.read(buffer)) > 0) out.write(buffer, 0, n);
+                        }
+                        int code = p.waitFor();
+                        if (code != 0) out.write(("\\n[logcat exited with code " + code + "]\\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                    } catch (Exception e) {
+                        out.write(("\\n[logcat capture failed: " + e + "]\\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                    }
+                } else {
+                    out.write("\\n[game process PID was not recorded; Logcat section skipped]\\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                }
+            }
+            Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".files", exported);
+            Intent share = new Intent(Intent.ACTION_SEND).setType("text/plain")
+                    .putExtra(Intent.EXTRA_STREAM, uri)
+                    .putExtra(Intent.EXTRA_SUBJECT, "NGR runtime log " + gameId)
+                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(Intent.createChooser(share, "Export NGR runtime log"));
+        } catch (Exception e) {
+            Toast.makeText(this, "Could not export runtime log: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
     private class Bridge {
         @JavascriptInterface public void pick(String id, boolean dir) { runOnUiThread(() -> startPick(id, dir)); }
         @JavascriptInterface public void runProotExperiments() {
@@ -217,6 +269,7 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface public void installApk(String path) { runOnUiThread(() -> doInstall(path)); }
+        @JavascriptInterface public void exportRuntimeLog(String gameId) { runOnUiThread(() -> MainActivity.this.exportRuntimeLog(gameId)); }
 
         /** Launch a game through NGR's own NativeActivity; no per-game Android package is installed. */
         @JavascriptInterface public void launchGame(String gameId) {
