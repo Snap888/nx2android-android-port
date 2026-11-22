@@ -243,19 +243,19 @@ static int log_runtime_elf_metadata(const char *path) {
         eh.e_ident[EI_CLASS] != ELFCLASS64 || eh.e_machine != EM_AARCH64 ||
         eh.e_phentsize != sizeof(Elf64_Phdr) || eh.e_phnum == 0 || eh.e_phnum > 128) {
         LOGE("[ELF preflight] invalid ELF/program-header table");
-        close(fd); return;
+        close(fd); return -1;
     }
     LOGI("[ELF preflight] type=%u machine=%u entry=0x%llx phnum=%u",
          eh.e_type, eh.e_machine, (unsigned long long)eh.e_entry, eh.e_phnum);
     if (eh.e_type != ET_DYN) {
         LOGE("[ELF preflight] refusing non-ET_DYN runtime (type=%u)", eh.e_type);
-        close(fd); return;
+        close(fd); return -1;
     }
     Elf64_Phdr phdrs[128];
     size_t phbytes = (size_t)eh.e_phnum * sizeof(Elf64_Phdr);
     if (pread(fd, phdrs, phbytes, (off_t)eh.e_phoff) != (ssize_t)phbytes) {
         LOGE("[ELF preflight] cannot read program headers");
-        close(fd); return;
+        close(fd); return -1;
     }
     uint64_t init_addr = 0, array_addr = 0, array_size = 0;
     for (size_t i = 0; i < eh.e_phnum; ++i) {
@@ -290,6 +290,7 @@ static int log_runtime_elf_metadata(const char *path) {
         LOGE("[ELF preflight] unusual init array size=%llu", (unsigned long long)array_size);
     }
     close(fd);
+    return 0;
 }
 
 static int game_library_loaded(const char *name) {
