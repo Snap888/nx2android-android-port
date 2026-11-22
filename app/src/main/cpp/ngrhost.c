@@ -234,9 +234,9 @@ static uint64_t elf_vaddr_to_offset(const Elf64_Phdr *phdrs, size_t phnum,
     return UINT64_MAX;
 }
 
-static void log_runtime_elf_metadata(const char *path) {
+static int log_runtime_elf_metadata(const char *path) {
     int fd = open(path, O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
-    if (fd < 0) { LOGE("[ELF preflight] open failed: %s", strerror(errno)); return; }
+    if (fd < 0) { LOGE("[ELF preflight] open failed: %s", strerror(errno)); return -1; }
     Elf64_Ehdr eh;
     if (pread(fd, &eh, sizeof(eh), 0) != (ssize_t)sizeof(eh) ||
         memcmp(eh.e_ident, ELFMAG, SELFMAG) != 0 ||
