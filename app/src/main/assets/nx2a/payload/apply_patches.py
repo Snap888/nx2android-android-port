@@ -65,10 +65,17 @@ patch('arm host c++', 'nxnative/dm/android/build.py', 'cxx-arm', [
 """),
 ])
 
-# 2. every port gets the package unknownnone.nx2android.<game name> unless --package is given
-patch('package names', 'porter/pipeline.py', "'unknownnone.nx2android.'", [
+# 2. the single NGR application owns every game's data directory; per-game Android packages are not created in NGR mode
+patch('NGR package and stable game ID', 'porter/pipeline.py', 'NX2A_NGR_PACKAGE', [
 ('self.package = o.package or ap.package',
- "self.package = o.package or 'unknownnone.nx2android.' + (re.sub(r'^[^a-z]+|[^a-z0-9]', '', ap.name.lower()) or 'game')"),
+ """self.package = 'unknown.none.nx2android' if os.environ.get('NX2A_NGR') == '1' else (o.package or 'unknownnone.nx2android.' + (re.sub(r'^[^a-z]+|[^a-z0-9]', '', ap.name.lower()) or 'game'))  # NX2A_NGR_PACKAGE"""),
+('        self.g, self.ap = g, ap\n',
+ """        self.g, self.ap = g, ap
+        if os.environ.get('NX2A_NGR') == '1':
+            self.ngr_game_id = hashlib.sha256(('switch:' + self.g.id.upper()).encode('utf-8')).hexdigest()[:20]
+            os.environ['NX2A_GAME_ID'] = self.ngr_game_id
+            self.env['NX2A_GAME_ID'] = self.ngr_game_id
+"""),
 ])
 # 3. prebuilt .NET tools (CI-built, a runtime that starts under proot): used when the app has installed and tested them (NX2A_PREBUILT)
 patch('prebuilt extractor', 'nxnative/scripts/build_ipa_from_nsp.py', 'NX2A_PREBUILT', [
