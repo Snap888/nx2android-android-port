@@ -174,6 +174,8 @@ public class MainActivity extends Activity {
         pickId = id; pickDir = dir;
         Intent i = new Intent(dir ? Intent.ACTION_OPEN_DOCUMENT_TREE : Intent.ACTION_OPEN_DOCUMENT);
         if (!dir) { i.addCategory(Intent.CATEGORY_OPENABLE); i.setType("*/*"); }
+        i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+        if (dir) i.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         try { startActivityForResult(i, 4711); }
         catch (Exception e) { Toast.makeText(this, "No file picker on this phone", Toast.LENGTH_LONG).show(); }
     }
@@ -195,6 +197,10 @@ public class MainActivity extends Activity {
     @Override protected void onActivityResult(int req, int res, Intent data) {
         super.onActivityResult(req, res, data);
         if (req != 4711 || res != RESULT_OK || data == null || data.getData() == null) return;
+        try {
+            int grantFlags = data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            getContentResolver().takePersistableUriPermission(data.getData(), grantFlags);
+        } catch (SecurityException ignored) { }
         String p = pathOf(data.getData());
         if (p.isEmpty()) { Toast.makeText(this, "That location has no file path. Pick it from Internal storage or the SD card.", Toast.LENGTH_LONG).show(); return; }
         web.evaluateJavascript("nx2aPicked(" + org.json.JSONObject.quote(pickId) + "," + org.json.JSONObject.quote(p) + ")", null);
