@@ -217,6 +217,7 @@ def job_env():
     """The base environment plus the .NET workaround the probe found, if any."""
     e = dict(ENV)
     e.update(prebuilt.env())   # the CI-built .NET tools, when they are installed and start
+    e['NX2A_NGR'] = '1'        # the porter emits a native runtime + data pack, never a per-game APK
     return e
 
 
