@@ -2,6 +2,7 @@ package unknown.none.nx2android;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -242,21 +243,28 @@ public class MainActivity extends Activity {
                 File pidFile = new File(dir, gameId + ".pid");
                 String pid = "";
                 if (pidFile.isFile()) pid = new String(java.nio.file.Files.readAllBytes(pidFile.toPath()), java.nio.charset.StandardCharsets.UTF_8).trim();
-                if (pid.matches("[0-9]+")) {
-                    out.write(("\n\n===== Android Logcat (game process pid " + pid + ") =====\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
-                    try {
-                        Process p = new ProcessBuilder("logcat", "-d", "-v", "threadtime", "--pid=" + pid).redirectErrorStream(true).start();
-                        try (java.io.InputStream logs = p.getInputStream()) {
-                            byte[] buffer = new byte[64 * 1024]; int n;
-                            while ((n = logs.read(buffer)) > 0) out.write(buffer, 0, n);
+                out.write(("\n\n===== Android Logcat (recent system + NGR process events; game pid="
+                        + (pid.isEmpty() ? "not-reached" : pid) + ") =====\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                try {
+                    Process p = new ProcessBuilder("logcat", "-d", "-v", "threadtime", "-t", "5000")
+                            .redirectErrorStream(true).start();
+                    try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                            new java.io.InputStreamReader(p.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            if (line.contains("NGRRuntime") || line.contains("AndroidRuntime")
+                                    || line.contains("ActivityTaskManager") || line.contains("ActivityManager")
+                                    || line.contains("linker") || line.contains("libc")
+                                    || line.contains("DEBUG") || line.contains("crash_dump")
+                                    || line.contains(getPackageName()) || line.contains("NativeActivity")) {
+                                out.write((line + "\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                            }
                         }
-                        int code = p.waitFor();
-                        if (code != 0) out.write(("\n[logcat exited with code " + code + "]\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
-                    } catch (Exception e) {
-                        out.write(("\n[logcat capture failed: " + e + "]\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
                     }
-                } else {
-                    out.write("\n[game process PID was not recorded; Logcat section skipped]\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                    int code = p.waitFor();
+                    if (code != 0) out.write(("\n[logcat exited with code " + code + "]\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                } catch (Exception e) {
+                    out.write(("\n[logcat capture failed: " + e + "]\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
                 }
             }
             Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".files", exported);
@@ -290,13 +298,37 @@ public class MainActivity extends Activity {
                     Toast.makeText(MainActivity.this, "Invalid game shortcut ID", Toast.LENGTH_LONG).show();
                     return;
                 }
-                appendRuntimeLog(gameId, "Library launch requested");
+                appendRuntimeLog(gameId, "Library launch requested; appPid=" + android.os.Process.myPid()
+                        + " package=" + getPackageName() + " sdk=" + Build.VERSION.SDK_INT);
                 try {
+                    File nativeHost = new File(getApplicationInfo().nativeLibraryDir, "libngrhost.so");
+                    appendRuntimeLog(gameId, "Native host library: " + nativeHost.getAbsolutePath()
+                            + " exists=" + nativeHost.isFile() + " readable=" + nativeHost.canRead());
                     Intent launch = new Intent(MainActivity.this, android.app.NativeActivity.class);
                     launch.putExtra("game_id", gameId);
                     launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                    appendRuntimeLog(gameId, "Starting explicit component " + launch.getComponent()
+                            + " with game_id=" + launch.getStringExtra("game_id"));
                     startActivity(launch);
                     appendRuntimeLog(gameId, "NativeActivity startActivity returned successfully");
+                    h.postDelayed(() -> {
+                        try {
+                            ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+                            boolean found = false;
+                            if (am != null && am.getRunningAppProcesses() != null) {
+                                for (ActivityManager.RunningAppProcessInfo p : am.getRunningAppProcesses()) {
+                                    if (p.processName.startsWith(getPackageName())) {
+                                        appendRuntimeLog(gameId, "Observed process after launch: name=" + p.processName
+                                                + " pid=" + p.pid + " importance=" + p.importance);
+                                        found = true;
+                                    }
+                                }
+                            }
+                            if (!found) appendRuntimeLog(gameId, "No NGR app process visible 1500ms after startActivity");
+                        } catch (Exception e) {
+                            appendRuntimeLog(gameId, "Process snapshot failed: " + e);
+                        }
+                    }, 1500);
                 } catch (Exception e) {
                     appendRuntimeLog(gameId, "NativeActivity startActivity failed: " + e);
                     Toast.makeText(MainActivity.this, "Could not start NGR runtime: " + e.getMessage(), Toast.LENGTH_LONG).show();
