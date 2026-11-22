@@ -50,7 +50,7 @@ jobs:
           # payload files update the app by themselves (no new APK): rebuild only when something else changed, or when started by hand
           build=true
           if [ "${{ github.event_name }}" = "push" ] && git cat-file -e "${{ github.event.before }}^{commit}" 2>/dev/null; then
-            other=$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" | grep -Ev '^(app/src/main/assets/nx2a/payload/|docs/|README\.md$|tools/make_prebuilt\.sh$|\.github/workflows/)' || true)
+            other=$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" | grep -Ev '^(app/src/main/assets/nx2a/payload/|docs/|tests/|README\.md$|tools/make_prebuilt\.sh$|\.github/workflows/)' || true)
             [ -z "$other" ] && build=false
             echo "changed outside the payload: ${other:-nothing}"
           fi
@@ -66,8 +66,9 @@ jobs:
         run: |
           bash tools/fetch_proot.sh
           bash tools/fetch_rootfs.sh
-      - name: Check Python payload syntax
-        run: python3 -m py_compile app/src/main/assets/nx2a/payload/webgui/server.py app/src/main/assets/nx2a/payload/runtime_install.py app/src/main/assets/nx2a/launcher.py
+      - name: Check Python payload syntax and runtime installer tests
+        run: |
+          python3 -m py_compile app/src/main/assets/nx2a/payload/webgui/server.py app/src/main/assets/nx2a/payload/runtime_install.py app/src/main/assets/nx2a/launcher.py
           python3 -m unittest discover -s tests -p 'test_*.py' -v
       - name: Check WebView JavaScript syntax
         run: |
