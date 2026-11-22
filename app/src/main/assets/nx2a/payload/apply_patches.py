@@ -65,6 +65,17 @@ patch('arm host c++', 'nxnative/dm/android/build.py', 'cxx-arm', [
 """),
 ])
 
+# 1c. hashlib is used by the NGR stable game-ID patch; import it inside inputs as well as at module scope
+# so the stage remains safe when the porter is loaded through an alternate module loader.
+patch('NGR hashlib local import', 'porter/pipeline.py', 'NX2A_HASHLIB_LOCAL', [
+("""    def inputs(self):
+        o = self.o
+""", """    def inputs(self):
+        import hashlib  # NX2A_HASHLIB_LOCAL: keep the NGR game-ID hash available in this stage
+        o = self.o
+"""),
+])
+
 # 2. the single NGR application owns every game's data directory; per-game Android packages are not created in NGR mode
 patch('NGR package and stable game ID', 'porter/pipeline.py', 'NX2A_NGR_PACKAGE', [
 ('self.package = o.package or ap.package',
