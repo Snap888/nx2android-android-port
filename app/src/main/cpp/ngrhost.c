@@ -258,6 +258,8 @@ static int log_runtime_elf_metadata(const char *path) {
         close(fd); return -1;
     }
     uint64_t init_addr = 0, array_addr = 0, array_size = 0;
+    uint64_t rela_addr = 0, rela_size = 0, rela_ent = sizeof(Elf64_Rela);
+    uint64_t relr_addr = 0, relr_size = 0, relr_ent = sizeof(Elf64_Addr);
     for (size_t i = 0; i < eh.e_phnum; ++i) {
         if (phdrs[i].p_type != PT_DYNAMIC) continue;
         uint64_t off = phdrs[i].p_offset, size = phdrs[i].p_filesz;
@@ -268,23 +270,61 @@ static int log_runtime_elf_metadata(const char *path) {
             if (dyn.d_tag == DT_INIT) init_addr = dyn.d_un.d_ptr;
             else if (dyn.d_tag == DT_INIT_ARRAY) array_addr = dyn.d_un.d_ptr;
             else if (dyn.d_tag == DT_INIT_ARRAYSZ) array_size = dyn.d_un.d_val;
+            else if (dyn.d_tag == DT_RELA) rela_addr = dyn.d_un.d_ptr;
+            else if (dyn.d_tag == DT_RELASZ) rela_size = dyn.d_un.d_val;
+            else if (dyn.d_tag == DT_RELAENT) rela_ent = dyn.d_un.d_val;
+            else if (dyn.d_tag == DT_RELR) relr_addr = dyn.d_un.d_ptr;
+            else if (dyn.d_tag == DT_RELRSZ) relr_size = dyn.d_un.d_val;
+            else if (dyn.d_tag == DT_RELRENT) relr_ent = dyn.d_un.d_val;
         }
     }
     LOGI("[ELF preflight] DT_INIT=0x%llx INIT_ARRAY=0x%llx INIT_ARRAYSZ=%llu",
          (unsigned long long)init_addr, (unsigned long long)array_addr,
          (unsigned long long)array_size);
+    LOGI("[ELF preflight] DT_RELA=0x%llx RELASZ=%llu RELAENT=%llu DT_RELR=0x%llx RELRSZ=%llu RELRENT=%llu",
+         (unsigned long long)rela_addr, (unsigned long long)rela_size,
+         (unsigned long long)rela_ent, (unsigned long long)relr_addr,
+         (unsigned long long)relr_size, (unsigned long long)relr_ent);
     if (array_size && array_size <= 4096 && array_size % sizeof(Elf64_Addr) == 0) {
         uint64_t array_off = elf_vaddr_to_offset(phdrs, eh.e_phnum, array_addr, array_size);
         if (array_off == UINT64_MAX) {
             LOGE("[ELF preflight] init array is outside file-backed PT_LOAD segments");
         } else {
-            for (uint64_t i = 0; i < array_size / sizeof(Elf64_Addr); ++i) {
+            uint64_t count = array_size / sizeof(Elf64_Addr);
+            uint64_t rela_off = rela_addr ? elf_vaddr_to_offset(phdrs, eh.e_phnum, rela_addr, rela_size) : UINT64_MAX;
+            int rela_table_valid = rela_size && rela_size <= 64u * 1024u * 1024u &&
+                                   rela_ent == sizeof(Elf64_Rela) &&
+                                   rela_size % sizeof(Elf64_Rela) == 0 &&
+                                   rela_off != UINT64_MAX;
+            if (rela_addr && !rela_table_valid)
+                LOGE("[ELF preflight] DT_RELA table has invalid bounds/entry size");
+            for (uint64_t i = 0; i < count; ++i) {
                 Elf64_Addr value = 0;
+                uint64_t slot_vaddr = array_addr + i * sizeof(value);
                 if (pread(fd, &value, sizeof(value),
                           (off_t)(array_off + i * sizeof(value))) != (ssize_t)sizeof(value)) break;
-                LOGI("[ELF preflight] init_array[%llu]=0x%llx (on-disk; relocations may apply)",
-                     (unsigned long long)i, (unsigned long long)value);
+                int found = 0;
+                if (rela_table_valid) {
+                    for (uint64_t ro = 0; ro < rela_size; ro += sizeof(Elf64_Rela)) {
+                        Elf64_Rela rel;
+                        if (pread(fd, &rel, sizeof(rel), (off_t)(rela_off + ro)) != (ssize_t)sizeof(rel)) break;
+                        if (rel.r_offset == slot_vaddr) {
+                            found = 1;
+                            LOGI("[ELF preflight] init_array[%llu] relocation: type=%u symbol=%u addend=0x%llx",
+                                 (unsigned long long)i,
+                                 (unsigned)ELF64_R_TYPE(rel.r_info),
+                                 (unsigned)ELF64_R_SYM(rel.r_info),
+                                 (unsigned long long)rel.r_addend);
+                            break;
+                        }
+                    }
+                }
+                LOGI("[ELF preflight] init_array[%llu] raw=0x%llx rela=%s",
+                     (unsigned long long)i, (unsigned long long)value,
+                     found ? "present" : (relr_size ? "not-in-RELA-check-RELR-may-cover" : "MISSING"));
             }
+            if (relr_size)
+                LOGI("[ELF preflight] packed RELR relocations present; init-array coverage requires RELR decoding");
         }
     } else if (array_size) {
         LOGE("[ELF preflight] unusual init array size=%llu", (unsigned long long)array_size);
