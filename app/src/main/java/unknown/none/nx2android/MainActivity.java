@@ -211,7 +211,7 @@ public class MainActivity extends Activity {
             File dir = new File(getFilesDir(), "ngr-logs");
             if (!dir.isDirectory() && !dir.mkdirs()) return;
             File log = new File(dir, gameId + ".log");
-            String line = System.currentTimeMillis() + " [JAVA] pid=" + android.os.Process.myPid() + " " + message + "\\n";
+            String line = System.currentTimeMillis() + " [JAVA] pid=" + android.os.Process.myPid() + " " + message + "\n";
             try (java.io.FileOutputStream out = new java.io.FileOutputStream(log, true)) {
                 out.write(line.getBytes(java.nio.charset.StandardCharsets.UTF_8));
             }
@@ -234,7 +234,7 @@ public class MainActivity extends Activity {
         try {
             dir.mkdirs();
             try (java.io.FileOutputStream out = new java.io.FileOutputStream(exported, false)) {
-                out.write(("NGR runtime diagnostic export\\nGame ID: " + gameId + "\\n\\n===== Native dispatcher + game stdout/stderr =====\\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                out.write(("NGR runtime diagnostic export\nGame ID: " + gameId + "\n\n===== Native dispatcher + game stdout/stderr =====\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
                 try (java.io.FileInputStream in = new java.io.FileInputStream(source)) {
                     byte[] buffer = new byte[64 * 1024]; int n;
                     while ((n = in.read(buffer)) > 0) out.write(buffer, 0, n);
@@ -243,7 +243,7 @@ public class MainActivity extends Activity {
                 String pid = "";
                 if (pidFile.isFile()) pid = new String(java.nio.file.Files.readAllBytes(pidFile.toPath()), java.nio.charset.StandardCharsets.UTF_8).trim();
                 if (pid.matches("[0-9]+")) {
-                    out.write("\\n\\n===== Android Logcat (game process pid " + pid + ") =====\\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                    out.write("\n\n===== Android Logcat (game process pid " + pid + ") =====\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));
                     try {
                         Process p = new ProcessBuilder("logcat", "-d", "-v", "threadtime", "--pid=" + pid).redirectErrorStream(true).start();
                         try (java.io.InputStream logs = p.getInputStream()) {
@@ -251,12 +251,12 @@ public class MainActivity extends Activity {
                             while ((n = logs.read(buffer)) > 0) out.write(buffer, 0, n);
                         }
                         int code = p.waitFor();
-                        if (code != 0) out.write(("\\n[logcat exited with code " + code + "]\\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                        if (code != 0) out.write(("\n[logcat exited with code " + code + "]\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
                     } catch (Exception e) {
-                        out.write(("\\n[logcat capture failed: " + e + "]\\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                        out.write(("\n[logcat capture failed: " + e + "]\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
                     }
                 } else {
-                    out.write("\\n[game process PID was not recorded; Logcat section skipped]\\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                    out.write("\n[game process PID was not recorded; Logcat section skipped]\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));
                 }
             }
             Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".files", exported);
