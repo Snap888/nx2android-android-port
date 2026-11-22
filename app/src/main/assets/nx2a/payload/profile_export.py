@@ -64,7 +64,7 @@ def export_profile(repo, game_id, data_dir, source_folder=""):
             aheader = android_profile.header(ap).encode("utf-8")
             selected, game_header, android_header = (g, ap), header, aheader
             break
-        except (SystemExit, ValueError, OSError) as exc:
+        except Exception:
             continue
     if selected is None:
         raise ValueError(f"no profile candidate matched compiled profile_h {expected_hash[:12]} for {game_id}")
