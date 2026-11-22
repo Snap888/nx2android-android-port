@@ -156,12 +156,42 @@ def register_port_result(lines):
     except Exception as e:
         runtime_error = str(e)
         JOB['lines'].append(f'[NGR runtime] extraction failed: {runtime_error}')
+
+    # Export the exact profile header used by the native build. This is the first
+    # versioned JSON ABI artifact; the current host still uses its compiled macros.
+    profile_ready = False
+    profile_error = ''
+    title_id = str(result.get('title_id') or '')
+    if re.fullmatch(r'[0-9A-Fa-f]{16}', title_id):
+        exporter = HERE.parent / 'profile_export.py'
+        try:
+            exported = subprocess.run(
+                [sys.executable, str(exporter), '--repo', str(REPO), '--game-id', title_id,
+                 '--data', data_path, '--source-folder', str(JOB.get('source_folder') or '')],
+                capture_output=True, text=True, timeout=90, env=ENV
+            )
+            profile_ready = exported.returncode == 0
+            detail = (exported.stdout + exported.stderr).strip()
+            if detail:
+                JOB['lines'].extend(detail.splitlines()[-12:])
+            if not profile_ready:
+                profile_error = detail[-1200:] or f'profile exporter exited {exported.returncode}'
+        except Exception as e:
+            profile_error = str(e)
+        if not profile_ready:
+            JOB['lines'].append(f'[NGR profile] export unavailable (legacy compiled host remains usable): {profile_error}')
+    else:
+        profile_error = 'porter result has no valid 16-digit title_id'
+        JOB['lines'].append(f'[NGR profile] {profile_error}')
+
     ready = not runtime_error
     item = {
         'id': game_id, 'title': title, 'platform': 'switch',
         'package': package, 'apk_path': '', 'data_path': data_path,
         'runtime_so_path': str(Path(data_path) / 'libdmhost.so') if ready else '',
         'runtime_libs': runtime_libs, 'runtime_ready': ready, 'runtime_installed': False,
+        'profile_path': str(Path(data_path) / 'profile.json') if profile_ready else '',
+        'runtime_profile_ready': profile_ready, 'runtime_profile_error': profile_error,
         'source_folder': JOB.get('source_folder', ''),
         'status': 'runtime_ready' if ready else 'runtime_extract_failed',
         'runtime_error': runtime_error,
