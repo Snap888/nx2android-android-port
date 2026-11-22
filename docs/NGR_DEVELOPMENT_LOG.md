@@ -138,3 +138,23 @@
 ### Remaining native migration
 - The dispatcher still loads a per-game compiled `libdmhost.so`; the JSON file is not parsed by native code yet.
 - Next: add a bounded/versioned C JSON parser, define `dm_game_profile`, and convert the host/HLE/NVN consumers in groups while preserving legacy macro builds for A/B verification.
+
+
+## 2026-11-22 — Native schema-v1 profile validation
+
+### Implementation
+- Added a small bounded C JSON tokenizer/validator (`ngr_profile.c/.h`) to the NGR NativeActivity dispatcher; no third-party JSON library is required.
+- Before staging/loading the game's native libraries, the dispatcher reads `profile.json` and `nx2a-data.json` with a 4 MiB per-file limit and no-follow file opens.
+- The validator checks schema version, 16-digit title ID, compiled `game_profile.h` SHA-256 binding, module count, ordered profile rows, per-build table shapes, Android environment/settings and overlay row limits.
+- The validator produces a compact summary for the `NGRRuntime` log. Missing JSON keeps legacy compiled-profile games launchable; an invalid/mismatched JSON document is logged and the compiled host remains the fallback. The JSON is validated but not yet used to configure HLE/NVN behavior.
+- Added native C tests for valid profile, header-hash mismatch, unsupported schema and malformed JSON. CI compiles the parser with `-Wall -Wextra -Werror` and runs the test binary.
+- Added the parser to the NGR NativeActivity library build.
+
+### Validation
+- Android Release APK build succeeded in GitHub Actions run 44994407946 (artifact `nx2android-apk`, 35.8 MB).
+- CI run 44994441650 passed: 8 Python tests, native C profile-validator tests, WebView JavaScript syntax and OTA manifest verification.
+- OTA payload remains version 109. The app's update config points at this feature branch, so payload-only changes are fetched by the existing updater.
+
+### Remaining work
+- The native dispatcher now verifies the JSON artifact but the game host still reads the compiled profile macros.
+- Next convert the module list/startup args/environment and memory contract into a session-owned profile structure, then migrate HLE/NVN flags, per-build tables and dynamic overlay layouts. Keep the legacy path available until A/B and multi-game device tests pass.
