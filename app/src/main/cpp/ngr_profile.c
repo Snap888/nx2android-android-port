@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #define NGR_JSON_MAX_TOKENS 65536u
 #define NGR_JSON_MAX_DEPTH 64u
@@ -278,7 +279,7 @@ static int is_hex_string(const char *s, size_t n) {
 }
 
 static int required_string(const json_parser *p, int object, const char *key, char *out, size_t cap) {
-    return token_copy(p, object_get(p, object, key), out, cap) >= 0;
+    return token_copy(p, object_get(p, object, key), out, cap) > 0;
 }
 
 static int validate_string_array(const json_parser *p, int array, size_t max_count, size_t max_length, size_t *count_out) {
@@ -302,7 +303,7 @@ static int validate_game_rows(const json_parser *p, int rows, size_t *count_out)
         int row = array_at(p, rows, i);
         int key = object_get(p, row, "key");
         int values = object_get(p, row, "values");
-        if (key < 0 || p->tokens[key].type != TOK_STRING || !token_copy(p, key, (char[256]){0}, 256)) return 0;
+        if (key < 0 || p->tokens[key].type != TOK_STRING || token_copy(p, key, (char[256]){0}, 256) <= 0) return 0;
         if (values < 0 || p->tokens[values].type != TOK_ARRAY || array_count(p, values) > 64) return 0;
         for (size_t k = 0; k < array_count(p, values); ++k) {
             int v = array_at(p, values, k);
