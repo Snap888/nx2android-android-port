@@ -97,6 +97,7 @@ def export_profile(repo, game_id, data_dir, source_folder=""):
         "schema_version": 1,
         "identity": {
             "game_id": g.id,
+            "library_id": manifest.get("game_id", ""),
             "name": g.get("name", g.id),
             "title_id": f"{g.title_id:016X}",
             "program_id": f"{int(g.get('program_id'), 16):016X}",
