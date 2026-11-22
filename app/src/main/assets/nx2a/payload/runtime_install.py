@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Install one port payload into NGR-owned storage. No ADB and no per-game APK."""
 import argparse
+import json
 import re
 import shutil
 import sys
@@ -21,6 +22,10 @@ def install_payload(source, games_root, game_id):
     games_root = Path(games_root)
     if not source.is_dir() or not (source / "nx2a-data.json").is_file():
         raise ValueError(f"not a completed nx2android data pack: {source}")
+    manifest = json.loads((source / "nx2a-data.json").read_text(encoding="utf-8"))
+    packed_game_id = manifest.get("game_id")
+    if packed_game_id and packed_game_id != game_id:
+        raise ValueError(f"data pack belongs to game {packed_game_id}, not selected library entry {game_id}")
     if not (source / "libdmhost.so").is_file():
         raise ValueError("libdmhost.so is missing; recompile this game with the NGR runtime build")
 
