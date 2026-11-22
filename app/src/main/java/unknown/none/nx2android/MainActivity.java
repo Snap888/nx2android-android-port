@@ -243,7 +243,7 @@ public class MainActivity extends Activity {
                 String pid = "";
                 if (pidFile.isFile()) pid = new String(java.nio.file.Files.readAllBytes(pidFile.toPath()), java.nio.charset.StandardCharsets.UTF_8).trim();
                 if (pid.matches("[0-9]+")) {
-                    out.write("\n\n===== Android Logcat (game process pid " + pid + ") =====\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                    out.write(("\n\n===== Android Logcat (game process pid " + pid + ") =====\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
                     try {
                         Process p = new ProcessBuilder("logcat", "-d", "-v", "threadtime", "--pid=" + pid).redirectErrorStream(true).start();
                         try (java.io.InputStream logs = p.getInputStream()) {
