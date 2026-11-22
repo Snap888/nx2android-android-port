@@ -12,6 +12,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include "ngr_profile.h"
 
 #define TAG "NGRRuntime"
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
@@ -102,6 +103,31 @@ static int copy_file(const char *src, const char *dst) {
     if (!ok && chmod(dst, 0700)) { ok = -1; saved = errno; }
     if (ok) errno = saved;
     return ok;
+}
+
+static char *read_small_file(const char *path, size_t max_size, size_t *size_out) {
+    int fd = open(path, O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
+    if (fd < 0) return NULL;
+    struct stat st;
+    if (fstat(fd, &st) || !S_ISREG(st.st_mode) || st.st_size <= 0 || (uint64_t)st.st_size > max_size) {
+        close(fd);
+        errno = EFBIG;
+        return NULL;
+    }
+    size_t size = (size_t)st.st_size;
+    char *data = (char *)malloc(size + 1);
+    if (!data) { close(fd); return NULL; }
+    size_t done = 0;
+    while (done < size) {
+        ssize_t n = read(fd, data + done, size - done);
+        if (n < 0 && errno == EINTR) continue;
+        if (n <= 0) { free(data); close(fd); errno = EIO; return NULL; }
+        done += (size_t)n;
+    }
+    close(fd);
+    data[size] = 0;
+    if (size_out) *size_out = size;
+    return data;
 }
 
 static int valid_aarch64_elf(const char *path) {
@@ -245,6 +271,35 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
         ANativeActivity_finish(activity);
         return;
     }
+
+    /* Schema-v1 JSON is an intermediate ABI artifact. Validate that it is the
+       exact profile used for this data pack; legacy payloads still use macros. */
+    char profile_path[1200];
+    int pp = snprintf(profile_path, sizeof(profile_path), "%s/profile.json", game_dir);
+    if (pp >= 0 && (size_t)pp < sizeof(profile_path) && access(profile_path, R_OK) == 0) {
+        size_t manifest_size = 0, profile_size = 0;
+        char *manifest_json = read_small_file(marker, 4u * 1024u * 1024u, &manifest_size);
+        char *profile_json = read_small_file(profile_path, 4u * 1024u * 1024u, &profile_size);
+        if (manifest_json && profile_json) {
+            ngr_profile_summary summary;
+            char profile_error[256] = {0};
+            if (ngr_profile_validate(profile_json, profile_size, manifest_json, manifest_size,
+                                     &summary, profile_error, sizeof(profile_error)) == 0) {
+                LOGI("[NGR profile] schema v%d validated: title=%s modules=%zu rows=%zu build-table-rows=%zu overlay=%zu",
+                     summary.schema_version, summary.title_id, summary.module_count,
+                     summary.profile_row_count, summary.game_table_row_count, summary.overlay_count);
+            } else {
+                LOGE("[NGR profile] JSON rejected; continuing with compiled legacy profile: %s", profile_error);
+            }
+        } else {
+            LOGE("[NGR profile] cannot read profile/manifest JSON; continuing with compiled legacy profile: %s", strerror(errno));
+        }
+        free(manifest_json);
+        free(profile_json);
+    } else {
+        LOGI("[NGR profile] no profile.json; using the compiled game profile (legacy payload)");
+    }
+
     if (stage_native_libs(game_dir, private_dir)) {
         toast(activity, "Cannot copy game runtime to private storage. Check free space.");
         (*activity->env)->ReleaseStringUTFChars(activity->env, jid, id);
