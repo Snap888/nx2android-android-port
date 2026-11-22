@@ -68,7 +68,7 @@ jobs:
           bash tools/fetch_rootfs.sh
       - name: Check Python payload syntax and runtime installer tests
         run: |
-          python3 -m py_compile app/src/main/assets/nx2a/payload/webgui/server.py app/src/main/assets/nx2a/payload/runtime_install.py app/src/main/assets/nx2a/launcher.py
+          python3 -m py_compile app/src/main/assets/nx2a/payload/webgui/server.py app/src/main/assets/nx2a/payload/runtime_install.py app/src/main/assets/nx2a/payload/profile_export.py app/src/main/assets/nx2a/launcher.py
           python3 -m unittest discover -s tests -p 'test_*.py' -v
       - name: Check WebView JavaScript syntax
         run: |
