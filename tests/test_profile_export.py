@@ -23,34 +23,53 @@ class ProfileExportTests(unittest.TestCase):
         self.profile.mkdir(parents=True)
         (self.profile / "game.tsv").write_text("name\\tTest Game\\n")
         (self.profile / "android.tsv").write_text("status\\tplayable\\n")
-        (self.data = self.root / "game-data").mkdir()
-        self.header = b"// deterministic generated game profile header\\n"
-        self.android_header = b"// deterministic generated android profile header\\n"
-        self.modules = self.root / "modules"
-        self.modules.mkdir()
-        (self.dm / "games").mkdir(parents=True, exist_ok=True)
+        self.data = self.root / "game-data"
+        self.data.mkdir()
+        self.header = b"game-header-v1"
+        self.android_header = b"android-header-v1"
         (self.dm / "android/tools").mkdir(parents=True)
-        (self.dm / "games/game.py").write_text(
-            "class FakeGame:\\n"
-            "    def __init__(self, path):\\n"
-            "        from pathlib import Path\\n"
-            "        self.dir=Path(path); self.id=self.dir.name; self.rows=[('name',['Test Game']),('modules',['main','sdk'])]; self.title_id=int(self.id,16)\\n"
-            "    def get(self,k,d=None): return {'name':'Test Game','program_id':'0100000000001000'}.get(k,d)\\n"
-            "    def words(self,k,d=None): return ['main','sdk'] if k=='modules' else (d or '').split()\\n"
-            "    def builds(self): return {'v1':{'main':'0123456789abcdef0123456789abcdef','display':'1.0'}}\\n"
-            "def load(path): return FakeGame(path)\\n"
-            f"def header(g): return {self.header!r}\\n"
-            "BUILD_TABLES={'fps_locks.tsv':None}\\n"
-            "def build_table(g,n): return [['0123456789abcdef0123456789abcdef','main','0x10']]\\n"
-        )
-        (self.dm / "android/tools/android_profile.py").write_text(
-            "class FakeAndroid:\\n"
-            "    def __init__(self,g):\\n"
-            "        self.rows=[('status','playable')]; self.status='playable'; self.tested='device'; self.package='org.test.game'; self.landscape=True; self.requires=[]; self.sysdata=[]; self.romfs_zstd=False; self.vulkan_driver='system'; self.pacing='adaptive'; self.env=[]; self.settings={'overlay':'1'}\\n"
-            "    def overlay_table(self): return [{'layout':'tablet','name':'menu','kind':'menu','x':'0.5','y':'0.5'}]\\n"
-            "def AndroidProfile(g): return FakeAndroid(g)\\n"
-            f"def header(p): return {self.android_header!r}\\n"
-        )
+        (self.dm / "games/game.py").write_text("""class FakeGame:
+    def __init__(self, path):
+        from pathlib import Path
+        self.dir = Path(path)
+        self.id = self.dir.name
+        self.rows = [('name', ['Test Game']), ('modules', ['main', 'sdk'])]
+        self.title_id = int(self.id, 16)
+    def get(self, key, default=None):
+        return {'name': 'Test Game', 'program_id': '0100000000001000'}.get(key, default)
+    def words(self, key, default=None):
+        return ['main', 'sdk'] if key == 'modules' else (default or '').split()
+    def builds(self):
+        return {'v1': {'main': '0123456789abcdef0123456789abcdef', 'display': '1.0'}}
+def load(path):
+    return FakeGame(path)
+def header(game):
+    return b'game-header-v1'
+BUILD_TABLES = {'fps_locks.tsv': None}
+def build_table(game, name):
+    return [['0123456789abcdef0123456789abcdef', 'main', '0x10']]
+""")
+        (self.dm / "android/tools/android_profile.py").write_text("""class FakeAndroid:
+    def __init__(self, game):
+        self.rows = [('status', 'playable')]
+        self.status = 'playable'
+        self.tested = 'device'
+        self.package = 'org.test.game'
+        self.landscape = True
+        self.requires = []
+        self.sysdata = []
+        self.romfs_zstd = False
+        self.vulkan_driver = 'system'
+        self.pacing = 'adaptive'
+        self.env = []
+        self.settings = {'overlay': '1'}
+    def overlay_table(self):
+        return [{'layout': 'tablet', 'name': 'menu', 'kind': 'menu', 'x': '0.5', 'y': '0.5'}]
+def AndroidProfile(game):
+    return FakeAndroid(game)
+def header(profile):
+    return b'android-header-v1'
+""")
         (self.data / "nx2a-data.json").write_text(json.dumps({
             "title_id": self.game_id,
             "package": "org.test.game",
