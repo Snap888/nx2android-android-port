@@ -402,5 +402,25 @@ patch('NGR no per-game APK', 'porter/pipeline.py', 'NX2A_NGR_NO_APK', [
 """),
 ])
 
+# 10. every device path in env.txt (DLC, sysdata, fonts, FPS tables) resolves inside this game's NGR folder.
+patch('NGR per-game data-pack paths', 'porter/datapack.py', 'NX2A_GAME_FILES', [
+("""def files_folder(package): return f'/sdcard/Android/data/{package}/files'
+""", """def files_folder(package):
+    root = f'/sdcard/Android/data/{package}/files'
+    game_id = os.environ.get('NX2A_GAME_ID', '')
+    return f'{root}/games/{game_id}' if game_id else root   # NX2A_GAME_FILES
+"""),
+("""    for name, src in (files or {}).items(): shutil.copyfile(src, tmp / name); n += 1; b += Path(src).stat().st_size
+""", """    for name, src in (files or {}).items():
+        target = tmp / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(src, target); n += 1; b += Path(src).stat().st_size
+"""),
+("""    if profile_h: man['profile_h'] = profile_h
+""", """    if profile_h: man['profile_h'] = profile_h
+    if os.environ.get('NX2A_GAME_ID'): man['game_id'] = os.environ['NX2A_GAME_ID']
+"""),
+])
+
 # All patch groups must run before reporting failures.
 sys.exit(1 if failed else 0)
