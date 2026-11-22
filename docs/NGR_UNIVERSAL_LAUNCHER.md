@@ -58,8 +58,8 @@ The new library must not label these legacy outputs as shared-runtime-ready. The
 
 ## Not yet implemented
 
-- Runtime-loaded native game-profile ABI (still pending).
-- Removal of per-game compile-time profile dependencies from the shared host (still pending).
+- Versioned game-profile JSON schema v1 is exported and checked against the compiled profile-header hash; the native C parser and runtime consumers are still pending.
+- Removal of per-game compile-time profile dependencies from the shared host (still pending; the JSON export is only the first ABI artifact).
 - One reusable profile-agnostic `libdmhost.so` (still pending; current dispatcher loads a per-game host library inside the NGR process).
 - Physical-device validation of the new NGR NativeActivity dispatcher and runtime install path.
 - Per-game graphics/controller settings applied to the native runtime.
@@ -93,3 +93,10 @@ The new library must not label these legacy outputs as shared-runtime-ready. The
 - Native library copies reject symlinks and handle EINTR; companion libraries are retried across passes instead of relying on APK ZIP entry order. Handle-table capacity is checked before storing every loaded library.
 - The runtime installer is now factored into a transactional function with explicit validation and rollback. Its Python unit tests run in CI.
 - A successful Android build or CI unit test still does not prove that a particular game's native dependency graph is loadable on a phone. The physical-device launch gate remains open.
+
+
+## Profile ABI export milestone (2026-11-22)
+
+The successful porter result now gets a `profile.json` alongside the game's data pack. The exporter reuses the current porter parsers and validates the exact `profile_h` from the data-pack manifest before writing. The document retains ordered/repeated TSV rows, normalized Android profile properties, per-build tables and resolved overlay layouts.
+
+This does not yet make the native host profile-agnostic: the current dispatcher still loads a per-game `libdmhost.so` compiled against profile headers. Native JSON parsing and migration of all HLE/NVN/Android consumers remain mandatory before one common host can be claimed.
