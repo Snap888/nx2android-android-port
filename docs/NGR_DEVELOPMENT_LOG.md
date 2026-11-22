@@ -158,3 +158,33 @@
 ### Remaining work
 - The native dispatcher now verifies the JSON artifact but the game host still reads the compiled profile macros.
 - Next convert the module list/startup args/environment and memory contract into a session-owned profile structure, then migrate HLE/NVN flags, per-build tables and dynamic overlay layouts. Keep the legacy path available until A/B and multi-game device tests pass.
+
+
+## 2026-11-22 — Native game launch diagnostics
+
+### User-reported issue
+- The Switch game recompilation completed and the NGR runtime installer reported success, but launching the game from Library did not start gameplay.
+- The existing dispatcher emitted some \`NGRRuntime\` Logcat messages, but there was no persistent per-game launch trace or in-app export action. A failure after the NativeActivity handoff could therefore be difficult to retrieve.
+
+### Implemented
+- Added per-game persistent logs under the NGR app's private files directory: \`files/ngr-logs/<game-id>.log\`.
+- The Java Library bridge records the launch request, successful \`startActivity\` handoff and any Java-side launch exception.
+- The native dispatcher records launch session metadata, Android SDK, storage paths, payload/profile validation, native library staging, companion dependency preloads, \`dlopen\`, \`dlsym\`, and the handoff into the game's \`ANativeActivity_onCreate\`.
+- Native dispatcher logs are written both to Android Logcat (\`NGRRuntime\`) and the per-game file.
+- Redirected native host stdout/stderr into the same per-game file so C runtime diagnostics are retained even when the game's native host uses \`printf\` / \`fprintf(stderr)\`.
+- Added a PID sidecar so the export action can collect the game process's Android Logcat, including linker, Vulkan and driver messages emitted by that process.
+- Added **Export runtime log (debug)** to each Library game details dialog. It shares a combined text file containing the persistent native/Java trace and a Logcat snapshot.
+- Extended FileProvider's allowlist only for the private \`ngr-logs/\` folder; no broad storage permission is added.
+
+### Files changed
+- \`app/src/main/cpp/ngrhost.c\`
+- \`app/src/main/java/unknown/none/nx2android/MainActivity.java\`
+- \`app/src/main/res/xml/file_paths.xml\`
+- \`app/src/main/assets/nx2a/payload/webgui/index.html\`
+- \`app/src/main/assets/nx2a/payload/payload.json\` (manifest update pending in this commit sequence)
+
+### Validation / next steps
+- GitHub Actions must compile the Android native dispatcher and Java app, validate WebView JavaScript and the payload manifest.
+- Install the new test APK, open the game's Library card, tap **Launch game**, wait for the failure/black screen, return to NGR and tap **Export runtime log (debug)**.
+- Send the exported text file. The last successful stage will show whether the failure is before the runtime library loads, during NativeActivity handoff, or inside the game host's startup/Vulkan path.
+- No physical-device launch fix is claimed yet; this change adds diagnostics to identify the actual failing stage.
