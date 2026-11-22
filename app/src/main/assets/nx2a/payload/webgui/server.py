@@ -146,7 +146,15 @@ def register_port_result(lines):
     identity = 'switch:' + title_id.upper() if re.fullmatch(r'[0-9A-Fa-f]{16}', title_id) else (package + ':' + data_path)
     game_id = hashlib.sha256(identity.encode('utf-8')).hexdigest()[:20]
     catalog = library_read()
+    source_folder = str(JOB.get('source_folder') or '')
     existing = next((g for g in catalog['games'] if g.get('id') == game_id), None)
+    if not existing and title_id:
+        existing = next((g for g in catalog['games'] if
+                         g.get('title_id', '').upper() == title_id.upper() or
+                         (source_folder and g.get('source_folder') == source_folder)), None)
+    if existing and existing.get('id') != game_id:
+        # Migrate an earlier package-hash shortcut to the stable title-ID shortcut.
+        catalog['games'] = [g for g in catalog['games'] if g.get('id') != existing.get('id')]
     title = str(result.get('name') or result.get('app_name') or Path(data_path).name.removesuffix('-data'))
     runtime_libs = []
     runtime_error = ''
@@ -193,13 +201,13 @@ def register_port_result(lines):
 
     ready = not runtime_error
     item = {
-        'id': game_id, 'title': title, 'platform': 'switch',
+        'id': game_id, 'title': title, 'platform': 'switch', 'title_id': title_id,
         'package': package, 'apk_path': '', 'data_path': data_path,
         'runtime_so_path': str(Path(data_path) / 'libdmhost.so') if ready else '',
         'runtime_libs': runtime_libs, 'runtime_ready': ready, 'runtime_installed': False,
         'profile_path': str(Path(data_path) / 'profile.json') if profile_ready else '',
         'runtime_profile_ready': profile_ready, 'runtime_profile_error': profile_error,
-        'source_folder': JOB.get('source_folder', ''),
+        'source_folder': source_folder,
         'status': 'runtime_ready' if ready else 'runtime_extract_failed',
         'runtime_error': runtime_error,
         'settings': (existing or {}).get('settings', {
