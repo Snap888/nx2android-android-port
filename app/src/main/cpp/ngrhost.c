@@ -8,6 +8,8 @@
 #include <fcntl.h>
 #include <elf.h>
 #include <stdio.h>
+#include <stdarg.h>
+#include <time.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,8 +18,43 @@
 #include "ngr_profile.h"
 
 #define TAG "NGRRuntime"
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
+static char g_runtime_log_path[1400];
+static char g_runtime_log_dir[1200];
+
+static void runtime_log_emit(int priority, const char *fmt, ...) {
+    char message[4096];
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(message, sizeof(message), fmt, ap);
+    va_end(ap);
+    __android_log_write(priority, TAG, message);
+
+    if (!g_runtime_log_path[0]) return;
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    struct tm tmv;
+    localtime_r(&ts.tv_sec, &tmv);
+    char stamp[64];
+    strftime(stamp, sizeof(stamp), "%Y-%m-%d %H:%M:%S", &tmv);
+    char line[4352];
+    int len = snprintf(line, sizeof(line), "%s.%03ld [%s] pid=%ld %s\\n",
+        stamp, ts.tv_nsec / 1000000L, priority >= ANDROID_LOG_ERROR ? "E" : "I",
+        (long)getpid(), message);
+    if (len <= 0) return;
+    if ((size_t)len >= sizeof(line)) len = (int)sizeof(line) - 1;
+    int fd = open(g_runtime_log_path, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC | O_NOFOLLOW, 0600);
+    if (fd < 0) return;
+    size_t off = 0;
+    while (off < (size_t)len) {
+        ssize_t n = write(fd, line + off, (size_t)len - off);
+        if (n < 0 && errno == EINTR) continue;
+        if (n <= 0) break;
+        off += (size_t)n;
+    }
+    close(fd);
+}
+#define LOGE(...) runtime_log_emit(ANDROID_LOG_ERROR, __VA_ARGS__)
+#define LOGI(...) runtime_log_emit(ANDROID_LOG_INFO, __VA_ARGS__)
 
 typedef void (*game_on_create_fn)(ANativeActivity *, void *, size_t);
 static void *g_game_handles[64];
@@ -70,6 +107,39 @@ static int mkdirs(const char *path) {
         *p = 0; if (mkdir(tmp, 0700) && errno != EEXIST) return -1; *p = '/';
     }
     if (mkdir(tmp, 0700) && errno != EEXIST) return -1;
+    return 0;
+}
+
+static int runtime_log_init(const char *internal_root, const char *game_id) {
+    if (!internal_root || !*internal_root || !game_id || !*game_id) return -1;
+    int a = snprintf(g_runtime_log_dir, sizeof(g_runtime_log_dir), "%s/ngr-logs", internal_root);
+    int b = snprintf(g_runtime_log_path, sizeof(g_runtime_log_path), "%s/%s.log", g_runtime_log_dir, game_id);
+    if (a < 0 || (size_t)a >= sizeof(g_runtime_log_dir) || b < 0 || (size_t)b >= sizeof(g_runtime_log_path)) {
+        g_runtime_log_path[0] = 0; return -1;
+    }
+    if (mkdirs(g_runtime_log_dir)) { g_runtime_log_path[0] = 0; return -1; }
+    char pid_path[1500];
+    int n = snprintf(pid_path, sizeof(pid_path), "%s/%s.pid", g_runtime_log_dir, game_id);
+    if (n > 0 && (size_t)n < sizeof(pid_path)) {
+        int fd = open(pid_path, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC | O_NOFOLLOW, 0600);
+        if (fd >= 0) {
+            char pid[48]; int plen = snprintf(pid, sizeof(pid), "%ld\\n", (long)getpid());
+            if (plen > 0) (void)write(fd, pid, (size_t)plen);
+            close(fd);
+        }
+    }
+    int fd = open(g_runtime_log_path, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC | O_NOFOLLOW, 0600);
+    if (fd < 0) { g_runtime_log_path[0] = 0; return -1; }
+    close(fd);
+    /* Capture printf/fprintf(stderr) from the game host as well as our tagged logs. */
+    fd = open(g_runtime_log_path, O_WRONLY | O_APPEND | O_CLOEXEC | O_NOFOLLOW, 0600);
+    if (fd >= 0) {
+        (void)dup2(fd, STDOUT_FILENO);
+        (void)dup2(fd, STDERR_FILENO);
+        if (fd > STDERR_FILENO) close(fd);
+        setvbuf(stdout, NULL, _IONBF, 0);
+        setvbuf(stderr, NULL, _IONBF, 0);
+    }
     return 0;
 }
 
@@ -225,6 +295,7 @@ static int preload_game_dependencies(const char *private_game_dir) {
 
 __attribute__((visibility("default")))
 void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size_t saved_state_size) {
+    LOGI("NativeActivity_onCreate entered; saved_state=%s", saved_state ? "present" : "none");
     jstring jid = game_id_from_intent(activity);
     if (!jid) {
         LOGE("launch intent has no game_id extra");
@@ -243,6 +314,12 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
 
     const char *external = activity->externalDataPath ? activity->externalDataPath : activity->internalDataPath;
     const char *internal = activity->internalDataPath ? activity->internalDataPath : activity->externalDataPath;
+    if (runtime_log_init(internal, id)) {
+        __android_log_print(ANDROID_LOG_ERROR, TAG, "cannot initialize persistent runtime log under %s: %s", internal ? internal : "(null)", strerror(errno));
+    }
+    LOGI("============================================================");
+    LOGI("NGR launch session started: game_id=%s sdk=%d abi=arm64-v8a", id, (int)android_get_device_api_level());
+    LOGI("NativeActivity paths: internal=%s external=%s", internal ? internal : "(null)", external ? external : "(null)");
     char game_dir[1024], private_dir[1024], lib_path[1200], external_lib[1200];
     int a = snprintf(game_dir, sizeof(game_dir), "%s/games/%s", external, id);
     int b = snprintf(private_dir, sizeof(private_dir), "%s/games/%s", internal, id);
@@ -311,19 +388,23 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     setenv("DM_GAME_DIR", game_dir, 1);
     setenv("NGR_PRIVATE_GAME_DIR", private_dir, 1);
     setenv("NGR_GAME_ID", id, 1);
-    LOGI("starting game %s; data=%s; native runtime=%s", id, game_dir, lib_path);
-    preload_game_dependencies(private_dir);
+    LOGI("[stage 1/8] payload validated; game_dir=%s private_dir=%s", game_dir, private_dir);
+    LOGI("[stage 2/8] native libraries staged; runtime=%s", lib_path);
+    LOGI("[stage 3/8] preloading companion dependencies");
+    int preloaded = preload_game_dependencies(private_dir);
+    LOGI("[stage 3/8] dependency preload finished: %d companion libraries", preloaded);
 
     dlerror();
     void *game_handle = dlopen(lib_path, RTLD_NOW | RTLD_LOCAL);
     const char *err = dlerror();
     if (!game_handle) {
-        LOGE("dlopen failed for %s: %s", lib_path, err ? err : "unknown linker error");
+        LOGE("[stage 4/8] dlopen failed for %s: %s", lib_path, err ? err : "unknown linker error");
         toast(activity, "Cannot load game runtime. See NGR runtime log.");
         (*activity->env)->ReleaseStringUTFChars(activity->env, jid, id);
         ANativeActivity_finish(activity);
         return;
     }
+    LOGI("[stage 4/8] dlopen succeeded: handle=%p", game_handle);
     dlerror();
     game_on_create_fn on_create = (game_on_create_fn)dlsym(game_handle, "ANativeActivity_onCreate");
     err = dlerror();
@@ -334,6 +415,7 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
         ANativeActivity_finish(activity);
         return;
     }
+    LOGI("[stage 5/8] resolved ANativeActivity_onCreate at %p", (void *)on_create);
     (*activity->env)->ReleaseStringUTFChars(activity->env, jid, id);
     if (g_game_handle_count >= sizeof(g_game_handles) / sizeof(g_game_handles[0])) {
         LOGE("runtime handle table is full; refusing to dispatch game");
@@ -344,6 +426,9 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     g_game_handles[g_game_handle_count] = game_handle;
     snprintf(g_game_loaded_names[g_game_handle_count], sizeof(g_game_loaded_names[0]), "%s", "libdmhost.so");
     g_game_handle_count++;
-    LOGI("dispatching NativeActivity to game runtime");
+    LOGI("[stage 6/8] dispatching NativeActivity_onCreate to libdmhost.so");
     on_create(activity, saved_state, saved_state_size);
+    LOGI("[stage 7/8] game NativeActivity_onCreate returned; game runtime initialization continues asynchronously");
+    LOGI("[stage 8/8] dispatcher handoff complete; subsequent native output is captured from stdout/stderr and Logcat");
+
 }
