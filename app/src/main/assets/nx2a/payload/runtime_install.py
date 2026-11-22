@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Install one port payload into NGR-owned storage. No ADB and no per-game APK."""
 import argparse
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -74,8 +75,7 @@ def main():
     ap.add_argument("--game-id", required=True)
     ap.add_argument("--package", default=APP_PACKAGE)
     a = ap.parse_args()
-    if (not a.package or len(a.package) > 255 or
-            any(not (part and part.replace("_", "a").isalnum()) for part in a.package.split("."))):
+    if len(a.package) > 255 or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)+", a.package):
         raise SystemExit("invalid Android package name")
     games_root = Path("/sdcard/Android/data") / a.package / "files" / "games"
     install_payload(a.data, games_root, a.game_id)
