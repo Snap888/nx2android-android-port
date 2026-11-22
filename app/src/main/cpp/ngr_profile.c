@@ -258,7 +258,7 @@ static int array_at(const json_parser *p, int array, size_t wanted) {
 }
 
 static int token_text_eq(const json_parser *p, int token, const char *value) {
-    if (token < 0 || (size_t)token >= p->count || p->tokens[token].type != TOK_STRING) return 0;
+    if (token < 0 || (size_t)token >= p->count || (p->tokens[token].type != TOK_STRING && p->tokens[token].type != TOK_PRIMITIVE)) return 0;
     size_t n = p->tokens[token].end - p->tokens[token].start;
     return n == strlen(value) && !memcmp(p->json + p->tokens[token].start, value, n);
 }
