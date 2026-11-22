@@ -348,5 +348,59 @@ patch('NGR per-game save roots', 'nxnative/dm/android/front_android.c', 'NX2A_GA
  "    const char *ngr_private_root = getenv(\"NGR_PRIVATE_GAME_DIR\"); if (!ngr_private_root || !*ngr_private_root) ngr_private_root = act->internalDataPath;\n    snprintf(p, sizeof p, \"%s/save\", ngr_private_root); mkdir(p, 0700); setenv(\"DM_SAVE\", p, 0);\n    snprintf(p, sizeof p, \"%s/temp\", ngr_private_root); mkdir(p, 0700); setenv(\"DM_TEMP\", p, 0); // NX2A_GAME_SAVE_ROOT"),
 ])
 
+# 9. NGR writes the compiled native host, optional driver libraries and UI assets directly into the data pack.
+patch('NGR no per-game APK', 'porter/pipeline.py', 'NX2A_NGR_NO_APK', [
+("""        self.host()
+        self.apk()
+        self.data()
+""", """        self.host()
+        if os.environ.get('NX2A_NGR') != '1': self.apk()   # NX2A_NGR_NO_APK
+        self.data()
+"""),
+("""        say(f'done: {self.result["apk"]} and {self.result["data"]}')
+""", """        if os.environ.get('NX2A_NGR') == '1':
+            say(f'done: NGR native runtime {self.result.get("runtime", "(missing)")} and data pack {self.result["data"]}')
+        else:
+            say(f'done: {self.result["apk"]} and {self.result["data"]}')
+"""),
+("""        man = datapack.build(dst, profile=self.ap, version=self.pkg_ver, display=self.display, patched=self.patched, romfs=romfs, shaders=self.dmsv,
+""", """        pack_files = {**self.fps_files, **font_files, **self.ngr_runtime_files()}
+        man = datapack.build(dst, profile=self.ap, version=self.pkg_ver, display=self.display, patched=self.patched, romfs=romfs, shaders=self.dmsv,
+"""),
+("""                             files={**self.fps_files, **font_files}, profile_h=getattr(self, 'profile_h', None),
+""", """                             files=pack_files, profile_h=getattr(self, 'profile_h', None),
+"""),
+("""        self.data_path = dst; self.result['data'] = str(dst)
+""", """        self.data_path = dst; self.result['data'] = str(dst)
+        if os.environ.get('NX2A_NGR') == '1':
+            self.result['runtime'] = str(dst / 'libdmhost.so')
+            self.result['runtime_libs'] = sorted(p.name for p in dst.glob('*.so'))
+"""),
+("""    def data(self):
+""", """    def ngr_runtime_files(self):
+        if os.environ.get('NX2A_NGR') != '1': return {}
+        files = {'libdmhost.so': self.so}
+        driver = self.o.vulkan_driver
+        if driver:
+            if driver.name != driver_lib_name(driver):
+                packed = self.so.parent / driver_lib_name(driver)
+                shutil.copyfile(driver, packed)
+                driver = packed
+            files[driver.name] = driver
+            for name in ADRENOTOOLS_LIBS:
+                companion = self.so.parent / name
+                if companion.is_file(): files[name] = companion
+        theme = android_profile.theme(self.g.id)
+        for name in ('theme.tsv', 'tablet.png', 'phone.png'):
+            asset = theme / name
+            if asset.is_file(): files[f'assets/overlay/{name}'] = asset
+        for name, asset in ui_font_assets().items():
+            if Path(asset).is_file(): files[f'assets/{name}'] = asset
+        return files
+
+    def data(self):
+"""),
+])
+
 # All patch groups must run before reporting failures.
 sys.exit(1 if failed else 0)
