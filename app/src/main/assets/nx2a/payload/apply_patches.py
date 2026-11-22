@@ -52,6 +52,15 @@ if NX2A_ARM_HOST:
  "subprocess.run([str(_sh.which('llvm-strip') or _sh.which('llvm-strip-18') or 'strip') if NX2A_ARM_HOST else str(bin_ / ('llvm-strip.exe' if os.name == 'nt' else 'llvm-strip')), '--strip-unneeded', str(out / 'libdmhost.so')], check=True)"),
 ])
 
+# 1a. Keep the Android host's constructor relocations in standard DT_RELA form.
+# NDK Clang injects Android RELR packing for API 30+ targets by default. The
+# affected game host has a large init_array; a malformed packed table can leave
+# constructor pointers unrelocated before bionic calls them.
+patch('standard Android host relocations', 'nxnative/dm/android/build.py', 'NX2A_DISABLE_RELR', [
+("""LDFLAGS = [TARGET, '-fuse-ld=lld', '-Wl,--error-limit=0', '-Wl,-z,max-page-size=16384', '-Wl,--build-id', '-Wl,-z,nostart-stop-gc']""",
+ """LDFLAGS = [TARGET, '-fuse-ld=lld', '-Wl,--pack-dyn-relocs=none', '-Wl,--error-limit=0', '-Wl,-z,max-page-size=16384', '-Wl,--build-id', '-Wl,-z,nostart-stop-gc']  # NX2A_DISABLE_RELR"""),
+])
+
 # 1b. the same wrapper for C++ (the custom-driver loader libadrenotools is C++): the trimmed NDK has no clang++, use the system one with the NDK sysroot
 patch('arm host c++', 'nxnative/dm/android/build.py', 'cxx-arm', [
 ("""    CXX = str(bin_ / ('clang++.exe' if os.name == 'nt' else 'clang++'))
