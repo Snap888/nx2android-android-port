@@ -256,7 +256,11 @@ public class MainActivity extends Activity {
                                     || line.contains("ActivityTaskManager") || line.contains("ActivityManager")
                                     || line.contains("linker") || line.contains("libc")
                                     || line.contains("DEBUG") || line.contains("crash_dump")
-                                    || line.contains(getPackageName()) || line.contains("NativeActivity")) {
+                                    || line.contains(getPackageName()) || line.contains("NativeActivity")
+                                    || line.contains("NgrGameActivity") || line.contains("Permission Denial")
+                                    || line.contains("Unable to") || line.contains("FATAL")
+                                    || line.contains("START ") || line.contains("Displayed ")
+                                    || line.contains("Process ") || line.contains("not found")) {
                                 out.write((line + "\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
                             }
                         }
@@ -304,7 +308,16 @@ public class MainActivity extends Activity {
                     File nativeHost = new File(getApplicationInfo().nativeLibraryDir, "libngrhost.so");
                     appendRuntimeLog(gameId, "Native host library: " + nativeHost.getAbsolutePath()
                             + " exists=" + nativeHost.isFile() + " readable=" + nativeHost.canRead());
-                    Intent launch = new Intent(MainActivity.this, android.app.NativeActivity.class);
+                    android.content.ComponentName gameComponent = new android.content.ComponentName(MainActivity.this, NgrGameActivity.class);
+                    try {
+                        android.content.pm.ActivityInfo info = getPackageManager().getActivityInfo(gameComponent, 0);
+                        appendRuntimeLog(gameId, "Resolved NGR activity: name=" + info.name + " process="
+                                + info.processName + " enabled=" + info.enabled + " exported=" + info.exported);
+                    } catch (Exception resolveError) {
+                        appendRuntimeLog(gameId, "NGR activity resolution failed: " + resolveError);
+                        throw resolveError;
+                    }
+                    Intent launch = new Intent().setComponent(gameComponent);
                     launch.putExtra("game_id", gameId);
                     launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                     appendRuntimeLog(gameId, "Starting explicit component " + launch.getComponent()
