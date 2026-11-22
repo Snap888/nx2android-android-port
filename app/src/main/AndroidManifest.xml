@@ -39,7 +39,6 @@
             android:name=".NgrGameActivity"
             android:label="NGR Game Runtime"
             android:exported="false"
-            android:process=":game"
             android:screenOrientation="sensorLandscape"
             android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|uiMode|density|layoutDirection|colorMode">
             <meta-data android:name="android.app.lib_name" android:value="ngrhost" />
