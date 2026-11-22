@@ -272,8 +272,20 @@ static int preload_game_dependencies(const char *private_game_dir) {
                 LOGE("native library path is too long: %s", ent->d_name);
                 continue;
             }
+            /* The GSL allocator shim overrides allocation entry points. Keep it
+               out of the process-wide symbol scope: making it RTLD_GLOBAL can
+               replace allocator symbols used by bionic's linker while the main
+               runtime is being relocated. The game runtime may still load it
+               through its own DT_NEEDED dependency group. */
+            int load_flags = RTLD_NOW | RTLD_GLOBAL;
+            if (!strcmp(ent->d_name, "libgsl_alloc_hook.so")) {
+                load_flags = RTLD_NOW | RTLD_LOCAL;
+                LOGI("[stage 3/8] isolating allocator shim from global linker scope");
+            }
+            LOGI("[stage 3/8] dlopen companion begin: %s flags=%s",
+                 ent->d_name, (load_flags & RTLD_GLOBAL) ? "GLOBAL" : "LOCAL");
             dlerror();
-            void *h = dlopen(path, RTLD_NOW | RTLD_GLOBAL);
+            void *h = dlopen(path, load_flags);
             const char *err = dlerror();
             if (h) {
                 g_game_handles[g_game_handle_count] = h;
@@ -281,7 +293,7 @@ static int preload_game_dependencies(const char *private_game_dir) {
                 g_game_handle_count++;
                 loaded_this_pass++;
                 total_loaded++;
-                LOGI("preloaded game dependency %s", ent->d_name);
+                LOGI("preloaded game dependency %s handle=%p", ent->d_name, h);
             } else {
                 LOGI("dependency load deferred (%s): %s", ent->d_name, err ? err : "unknown");
             }
@@ -394,8 +406,11 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     int preloaded = preload_game_dependencies(private_dir);
     LOGI("[stage 3/8] dependency preload finished: %d companion libraries", preloaded);
 
+    LOGI("[stage 4/8] main runtime dlopen begin: %s (RTLD_LAZY|RTLD_LOCAL)", lib_path);
     dlerror();
-    void *game_handle = dlopen(lib_path, RTLD_NOW | RTLD_LOCAL);
+    /* Defer function relocations until first use. This avoids resolving optional
+       hook entry points during the loader constructor phase. */
+    void *game_handle = dlopen(lib_path, RTLD_LAZY | RTLD_LOCAL);
     const char *err = dlerror();
     if (!game_handle) {
         LOGE("[stage 4/8] dlopen failed for %s: %s", lib_path, err ? err : "unknown linker error");
@@ -404,7 +419,7 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
         ANativeActivity_finish(activity);
         return;
     }
-    LOGI("[stage 4/8] dlopen succeeded: handle=%p", game_handle);
+    LOGI("[stage 4/8] main runtime dlopen succeeded: handle=%p", game_handle);
     dlerror();
     game_on_create_fn on_create = (game_on_create_fn)dlsym(game_handle, "ANativeActivity_onCreate");
     err = dlerror();
