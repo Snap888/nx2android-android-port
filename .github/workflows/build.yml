@@ -47,11 +47,12 @@ jobs:
       - name: Does the APK need rebuilding?
         id: chg
         run: |
-          # payload files update the app by themselves (no new APK): rebuild only when something else changed, or when started by hand
+          # Always produce a test APK on the NGR feature branch; payload-only updates must remain installable for device testing.
           build=true
           if [ "${{ github.event_name }}" = "push" ] && git cat-file -e "${{ github.event.before }}^{commit}" 2>/dev/null; then
             other=$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" | grep -Ev '^(app/src/main/assets/nx2a/payload/|docs/|tests/|README\.md$|tools/make_prebuilt\.sh$|\.github/workflows/)' || true)
             [ -z "$other" ] && build=false
+            if [ "${{ github.ref }}" = "refs/heads/feature/ngr-universal-library" ]; then build=true; fi
             echo "changed outside the payload: ${other:-nothing}"
           fi
           echo "build=$build" >> "$GITHUB_OUTPUT"
