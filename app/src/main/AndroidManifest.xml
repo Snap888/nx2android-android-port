@@ -17,6 +17,7 @@
     </queries>
 
     <application
+        android:name=".NgrApplication"
         android:requestLegacyExternalStorage="true"
         android:label="nx2android"
         android:icon="@mipmap/ic_launcher"
