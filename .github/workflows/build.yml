@@ -70,6 +70,8 @@ jobs:
         run: |
           python3 -m py_compile app/src/main/assets/nx2a/payload/webgui/server.py app/src/main/assets/nx2a/payload/runtime_install.py app/src/main/assets/nx2a/payload/profile_export.py app/src/main/assets/nx2a/launcher.py
           python3 -m unittest discover -s tests -p 'test_*.py' -v
+          cc -std=c11 -Wall -Wextra -Werror -Iapp/src/main/cpp tests/test_profile_json.c app/src/main/cpp/ngr_profile.c -o /tmp/test_profile_json
+          /tmp/test_profile_json
       - name: Check WebView JavaScript syntax
         run: |
           python3 - <<'PY'
