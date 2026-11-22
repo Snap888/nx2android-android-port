@@ -219,6 +219,36 @@ public class MainActivity extends Activity {
         } catch (Exception ignored) { }
     }
 
+    /** Remove only the selected game's diagnostic files; keep the shared lifecycle log intact. */
+    private void clearRuntimeLog(String gameId) {
+        if (gameId == null || !gameId.matches("[0-9a-f]{20}")) {
+            Toast.makeText(this, "Invalid game ID", Toast.LENGTH_LONG).show();
+            return;
+        }
+        new AlertDialog.Builder(this)
+                .setTitle("Clear runtime log?")
+                .setMessage("Delete this game's runtime log, exported log and PID marker? The shared Android lifecycle log will be kept.")
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Clear", (dialog, which) -> {
+                    File dir = new File(getFilesDir(), "ngr-logs");
+                    String[] suffixes = {".log", "-export.log", ".pid"};
+                    int deleted = 0;
+                    int failed = 0;
+                    for (String suffix : suffixes) {
+                        File target = new File(dir, gameId + suffix);
+                        if (target.exists()) {
+                            if (target.isFile() && target.delete()) deleted++;
+                            else failed++;
+                        }
+                    }
+                    String message = deleted + " log file(s) deleted";
+                    if (failed > 0) message += "; " + failed + " could not be deleted";
+                    Toast.makeText(this, message, failed > 0 ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show();
+                    appendRuntimeLog(gameId, "Log clear requested; deleted=" + deleted + " failed=" + failed);
+                })
+                .show();
+    }
+
     /** Share the per-game native log plus this runtime process's Logcat (linker/Vulkan/driver messages). */
     private void exportRuntimeLog(String gameId) {
         if (gameId == null || !gameId.matches("[0-9a-f]{20}")) {
@@ -304,6 +334,7 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface public void installApk(String path) { runOnUiThread(() -> doInstall(path)); }
         @JavascriptInterface public void exportRuntimeLog(String gameId) { runOnUiThread(() -> MainActivity.this.exportRuntimeLog(gameId)); }
+        @JavascriptInterface public void clearRuntimeLog(String gameId) { runOnUiThread(() -> MainActivity.this.clearRuntimeLog(gameId)); }
 
         /** Launch a game through NGR's own NativeActivity; no per-game Android package is installed. */
         @JavascriptInterface public void launchGame(String gameId) {
