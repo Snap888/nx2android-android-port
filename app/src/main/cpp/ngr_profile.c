@@ -355,6 +355,7 @@ static int validate_overlay(const json_parser *p, int android, size_t *count_out
 
 int ngr_profile_validate(const char *profile_json, size_t profile_size,
                          const char *manifest_json, size_t manifest_size,
+                         const char *expected_game_id,
                          ngr_profile_summary *summary,
                          char *error_out, size_t error_capacity) {
     json_parser profile = {0}, manifest = {0};
@@ -374,7 +375,8 @@ int ngr_profile_validate(const char *profile_json, size_t profile_size,
     int game = object_get(&profile, 0, "game");
     int manifest_title = object_get(&manifest, 0, "title_id");
     int manifest_hash = object_get(&manifest, 0, "profile_h");
-    if (identity < 0 || source < 0 || game < 0 || manifest_title < 0 || manifest_hash < 0) {
+    int manifest_game_id = object_get(&manifest, 0, "game_id");
+    if (identity < 0 || source < 0 || game < 0 || manifest_title < 0 || manifest_hash < 0 || manifest_game_id < 0) {
         set_error(error_out, error_capacity, "profile or data manifest is missing required objects");
         goto done;
     }
@@ -383,6 +385,15 @@ int ngr_profile_validate(const char *profile_json, size_t profile_size,
     char manifest_id[32], manifest_profile_hash[80];
     if (token_copy(&manifest, manifest_title, manifest_id, sizeof(manifest_id)) < 0 ||
         strcasecmp(local.title_id, manifest_id)) { set_error(error_out, error_capacity, "profile title_id does not match nx2a-data.json"); goto done; }
+    char packed_game_id[32], profile_library_id[32];
+    if (!expected_game_id || strlen(expected_game_id) != 20 ||
+        token_copy(&manifest, manifest_game_id, packed_game_id, sizeof(packed_game_id)) < 0 ||
+        strcmp(expected_game_id, packed_game_id) ||
+        !required_string(&profile, identity, "library_id", profile_library_id, sizeof(profile_library_id)) ||
+        strcmp(expected_game_id, profile_library_id)) {
+        set_error(error_out, error_capacity, "profile library ID does not match the selected NGR shortcut");
+        goto done;
+    }
     if (!required_string(&profile, source, "game_profile_sha256", local.game_profile_sha256, sizeof(local.game_profile_sha256)) ||
         !is_hex_string(local.game_profile_sha256, 64) ||
         token_copy(&manifest, manifest_hash, manifest_profile_hash, sizeof(manifest_profile_hash)) < 0 ||
