@@ -219,7 +219,9 @@ public class MainActivity extends Activity {
         } catch (Exception ignored) { }
     }
 
-    /** Remove only the selected game's diagnostic files; keep the shared lifecycle log intact. */
+    /** Clear the selected game's log in place. The native runtime reopens the path for
+     * every tagged line, while stdout/stderr may still hold the inode open; truncating
+     * preserves both writers. Unlinking the file made the logger recreate it immediately. */
     private void clearRuntimeLog(String gameId) {
         if (gameId == null || !gameId.matches("[0-9a-f]{20}")) {
             Toast.makeText(this, "Invalid game ID", Toast.LENGTH_LONG).show();
@@ -227,22 +229,33 @@ public class MainActivity extends Activity {
         }
         new AlertDialog.Builder(this)
                 .setTitle("Clear runtime log?")
-                .setMessage("Delete this game's runtime log, exported log and PID marker? The shared Android lifecycle log will be kept.")
+                .setMessage("Clear this game's runtime log and remove its exported copy? New runtime messages may appear after clearing.")
                 .setNegativeButton("Cancel", null)
                 .setPositiveButton("Clear", (dialog, which) -> {
                     File dir = new File(getFilesDir(), "ngr-logs");
-                    String[] suffixes = {".log", "-export.log", ".pid"};
-                    int deleted = 0;
+                    int cleared = 0;
+                    int removed = 0;
                     int failed = 0;
-                    for (String suffix : suffixes) {
-                        File target = new File(dir, gameId + suffix);
-                        if (target.exists()) {
-                            if (target.isFile() && target.delete()) deleted++;
-                            else failed++;
-                        }
+                    File runtime = new File(dir, gameId + ".log");
+                    if (runtime.exists()) {
+                        if (runtime.isFile()) {
+                            try (java.io.FileOutputStream out = new java.io.FileOutputStream(runtime, false)) {
+                                out.getFD().sync();
+                                cleared++;
+                            } catch (Exception e) { failed++; }
+                        } else failed++;
                     }
-                    String message = deleted + " log file(s) deleted";
-                    if (failed > 0) message += "; " + failed + " could not be deleted";
+                    File exported = new File(dir, gameId + "-export.log");
+                    if (exported.exists()) {
+                        if (exported.isFile() && exported.delete()) removed++;
+                        else failed++;
+                    }
+                    File pid = new File(dir, gameId + ".pid");
+                    if (pid.exists() && pid.isFile() && pid.delete()) removed++;
+                    String message = "Runtime log cleared";
+                    if (cleared == 0 && !runtime.exists()) message += " (no log file existed)";
+                    message += "; " + removed + " auxiliary file(s) removed";
+                    if (failed > 0) message += "; " + failed + " operation(s) failed";
                     Toast.makeText(this, message, failed > 0 ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show();
                 })
                 .show();
