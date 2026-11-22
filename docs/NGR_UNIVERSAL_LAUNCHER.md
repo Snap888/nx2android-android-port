@@ -100,3 +100,10 @@ The new library must not label these legacy outputs as shared-runtime-ready. The
 The successful porter result now gets a `profile.json` alongside the game's data pack. The exporter reuses the current porter parsers and validates the exact `profile_h` from the data-pack manifest before writing. The document retains ordered/repeated TSV rows, normalized Android profile properties, per-build tables and resolved overlay layouts.
 
 This does not yet make the native host profile-agnostic: the current dispatcher still loads a per-game `libdmhost.so` compiled against profile headers. Native JSON parsing and migration of all HLE/NVN/Android consumers remain mandatory before one common host can be claimed.
+
+
+## Native profile validation milestone (2026-11-22)
+
+The NGR dispatcher now parses and validates the versioned profile JSON before loading the game library. It checks the profile title ID and generated-header hash against the data-pack manifest, bounds module/profile/table/overlay collections, and logs a concise validation summary. Old data packs without JSON and invalid JSON both retain the compiled-profile fallback so this intermediate migration does not break existing ports.
+
+The JSON is not yet the source of runtime behavior: `libdmhost.so` still uses the profile-specific macros it was compiled with. Converting those consumers and proving two different games against one profile-agnostic host remain open acceptance gates.
