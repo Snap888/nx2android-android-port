@@ -206,6 +206,18 @@ public class MainActivity extends Activity {
         web.evaluateJavascript("nx2aPicked(" + org.json.JSONObject.quote(pickId) + "," + org.json.JSONObject.quote(p) + ")", null);
     }
 
+    private void appendRuntimeLog(String gameId, String message) {
+        try {
+            File dir = new File(getFilesDir(), "ngr-logs");
+            if (!dir.isDirectory() && !dir.mkdirs()) return;
+            File log = new File(dir, gameId + ".log");
+            String line = System.currentTimeMillis() + " [JAVA] pid=" + android.os.Process.myPid() + " " + message + "\\n";
+            try (java.io.FileOutputStream out = new java.io.FileOutputStream(log, true)) {
+                out.write(line.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            }
+        } catch (Exception ignored) { }
+    }
+
     /** Share the per-game native log plus this runtime process's Logcat (linker/Vulkan/driver messages). */
     private void exportRuntimeLog(String gameId) {
         if (gameId == null || !gameId.matches("[0-9a-f]{20}")) {
@@ -278,12 +290,15 @@ public class MainActivity extends Activity {
                     Toast.makeText(MainActivity.this, "Invalid game shortcut ID", Toast.LENGTH_LONG).show();
                     return;
                 }
+                appendRuntimeLog(gameId, "Library launch requested");
                 try {
                     Intent launch = new Intent(MainActivity.this, android.app.NativeActivity.class);
                     launch.putExtra("game_id", gameId);
                     launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                     startActivity(launch);
+                    appendRuntimeLog(gameId, "NativeActivity startActivity returned successfully");
                 } catch (Exception e) {
+                    appendRuntimeLog(gameId, "NativeActivity startActivity failed: " + e);
                     Toast.makeText(MainActivity.this, "Could not start NGR runtime: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 }
             });
