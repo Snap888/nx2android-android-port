@@ -17,6 +17,12 @@
 #include <unistd.h>
 #include "ngr_profile.h"
 
+#ifndef DT_ANDROID_RELR
+#define DT_ANDROID_RELR   0x6fffe000
+#define DT_ANDROID_RELRSZ  0x6fffe001
+#define DT_ANDROID_RELRENT 0x6fffe003
+#endif
+
 #define TAG "NGRRuntime"
 static char g_runtime_log_path[1400];
 static char g_runtime_log_dir[1200];
@@ -234,6 +240,37 @@ static uint64_t elf_vaddr_to_offset(const Elf64_Phdr *phdrs, size_t phnum,
     return UINT64_MAX;
 }
 
+static int elf_relr_has_slot(int fd, const Elf64_Phdr *phdrs, size_t phnum,
+                              uint64_t relr_addr, uint64_t relr_size,
+                              uint64_t relr_ent, uint64_t slot_vaddr) {
+    if (!relr_addr || !relr_size || relr_ent != sizeof(Elf64_Addr) ||
+        relr_size % sizeof(Elf64_Addr) || relr_size > 64u * 1024u * 1024u)
+        return 0;
+    uint64_t off = elf_vaddr_to_offset(phdrs, phnum, relr_addr, relr_size);
+    if (off == UINT64_MAX) return 0;
+    uint64_t base = 0;
+    for (uint64_t pos = 0; pos < relr_size; pos += sizeof(Elf64_Addr)) {
+        Elf64_Addr entry = 0;
+        if (pread(fd, &entry, sizeof(entry), (off_t)(off + pos)) != (ssize_t)sizeof(entry))
+            return 0;
+        if ((entry & 1u) == 0) {
+            if (entry == slot_vaddr) return 1;
+            if (entry > UINT64_MAX - sizeof(Elf64_Addr)) return 0;
+            base = entry + sizeof(Elf64_Addr);
+        } else {
+            uint64_t bitmap = entry >> 1;
+            if (slot_vaddr >= base && slot_vaddr - base < 63u * sizeof(Elf64_Addr) &&
+                ((slot_vaddr - base) % sizeof(Elf64_Addr)) == 0) {
+                unsigned bit = (unsigned)((slot_vaddr - base) / sizeof(Elf64_Addr));
+                if (bitmap & (UINT64_C(1) << bit)) return 1;
+            }
+            if (base > UINT64_MAX - 63u * sizeof(Elf64_Addr)) return 0;
+            base += 63u * sizeof(Elf64_Addr);
+        }
+    }
+    return 0;
+}
+
 static int log_runtime_elf_metadata(const char *path) {
     int fd = open(path, O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
     if (fd < 0) { LOGE("[ELF preflight] open failed: %s", strerror(errno)); return -1; }
@@ -275,7 +312,9 @@ static int log_runtime_elf_metadata(const char *path) {
             else if (dyn.d_tag == DT_RELAENT) rela_ent = dyn.d_un.d_val;
             else if (dyn.d_tag == DT_RELR) relr_addr = dyn.d_un.d_ptr;
             else if (dyn.d_tag == DT_RELRSZ) relr_size = dyn.d_un.d_val;
-            else if (dyn.d_tag == DT_RELRENT) relr_ent = dyn.d_un.d_val;
+            else if (dyn.d_tag == DT_RELRENT || dyn.d_tag == DT_ANDROID_RELRENT) relr_ent = dyn.d_un.d_val;
+            else if (dyn.d_tag == DT_ANDROID_RELR) relr_addr = dyn.d_un.d_ptr;
+            else if (dyn.d_tag == DT_ANDROID_RELRSZ) relr_size = dyn.d_un.d_val;
         }
     }
     LOGI("[ELF preflight] DT_INIT=0x%llx INIT_ARRAY=0x%llx INIT_ARRAYSZ=%llu",
@@ -324,14 +363,14 @@ static int log_runtime_elf_metadata(const char *path) {
                         }
                     }
                 }
-                if (value && !found && !relr_size) missing_constructor_reloc = 1;
-                LOGI("[ELF preflight] init_array[%llu] slot=0x%llx raw=0x%llx rela=%s",
+                if (!found && elf_relr_has_slot(fd, phdrs, eh.e_phnum,
+                                                relr_addr, relr_size, relr_ent, slot_vaddr))
+                    found = 1;
+                if (value && !found) missing_constructor_reloc = 1;
+                LOGI("[ELF preflight] init_array[%llu] slot=0x%llx raw=0x%llx relocation=%s",
                      (unsigned long long)i, (unsigned long long)slot_vaddr,
-                     (unsigned long long)value,
-                     found ? "present" : (relr_size ? "not-in-RELA-check-RELR-may-cover" : "MISSING"));
+                     (unsigned long long)value, found ? "present" : "MISSING");
             }
-            if (relr_size)
-                LOGI("[ELF preflight] packed RELR relocations present; init-array coverage requires RELR decoding");
             if (missing_constructor_reloc) {
                 LOGE("[ELF preflight] refusing malformed shared object: non-null init_array entries have no dynamic relocation");
                 close(fd);
