@@ -72,6 +72,7 @@ def header(profile):
 """)
         (self.data / "nx2a-data.json").write_text(json.dumps({
             "title_id": self.game_id,
+            "game_id": "1234567890abcdef1234",
             "package": "org.test.game",
             "version": "v1",
             "display": "1.0",
@@ -91,6 +92,7 @@ def header(profile):
         payload = json.loads(target.read_text())
         self.assertEqual(payload["schema_version"], 1)
         self.assertEqual(payload["identity"]["package"], "org.test.game")
+        self.assertEqual(payload["identity"]["library_id"], "1234567890abcdef1234")
         self.assertEqual(payload["game"]["modules"], ["main", "sdk"])
         self.assertEqual(payload["game"]["tables"]["fps_locks.tsv"][0][1], "main")
         self.assertEqual(payload["android"]["overlay"][0]["name"], "menu")
