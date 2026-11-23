@@ -410,15 +410,20 @@ static int is_main_runtime_alias(const char *name) {
            !strncmp(name, "libdmhost_", 10);
 }
 
-/* AdrenoTools hook DSOs are not ordinary game dependencies. AdrenoTools
- * loads private instances of these libraries inside its own linker namespace,
- * initializes hook_params there, and only then loads libmain_hook.so. Loading
- * them here in the app namespace creates a second, uninitialized hook_impl
- * instance; libmain_hook can bind to it and crash on hook_params->... .
+/* AdrenoTools-owned DSOs must not be preloaded into the app namespace.
+ * In particular, preloading libvulkan_freedreno.so here creates a default-
+ * namespace driver instance before AdrenoTools can open Turnip in its private
+ * namespace. AdrenoTools explicitly cannot apply its hooks once a Vulkan
+ * driver instance is already loaded. Its hook DSOs are also private: loading
+ * another copy here can leave hook_params uninitialized and crash in
+ * hook_impl (observed at offset 0x1aabc while reading the game's env.txt).
+ * Keep libadrenotools.so itself available; libdmhost uses it to create and
+ * initialize the isolated driver namespace.
  */
-static int is_adrenotools_namespace_hook(const char *name) {
+static int is_adrenotools_namespace_library(const char *name) {
     return name &&
-        (!strcmp(name, "libhook_impl.so") ||
+        (!strcmp(name, "libvulkan_freedreno.so") ||
+         !strcmp(name, "libhook_impl.so") ||
          !strcmp(name, "libmain_hook.so") ||
          !strcmp(name, "libfile_redirect_hook.so") ||
          !strcmp(name, "libgsl_alloc_hook.so"));
@@ -498,7 +503,7 @@ static int preload_game_dependencies(const char *private_game_dir) {
                 !strcmp(ent->d_name, "libdmhost.so") ||
                 is_main_runtime_alias(ent->d_name) ||
                 game_library_loaded(ent->d_name)) continue;
-            if (is_adrenotools_namespace_hook(ent->d_name)) {
+            if (is_adrenotools_namespace_library(ent->d_name)) {
                 LOGI("[stage 3/8] leaving %s for AdrenoTools isolated linker namespace; do not preload into app namespace",
                      ent->d_name);
                 continue;
