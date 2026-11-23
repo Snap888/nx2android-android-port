@@ -421,6 +421,29 @@ static int game_library_loaded(const char *name) {
  * app-specific external files directory and remains readable through DM_GAME_DIR. */
 static int stage_native_libs(const char *external_game_dir, const char *private_game_dir) {
     if (mkdirs(private_game_dir)) { LOGE("cannot create private runtime directory %s: %s", private_game_dir, strerror(errno)); return -1; }
+
+    /* The installed payload may have been recompiled with a different runtime.
+       Remove only previously staged top-level .so files; keep per-game save/temp
+       directories intact. Otherwise a library removed from the new build could
+       still be dlopened from the private staging directory. */
+    DIR *stale = opendir(private_game_dir);
+    if (!stale) { LOGE("cannot inspect private runtime directory %s: %s", private_game_dir, strerror(errno)); return -1; }
+    struct dirent *old_ent; int removed = 0;
+    while ((old_ent = readdir(stale))) {
+        size_t old_n = strlen(old_ent->d_name);
+        if (old_n < 4 || strcmp(old_ent->d_name + old_n - 3, ".so")) continue;
+        char old_path[1400];
+        int old_len = snprintf(old_path, sizeof(old_path), "%s/%s", private_game_dir, old_ent->d_name);
+        if (old_len < 0 || (size_t)old_len >= sizeof(old_path)) continue;
+        struct stat old_st;
+        if (lstat(old_path, &old_st) == 0 && (S_ISREG(old_st.st_mode) || S_ISLNK(old_st.st_mode))) {
+            if (unlink(old_path) == 0) removed++;
+            else { LOGE("cannot remove stale staged library %s: %s", old_path, strerror(errno)); closedir(stale); return -1; }
+        }
+    }
+    closedir(stale);
+    if (removed) LOGI("removed %d stale staged native libraries before refreshing runtime", removed);
+
     DIR *dir = opendir(external_game_dir);
     if (!dir) { LOGE("cannot open game data directory %s: %s", external_game_dir, strerror(errno)); return -1; }
     struct dirent *ent; int copied = 0;
