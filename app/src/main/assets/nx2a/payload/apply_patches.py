@@ -428,7 +428,7 @@ patch('NGR no per-game APK', 'porter/pipeline.py', 'NX2A_NGR_NO_APK', [
 # runtime build. They are packaged with the game even when the system Vulkan
 # driver is selected, so switching drivers later does not require recompilation.
 patch('NGR build complete native runtime', 'porter/pipeline.py', 'NX2A_NGR_ADRENOTOOLS', [
-("""                 + (['--adrenotools'] if self.o.vulkan_driver else []), self.logs / 'android_host.log', env=self.env)
+("""                + (['--adrenotools'] if self.o.vulkan_driver else []), self.logs / 'android_host.log', env=self.env)
 """,
  """                 + (['--adrenotools'] if self.o.vulkan_driver or os.environ.get('NX2A_NGR') == '1' else []), self.logs / 'android_host.log', env=self.env)  # NX2A_NGR_ADRENOTOOLS
 """),
