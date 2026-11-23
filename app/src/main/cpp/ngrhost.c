@@ -396,6 +396,20 @@ static int is_main_runtime_alias(const char *name) {
            !strncmp(name, "libdmhost_", 10);
 }
 
+/* AdrenoTools hook DSOs are not ordinary game dependencies. AdrenoTools
+ * loads private instances of these libraries inside its own linker namespace,
+ * initializes hook_params there, and only then loads libmain_hook.so. Loading
+ * them here in the app namespace creates a second, uninitialized hook_impl
+ * instance; libmain_hook can bind to it and crash on hook_params->... .
+ */
+static int is_adrenotools_namespace_hook(const char *name) {
+    return name &&
+        (!strcmp(name, "libhook_impl.so") ||
+         !strcmp(name, "libmain_hook.so") ||
+         !strcmp(name, "libfile_redirect_hook.so") ||
+         !strcmp(name, "libgsl_alloc_hook.so"));
+}
+
 static int game_library_loaded(const char *name) {
     for (size_t i = 0; i < g_game_handle_count; ++i)
         if (!strcmp(g_game_loaded_names[i], name)) return 1;
@@ -447,6 +461,11 @@ static int preload_game_dependencies(const char *private_game_dir) {
                 !strcmp(ent->d_name, "libdmhost.so") ||
                 is_main_runtime_alias(ent->d_name) ||
                 game_library_loaded(ent->d_name)) continue;
+            if (is_adrenotools_namespace_hook(ent->d_name)) {
+                LOGI("[stage 3/8] leaving %s for AdrenoTools isolated linker namespace; do not preload into app namespace",
+                     ent->d_name);
+                continue;
+            }
             if (g_game_handle_count >= (sizeof(g_game_handles) / sizeof(g_game_handles[0])) - 1) {
                 LOGE("too many game native libraries; refusing to overflow runtime handle table");
                 closedir(dir);
@@ -458,23 +477,10 @@ static int preload_game_dependencies(const char *private_game_dir) {
                 LOGE("native library path is too long: %s", ent->d_name);
                 continue;
             }
-            /* The GSL allocator shim overrides allocation entry points. Keep it
-               out of the process-wide symbol scope: making it RTLD_GLOBAL can
-               replace allocator symbols used by bionic's linker while the main
-               runtime is being relocated. The game runtime may still load it
-               through its own DT_NEEDED dependency group. */
+            /* Remaining libraries are ordinary game companions. AdrenoTools
+             * hook DSOs were deliberately excluded above and are loaded/initialized
+             * only by adrenotools_open_libvulkan in its dedicated linker namespace. */
             int load_flags = RTLD_NOW | RTLD_GLOBAL;
-            /* Hook implementations must not interpose on unrelated Android
-             * runtime symbols process-wide. They remain available to libdmhost
-             * through its DT_NEEDED dependency group when the main ELF is loaded.
-             * The allocator shim is also strictly local for the same reason. */
-            if (!strcmp(ent->d_name, "libgsl_alloc_hook.so") ||
-                !strcmp(ent->d_name, "libhook_impl.so") ||
-                !strcmp(ent->d_name, "libmain_hook.so") ||
-                !strcmp(ent->d_name, "libfile_redirect_hook.so")) {
-                load_flags = RTLD_NOW | RTLD_LOCAL;
-                LOGI("[stage 3/8] isolating hook/allocator library from process-global symbol scope: %s", ent->d_name);
-            }
             LOGI("[stage 3/8] dlopen companion begin: %s flags=%s",
                  ent->d_name, (load_flags & RTLD_GLOBAL) ? "GLOBAL" : "LOCAL");
             dlerror();
