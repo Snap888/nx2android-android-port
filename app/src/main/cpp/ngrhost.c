@@ -775,6 +775,23 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
         setenv("DM_NVN_LOG", "1", 0);
         LOGI("[config] NGR default DM_NVN_LOG=1 (NVN device/pool/queue/window lifecycle)");
     }
+    /* The loader may stall while the renderer continues presenting a static
+       frame. Request three timed snapshots from the independent host watchdog. */
+    if (!getenv("DM_WATCH_LOAD_DUMPS")) {
+        setenv("DM_WATCH_LOAD_DUMPS", "3", 0);
+        LOGI("[config] NGR default DM_WATCH_LOAD_DUMPS=3 (loading snapshots at 10/20/30s)");
+    }
+    if (!getenv("DM_WATCH_LOAD_INTERVAL")) {
+        setenv("DM_WATCH_LOAD_INTERVAL", "10", 0);
+        LOGI("[config] NGR default DM_WATCH_LOAD_INTERVAL=10 seconds");
+    }
+    if (!getenv("DM_FSLOG")) {
+        char fslog_path[1500];
+        int fn = snprintf(fslog_path, sizeof(fslog_path), "%s/fs-%s.tsv", g_runtime_log_dir, id);
+        if (fn > 0 && (size_t)fn < sizeof(fslog_path) && setenv("DM_FSLOG", fslog_path, 0) == 0)
+            LOGI("[config] NGR default DM_FSLOG=%s (RomFS ReadFile trace)", fslog_path);
+        else LOGE("[config] cannot configure DM_FSLOG path: %s", strerror(errno));
+    }
     /* Snapshot guest thread PCs/backtraces and graphics wait points after a
        one-second no-present stall. Keep the watchdog non-terminating: it is
        diagnostic only and must not close a game that later resumes. */
