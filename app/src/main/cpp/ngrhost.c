@@ -655,7 +655,7 @@ static void log_game_graphics_config(const char *game_dir) {
         if (!len || line[0] == '#') continue;
         if (!strncmp(line, "DM_VK_", 6) || !strncmp(line, "DM_NVN_", 7) ||
             !strncmp(line, "DM_GPU_", 7) || !strncmp(line, "DM_SLOWFRAME=", 13) ||
-            !strncmp(line, "DM_OPMODE=", 10) || !strncmp(line, "DM_PRESENT_", 11)) {
+            !strncmp(line, "DM_WATCH_", 9) || !strncmp(line, "DM_OPMODE=", 10) || !strncmp(line, "DM_PRESENT_", 11)) {
             LOGI("[config] env.txt: %s", line);
             ++logged;
         }
@@ -774,6 +774,21 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     if (!getenv("DM_NVN_LOG")) {
         setenv("DM_NVN_LOG", "1", 0);
         LOGI("[config] NGR default DM_NVN_LOG=1 (NVN device/pool/queue/window lifecycle)");
+    }
+    /* Snapshot guest thread PCs/backtraces and graphics wait points after a
+       one-second no-present stall. Keep the watchdog non-terminating: it is
+       diagnostic only and must not close a game that later resumes. */
+    if (!getenv("DM_WATCH_STALL")) {
+        setenv("DM_WATCH_STALL", "15", 0);
+        LOGI("[config] NGR default DM_WATCH_STALL=15 (capture state after 1s; rate limited)");
+    }
+    if (!getenv("DM_WATCH_DUMP_ALL")) {
+        setenv("DM_WATCH_DUMP_ALL", "1", 0);
+        LOGI("[config] NGR default DM_WATCH_DUMP_ALL=1 (include ordinary gameplay stalls)");
+    }
+    if (!getenv("DM_WATCH_NO_EXIT")) {
+        setenv("DM_WATCH_NO_EXIT", "1", 0);
+        LOGI("[config] NGR default DM_WATCH_NO_EXIT=1 (diagnostics never terminate the game)");
     }
     LOGI("[stage 1/8] payload validated; game_dir=%s private_dir=%s", game_dir, private_dir);
     LOGI("[stage 2/8] native libraries staged; runtime=%s", lib_path);
