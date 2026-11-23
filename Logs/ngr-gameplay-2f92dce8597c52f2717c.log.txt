@@ -2,81 +2,84 @@ NGR gameplay diagnostic log
 Game ID: 2f92dce8597c52f2717c
 
 ===== Game stdout/stderr + runtime timeline =====
-2026-11-23 21:34:12.372 [I] pid=7466 ============================================================
-2026-11-23 21:34:12.372 [I] pid=7466 NGR launch session started: game_id=2f92dce8597c52f2717c sdk=35 abi=arm64-v8a
-2026-11-23 21:34:12.372 [I] pid=7466 NativeActivity paths: internal=/data/user/0/unknown.none.nx2android/files external=/storage/emulated/0/Android/data/unknown.none.nx2android/files
-2026-11-23 21:34:12.374 [I] pid=7466 [NGR profile] no profile.json; using the compiled game profile (legacy payload)
-2026-11-23 21:34:12.377 [I] pid=7466 removed 7 stale staged native libraries before refreshing runtime
-2026-11-23 21:34:12.605 [I] pid=7466 staged 7 native libraries in private app storage
-2026-11-23 21:34:12.605 [I] pid=7466 [stage 1/8] payload validated; game_dir=/storage/emulated/0/Android/data/unknown.none.nx2android/files/games/2f92dce8597c52f2717c private_dir=/data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c
-2026-11-23 21:34:12.605 [I] pid=7466 [stage 2/8] native libraries staged; runtime=/data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c/libdmhost.so
-2026-11-23 21:34:12.605 [I] pid=7466 [stage 3/8] preloading companion dependencies
-2026-11-23 21:34:12.605 [I] pid=7466 [stage 3/8] leaving libhook_impl.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-23 21:34:12.605 [I] pid=7466 [stage 3/8] leaving libvulkan_freedreno.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-23 21:34:12.605 [I] pid=7466 [stage 3/8] dlopen companion begin: libadrenotools.so flags=GLOBAL
-2026-11-23 21:34:12.606 [I] pid=7466 preloaded game dependency libadrenotools.so handle=0xc0658864402131db
-2026-11-23 21:34:12.606 [I] pid=7466 [stage 3/8] leaving libmain_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-23 21:34:12.606 [I] pid=7466 [stage 3/8] leaving libfile_redirect_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-23 21:34:12.606 [I] pid=7466 [stage 3/8] leaving libgsl_alloc_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-23 21:34:12.606 [I] pid=7466 [stage 3/8] leaving libhook_impl.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-23 21:34:12.606 [I] pid=7466 [stage 3/8] leaving libvulkan_freedreno.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-23 21:34:12.606 [I] pid=7466 [stage 3/8] leaving libmain_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-23 21:34:12.606 [I] pid=7466 [stage 3/8] leaving libfile_redirect_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-23 21:34:12.606 [I] pid=7466 [stage 3/8] leaving libgsl_alloc_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-23 21:34:12.606 [I] pid=7466 preloaded 1 companion game libraries
-2026-11-23 21:34:12.606 [I] pid=7466 [stage 3/8] dependency preload finished: 1 companion libraries
-2026-11-23 21:34:12.606 [I] pid=7466 [stage 4/8] inspecting main runtime ELF before dlopen: /data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c/libdmhost.so
-2026-11-23 21:34:12.606 [I] pid=7466 [ELF preflight] type=3 machine=183 entry=0x0 phnum=11
-2026-11-23 21:34:12.606 [I] pid=7466 [ELF preflight] DT_INIT=0x0 INIT_ARRAY=0x1c1bb8 INIT_ARRAYSZ=48
-2026-11-23 21:34:12.606 [I] pid=7466 [ELF preflight] DT_RELA=0x10050 RELASZ=133104 RELAENT=24 DT_RELR=0x0 RELRSZ=0 RELRENT=8
-2026-11-23 21:34:12.606 [I] pid=7466 [ELF preflight] DT_RELA mapped file offset=0x10050 entries=5546
-2026-11-23 21:34:12.606 [I] pid=7466 [ELF preflight] init_array[0] relocation: type=1027 symbol=0 addend=0x1b9614
-2026-11-23 21:34:12.606 [I] pid=7466 [ELF preflight] init_array[0] slot=0x1c1bb8 raw=0x0 relocation=present
-2026-11-23 21:34:12.607 [I] pid=7466 [ELF preflight] init_array[1] relocation: type=1027 symbol=0 addend=0x1b9c6c
-2026-11-23 21:34:12.607 [I] pid=7466 [ELF preflight] init_array[1] slot=0x1c1bc0 raw=0x0 relocation=present
-2026-11-23 21:34:12.607 [I] pid=7466 [ELF preflight] init_array[2] relocation: type=1027 symbol=0 addend=0xab134
-2026-11-23 21:34:12.607 [I] pid=7466 [ELF preflight] init_array[2] slot=0x1c1bc8 raw=0x0 relocation=present
-2026-11-23 21:34:12.607 [I] pid=7466 [ELF preflight] init_array[3] relocation: type=1027 symbol=0 addend=0xc2c70
-2026-11-23 21:34:12.607 [I] pid=7466 [ELF preflight] init_array[3] slot=0x1c1bd0 raw=0x0 relocation=present
-2026-11-23 21:34:12.607 [I] pid=7466 [ELF preflight] init_array[4] relocation: type=1027 symbol=0 addend=0xef9f0
-2026-11-23 21:34:12.607 [I] pid=7466 [ELF preflight] init_array[4] slot=0x1c1bd8 raw=0x0 relocation=present
-2026-11-23 21:34:12.607 [I] pid=7466 [ELF preflight] init_array[5] relocation: type=1027 symbol=0 addend=0x1436e0
-2026-11-23 21:34:12.607 [I] pid=7466 [ELF preflight] init_array[5] slot=0x1c1be0 raw=0x0 relocation=present
-2026-11-23 21:34:12.607 [I] pid=7466 [stage 4/8] main runtime dlopen begin: /data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c/libdmhost.so (RTLD_LAZY|RTLD_LOCAL)
+2026-11-23 22:37:59.138 [I] pid=31731 ============================================================
+2026-11-23 22:37:59.138 [I] pid=31731 NGR launch session started: game_id=2f92dce8597c52f2717c sdk=35 abi=arm64-v8a
+2026-11-23 22:37:59.138 [I] pid=31731 NativeActivity paths: internal=/data/user/0/unknown.none.nx2android/files external=/storage/emulated/0/Android/data/unknown.none.nx2android/files
+2026-11-23 22:37:59.139 [I] pid=31731 [config] env.txt: DM_VK_DRIVER=libvulkan_freedreno.so
+2026-11-23 22:37:59.141 [I] pid=31731 [NGR profile] no profile.json; using the compiled game profile (legacy payload)
+2026-11-23 22:37:59.144 [I] pid=31731 removed 7 stale staged native libraries before refreshing runtime
+2026-11-23 22:37:59.330 [I] pid=31731 staged 7 native libraries in private app storage
+2026-11-23 22:37:59.330 [I] pid=31731 [config] NGR default DM_SLOWFRAME=1 (per-dropped-frame breakdown)
+2026-11-23 22:37:59.330 [I] pid=31731 [config] NGR default DM_NVN_LOG=1 (NVN device/pool/queue/window lifecycle)
+2026-11-23 22:37:59.330 [I] pid=31731 [stage 1/8] payload validated; game_dir=/storage/emulated/0/Android/data/unknown.none.nx2android/files/games/2f92dce8597c52f2717c private_dir=/data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c
+2026-11-23 22:37:59.330 [I] pid=31731 [stage 2/8] native libraries staged; runtime=/data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c/libdmhost.so
+2026-11-23 22:37:59.330 [I] pid=31731 [stage 3/8] preloading companion dependencies
+2026-11-23 22:37:59.330 [I] pid=31731 [stage 3/8] leaving libhook_impl.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-23 22:37:59.330 [I] pid=31731 [stage 3/8] leaving libvulkan_freedreno.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-23 22:37:59.330 [I] pid=31731 [stage 3/8] dlopen companion begin: libadrenotools.so flags=GLOBAL
+2026-11-23 22:37:59.331 [I] pid=31731 preloaded game dependency libadrenotools.so handle=0x90fa8b0225ea7fab
+2026-11-23 22:37:59.331 [I] pid=31731 [stage 3/8] leaving libmain_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-23 22:37:59.331 [I] pid=31731 [stage 3/8] leaving libfile_redirect_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-23 22:37:59.331 [I] pid=31731 [stage 3/8] leaving libgsl_alloc_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-23 22:37:59.331 [I] pid=31731 [stage 3/8] leaving libhook_impl.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-23 22:37:59.331 [I] pid=31731 [stage 3/8] leaving libvulkan_freedreno.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-23 22:37:59.331 [I] pid=31731 [stage 3/8] leaving libmain_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-23 22:37:59.331 [I] pid=31731 [stage 3/8] leaving libfile_redirect_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-23 22:37:59.331 [I] pid=31731 [stage 3/8] leaving libgsl_alloc_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-23 22:37:59.331 [I] pid=31731 preloaded 1 companion game libraries
+2026-11-23 22:37:59.331 [I] pid=31731 [stage 3/8] dependency preload finished: 1 companion libraries
+2026-11-23 22:37:59.331 [I] pid=31731 [stage 4/8] inspecting main runtime ELF before dlopen: /data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c/libdmhost.so
+2026-11-23 22:37:59.331 [I] pid=31731 [ELF preflight] type=3 machine=183 entry=0x0 phnum=11
+2026-11-23 22:37:59.331 [I] pid=31731 [ELF preflight] DT_INIT=0x0 INIT_ARRAY=0x1c1bb8 INIT_ARRAYSZ=48
+2026-11-23 22:37:59.331 [I] pid=31731 [ELF preflight] DT_RELA=0x10050 RELASZ=133104 RELAENT=24 DT_RELR=0x0 RELRSZ=0 RELRENT=8
+2026-11-23 22:37:59.331 [I] pid=31731 [ELF preflight] DT_RELA mapped file offset=0x10050 entries=5546
+2026-11-23 22:37:59.331 [I] pid=31731 [ELF preflight] init_array[0] relocation: type=1027 symbol=0 addend=0x1b9614
+2026-11-23 22:37:59.331 [I] pid=31731 [ELF preflight] init_array[0] slot=0x1c1bb8 raw=0x0 relocation=present
+2026-11-23 22:37:59.331 [I] pid=31731 [ELF preflight] init_array[1] relocation: type=1027 symbol=0 addend=0x1b9c6c
+2026-11-23 22:37:59.331 [I] pid=31731 [ELF preflight] init_array[1] slot=0x1c1bc0 raw=0x0 relocation=present
+2026-11-23 22:37:59.331 [I] pid=31731 [ELF preflight] init_array[2] relocation: type=1027 symbol=0 addend=0xab134
+2026-11-23 22:37:59.331 [I] pid=31731 [ELF preflight] init_array[2] slot=0x1c1bc8 raw=0x0 relocation=present
+2026-11-23 22:37:59.331 [I] pid=31731 [ELF preflight] init_array[3] relocation: type=1027 symbol=0 addend=0xc2c70
+2026-11-23 22:37:59.331 [I] pid=31731 [ELF preflight] init_array[3] slot=0x1c1bd0 raw=0x0 relocation=present
+2026-11-23 22:37:59.332 [I] pid=31731 [ELF preflight] init_array[4] relocation: type=1027 symbol=0 addend=0xef9f0
+2026-11-23 22:37:59.332 [I] pid=31731 [ELF preflight] init_array[4] slot=0x1c1bd8 raw=0x0 relocation=present
+2026-11-23 22:37:59.332 [I] pid=31731 [ELF preflight] init_array[5] relocation: type=1027 symbol=0 addend=0x1436e0
+2026-11-23 22:37:59.332 [I] pid=31731 [ELF preflight] init_array[5] slot=0x1c1be0 raw=0x0 relocation=present
+2026-11-23 22:37:59.332 [I] pid=31731 [stage 4/8] main runtime dlopen begin: /data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c/libdmhost.so (RTLD_LAZY|RTLD_LOCAL)
 [dm] [nvn] null device: 537 names, 417 implemented (403 semantic + 14 empty, 289 of them on the large host stack), the other 120 go to the red-reporting stub
-2026-11-23 21:34:12.609 [I] pid=7466 [stage 4/8] main runtime dlopen succeeded: handle=0x97a93fa26581fba5
-2026-11-23 21:34:12.609 [I] pid=7466 [stage 5/8] resolved ANativeActivity_onCreate at 0x7a0c314684
-2026-11-23 21:34:12.609 [I] pid=7466 [stage 6/8] dispatching NativeActivity_onCreate to libdmhost.so; activity=0x7a8f6d8c10 env=0xb400007aef6da410 clazz=0x6a06 assetManager=0x7a3f71cd70 internal=/data/user/0/unknown.none.nx2android/files external=/storage/emulated/0/Android/data/unknown.none.nx2android/files sdk=35
-2026-11-23 21:34:12.611 [I] pid=7466 [stage 7/8] game NativeActivity_onCreate returned; game runtime initialization continues asynchronously
-2026-11-23 21:34:12.611 [I] pid=7466 [activity] lifecycle and Surface tracing installed
-2026-11-23 21:34:12.611 [I] pid=7466 [stage 8/8] dispatcher handoff complete; window lifecycle events will be captured from this point
-2026-11-23 21:34:12.613 [I] pid=7466 [activity] onStart begin
-2026-11-23 21:34:12.613 [I] pid=7466 [activity] onStart returned
-2026-11-23 21:34:12.613 [I] pid=7466 [activity] onResume begin
-2026-11-23 21:34:12.613 [I] pid=7466 [activity] onResume returned
-2026-11-23 21:34:12.627 [I] pid=7466 [window] created window=0x7a6f73ed70 size=2448x1080
-2026-11-23 21:34:12.627 [I] pid=7466 [window] created callback returned
-2026-11-23 21:34:12.627 [I] pid=7466 [window] resized window=0x7a6f73ed70 size=2448x1080
-2026-11-23 21:34:12.627 [I] pid=7466 [window] resized callback returned
-2026-11-23 21:34:12.627 [I] pid=7466 [activity] onContentRectChanged begin rect=0,0-2344,1080
-2026-11-23 21:34:12.627 [I] pid=7466 [activity] onContentRectChanged returned
-2026-11-23 21:34:12.628 [I] pid=7466 [window] redraw requested window=0x7a6f73ed70
-2026-11-23 21:34:12.628 [I] pid=7466 [window] redraw callback returned
-2026-11-23 21:34:12.667 [I] pid=7466 [window] focus changed focused=1
-2026-11-23 21:34:12.667 [I] pid=7466 [window] focus callback returned
-2026-11-23 21:34:12.969 [I] pid=7466 [window] redraw requested window=0x7a6f73ed70
-2026-11-23 21:34:12.969 [I] pid=7466 [window] redraw callback returned
-2026-11-23 21:34:29.494 [I] pid=7466 [window] focus changed focused=0
-2026-11-23 21:34:29.496 [I] pid=7466 [window] focus callback returned
-2026-11-23 21:34:30.743 [I] pid=7466 [activity] onPause begin
-2026-11-23 21:34:30.752 [I] pid=7466 [activity] onPause returned
-2026-11-23 21:34:30.752 [I] pid=7466 [window] destroyed window=0x7a6f73ed70
-2026-11-23 21:34:30.783 [I] pid=7466 [window] destroyed callback returned
-2026-11-23 21:34:30.783 [I] pid=7466 [activity] onStop begin
-2026-11-23 21:34:30.783 [I] pid=7466 [activity] onStop returned
-2026-11-23 21:34:30.783 [I] pid=7466 [activity] onSaveInstanceState begin
-2026-11-23 21:34:30.784 [I] pid=7466 [activity] onSaveInstanceState returned size=0 state=none
-2026-11-23 21:34:30.792 [I] pid=7466 [activity] onDestroy begin
+2026-11-23 22:37:59.333 [I] pid=31731 [stage 4/8] main runtime dlopen succeeded: handle=0x436f04c599d68d65
+2026-11-23 22:37:59.333 [I] pid=31731 [stage 5/8] resolved ANativeActivity_onCreate at 0x7a08b4a684
+2026-11-23 22:37:59.333 [I] pid=31731 [stage 6/8] dispatching NativeActivity_onCreate to libdmhost.so; activity=0x7a8f6de570 env=0xb400007aef6da410 clazz=0x688a assetManager=0x7a3f6ef230 internal=/data/user/0/unknown.none.nx2android/files external=/storage/emulated/0/Android/data/unknown.none.nx2android/files sdk=35
+2026-11-23 22:37:59.336 [I] pid=31731 [stage 7/8] game NativeActivity_onCreate returned; game runtime initialization continues asynchronously
+2026-11-23 22:37:59.336 [I] pid=31731 [activity] lifecycle and Surface tracing installed
+2026-11-23 22:37:59.336 [I] pid=31731 [stage 8/8] dispatcher handoff complete; window lifecycle events will be captured from this point
+2026-11-23 22:37:59.337 [I] pid=31731 [activity] onStart begin
+2026-11-23 22:37:59.337 [I] pid=31731 [activity] onStart returned
+2026-11-23 22:37:59.338 [I] pid=31731 [activity] onResume begin
+2026-11-23 22:37:59.338 [I] pid=31731 [activity] onResume returned
+2026-11-23 22:37:59.350 [I] pid=31731 [window] created window=0x7a6f70de00 size=2448x1080
+2026-11-23 22:37:59.350 [I] pid=31731 [window] created callback returned
+2026-11-23 22:37:59.350 [I] pid=31731 [window] resized window=0x7a6f70de00 size=2448x1080
+2026-11-23 22:37:59.350 [I] pid=31731 [window] resized callback returned
+2026-11-23 22:37:59.350 [I] pid=31731 [activity] onContentRectChanged begin rect=0,0-2344,1080
+2026-11-23 22:37:59.350 [I] pid=31731 [activity] onContentRectChanged returned
+2026-11-23 22:37:59.351 [I] pid=31731 [window] redraw requested window=0x7a6f70de00
+2026-11-23 22:37:59.351 [I] pid=31731 [window] redraw callback returned
+2026-11-23 22:37:59.370 [I] pid=31731 [window] redraw requested window=0x7a6f70de00
+2026-11-23 22:37:59.370 [I] pid=31731 [window] redraw callback returned
+2026-11-23 22:37:59.377 [I] pid=31731 [window] focus changed focused=1
+2026-11-23 22:37:59.377 [I] pid=31731 [window] focus callback returned
+2026-11-23 22:38:48.789 [I] pid=31731 [window] focus changed focused=0
+2026-11-23 22:38:48.791 [I] pid=31731 [window] focus callback returned
+2026-11-23 22:38:49.924 [I] pid=31731 [activity] onPause begin
+2026-11-23 22:38:49.936 [I] pid=31731 [activity] onPause returned
+2026-11-23 22:38:49.936 [I] pid=31731 [window] destroyed window=0x7a6f70de00
+2026-11-23 22:38:49.941 [I] pid=31731 [window] destroyed callback returned
+2026-11-23 22:38:49.942 [I] pid=31731 [activity] onStop begin
+2026-11-23 22:38:49.942 [I] pid=31731 [activity] onStop returned
+2026-11-23 22:38:49.942 [I] pid=31731 [activity] onSaveInstanceState begin
+2026-11-23 22:38:49.942 [I] pid=31731 [activity] onSaveInstanceState returned size=0 state=none
+2026-11-23 22:38:49.960 [I] pid=31731 [activity] onDestroy begin
 
 
 ===== Crash / linker / NativeActivity Logcat =====
@@ -293,32 +296,29 @@ Game ID: 2f92dce8597c52f2717c
 11-23 11:39:03.924 27217 27217 F DEBUG   :       #36 pc 00000000000f23b8  /system/lib64/libandroid_runtime.so (android::AndroidRuntime::start(char const*, android::Vector<android::String8> const&, bool)+916) (BuildId: b4e8bb77c51d0aa602fe4bfdeec32337)
 11-23 11:39:03.924 27217 27217 F DEBUG   :       #37 pc 0000000000002654  /system/bin/app_process64 (main+1428) (BuildId: cf8363ee21ac2741a6c8dbbb8c562607)
 11-23 11:39:03.924 27217 27217 F DEBUG   :       #38 pc 000000000005628c  /apex/com.android.runtime/lib64/bionic/libc.so (__libc_init+120) (BuildId: 0a8ff12d1999606f4dc98ab8012e827d)
-11-23 21:30:41.475  3779  3779 D ADPFLog : getCurrentThermalStatus(), caller:11270,[unknown.none.nx2android]
-11-23 21:30:41.477  3779  3833 D ADPFLog : addThermalStatusListener(listener), caller:11270,[unknown.none.nx2android]
-11-23 21:30:41.477  3779  3833 D ADPFLog : addThermalStatusListener(executor, listener), caller:11270,[unknown.none.nx2android]
-11-23 21:33:48.350  7466  7466 D ADPFLog : getCurrentThermalStatus(), caller:11270,[unknown.none.nx2android]
-11-23 21:33:48.354  7466  7525 D ADPFLog : addThermalStatusListener(listener), caller:11270,[unknown.none.nx2android]
-11-23 21:33:48.354  7466  7525 D ADPFLog : addThermalStatusListener(executor, listener), caller:11270,[unknown.none.nx2android]
-11-23 21:34:29.494  7466  7466 I NGRRuntime: [window] focus changed focused=0
-11-23 21:34:29.495  7466  7466 I NGRRuntime: [window] focus callback returned
-11-23 21:34:30.742  7466  7466 I NGRRuntime: [activity] onPause begin
-11-23 21:34:30.752  7466  7466 I NGRRuntime: [activity] onPause returned
-11-23 21:34:30.752  7466  7466 I NGRRuntime: [window] destroyed window=0x7a6f73ed70
-11-23 21:34:30.783  7466  7466 I NGRRuntime: [window] destroyed callback returned
-11-23 21:34:30.783  7466  7466 I NGRRuntime: [activity] onStop begin
-11-23 21:34:30.783  7466  7466 I NGRRuntime: [activity] onStop returned
-11-23 21:34:30.783  7466  7466 I NGRRuntime: [activity] onSaveInstanceState begin
-11-23 21:34:30.784  7466  7466 I NGRRuntime: [activity] onSaveInstanceState returned size=0 state=none
-11-23 21:34:30.792  7466  7466 I NGRRuntime: [activity] onDestroy begin
-11-23 21:34:31.931  8386  8386 I libc    : SetHeapTaggingLevel: tag level set to 0
-11-23 21:34:31.958  8386  8386 D nativeloader: Configuring clns-7 for other apk /data/app/~~NrKoWxYoLqOCzb1FjIpmiw==/unknown.none.nx2android-T5ebvs6px4eQ0jGj41qw8g==/base.apk. target_sdk_version=28, uses_libraries=, library_path=/data/app/~~NrKoWxYoLqOCzb1FjIpmiw==/unknown.none.nx2android-T5ebvs6px4eQ0jGj41qw8g==/lib/arm64:/data/app/~~NrKoWxYoLqOCzb1FjIpmiw==/unknown.none.nx2android-T5ebvs6px4eQ0jGj41qw8g==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/unknown.none.nx2android
-11-23 21:34:31.965  8386  8386 V Monotype: SetAppTypeFace- try to flip, app = unknown.none.nx2android
-11-23 21:34:31.991  8386  8386 I NGRRuntime: Application.onCreate process=unknown.none.nx2android
-11-23 21:34:31.997  8386  8404 D vulkan  : searching for layers in '/data/app/~~NrKoWxYoLqOCzb1FjIpmiw==/unknown.none.nx2android-T5ebvs6px4eQ0jGj41qw8g==/lib/arm64'
-11-23 21:34:31.997  8386  8404 D vulkan  : searching for layers in '/data/app/~~NrKoWxYoLqOCzb1FjIpmiw==/unknown.none.nx2android-T5ebvs6px4eQ0jGj41qw8g==/base.apk!/lib/arm64-v8a'
-11-23 21:34:32.000  8386  8386 V Monotype: SetAppTypeFace- try to flip, app = unknown.none.nx2android
-11-23 21:34:32.041  8386  8386 D ADPFLog : getCurrentThermalStatus(), caller:11270,[unknown.none.nx2android]
-11-23 21:34:32.042  8386  8420 D ADPFLog : addThermalStatusListener(listener), caller:11270,[unknown.none.nx2android]
-11-23 21:34:32.042  8386  8420 D ADPFLog : addThermalStatusListener(executor, listener), caller:11270,[unknown.none.nx2android]
-11-23 21:34:32.117  8386  8386 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
-11-23 21:34:32.117  8386  8386 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
+11-23 22:37:28.706 31731 31731 D ADPFLog : getCurrentThermalStatus(), caller:11270,[unknown.none.nx2android]
+11-23 22:37:28.706 31731 31763 D ADPFLog : addThermalStatusListener(listener), caller:11270,[unknown.none.nx2android]
+11-23 22:37:28.706 31731 31763 D ADPFLog : addThermalStatusListener(executor, listener), caller:11270,[unknown.none.nx2android]
+11-23 22:38:48.789 31731 31731 I NGRRuntime: [window] focus changed focused=0
+11-23 22:38:48.791 31731 31731 I NGRRuntime: [window] focus callback returned
+11-23 22:38:49.924 31731 31731 I NGRRuntime: [activity] onPause begin
+11-23 22:38:49.936 31731 31731 I NGRRuntime: [activity] onPause returned
+11-23 22:38:49.936 31731 31731 I NGRRuntime: [window] destroyed window=0x7a6f70de00
+11-23 22:38:49.941 31731 31731 I NGRRuntime: [window] destroyed callback returned
+11-23 22:38:49.942 31731 31731 I NGRRuntime: [activity] onStop begin
+11-23 22:38:49.942 31731 31731 I NGRRuntime: [activity] onStop returned
+11-23 22:38:49.942 31731 31731 I NGRRuntime: [activity] onSaveInstanceState begin
+11-23 22:38:49.942 31731 31731 I NGRRuntime: [activity] onSaveInstanceState returned size=0 state=none
+11-23 22:38:49.960 31731 31731 I NGRRuntime: [activity] onDestroy begin
+11-23 22:38:54.414  1225  1225 I libc    : SetHeapTaggingLevel: tag level set to 0
+11-23 22:38:54.434  1225  1225 D nativeloader: Configuring clns-7 for other apk /data/app/~~zxkdsCdmhWXJUV8D3l71sw==/unknown.none.nx2android-zgV5YDdH0DyzlKtrqF_KmA==/base.apk. target_sdk_version=28, uses_libraries=, library_path=/data/app/~~zxkdsCdmhWXJUV8D3l71sw==/unknown.none.nx2android-zgV5YDdH0DyzlKtrqF_KmA==/lib/arm64:/data/app/~~zxkdsCdmhWXJUV8D3l71sw==/unknown.none.nx2android-zgV5YDdH0DyzlKtrqF_KmA==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/unknown.none.nx2android
+11-23 22:38:54.441  1225  1225 V Monotype: SetAppTypeFace- try to flip, app = unknown.none.nx2android
+11-23 22:38:54.467  1225  1225 I NGRRuntime: Application.onCreate process=unknown.none.nx2android
+11-23 22:38:54.472  1225  1245 D vulkan  : searching for layers in '/data/app/~~zxkdsCdmhWXJUV8D3l71sw==/unknown.none.nx2android-zgV5YDdH0DyzlKtrqF_KmA==/lib/arm64'
+11-23 22:38:54.472  1225  1245 D vulkan  : searching for layers in '/data/app/~~zxkdsCdmhWXJUV8D3l71sw==/unknown.none.nx2android-zgV5YDdH0DyzlKtrqF_KmA==/base.apk!/lib/arm64-v8a'
+11-23 22:38:54.477  1225  1225 V Monotype: SetAppTypeFace- try to flip, app = unknown.none.nx2android
+11-23 22:38:54.515  1225  1225 D ADPFLog : getCurrentThermalStatus(), caller:11270,[unknown.none.nx2android]
+11-23 22:38:54.516  1225  1282 D ADPFLog : addThermalStatusListener(listener), caller:11270,[unknown.none.nx2android]
+11-23 22:38:54.516  1225  1282 D ADPFLog : addThermalStatusListener(executor, listener), caller:11270,[unknown.none.nx2android]
+11-23 22:38:54.608  1225  1225 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-23 22:38:54.608  1225  1225 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
