@@ -261,6 +261,41 @@ public class MainActivity extends Activity {
                 .show();
     }
 
+    /** Start every launch with a fresh per-game diagnostic session.
+     * Truncate in place (never unlink) so any inherited native stdout/stderr
+     * descriptor still targets the same inode. */
+    private boolean resetRuntimeLogForLaunch(String gameId) {
+        if (gameId == null || !gameId.matches("[0-9a-f]{20}")) return false;
+        File dir = new File(getFilesDir(), "ngr-logs");
+        if (!dir.isDirectory() && !dir.mkdirs()) {
+            Log.e("NGRRuntime", "Cannot create runtime log directory " + dir);
+            return false;
+        }
+        File[] files = {
+                new File(dir, gameId + ".log"),
+                new File(dir, gameId + "-export.log"),
+                new File(dir, gameId + ".pid"),
+                new File(dir, "android-lifecycle.log")
+        };
+        try {
+            for (int i = 0; i < files.length; i++) {
+                File file = files[i];
+                if (i == 1 || i == 2) {
+                    if (file.exists() && !file.delete())
+                        Log.w("NGRRuntime", "Could not remove stale diagnostic file " + file);
+                    continue;
+                }
+                try (java.io.FileOutputStream out = new java.io.FileOutputStream(file, false)) {
+                    out.getFD().sync();
+                }
+            }
+            return true;
+        } catch (Exception error) {
+            Log.e("NGRRuntime", "Could not reset runtime log for " + gameId, error);
+            return false;
+        }
+    }
+
     /** Share the per-game native log plus this runtime process's Logcat (linker/Vulkan/driver messages). */
     private void exportRuntimeLog(String gameId) {
         if (gameId == null || !gameId.matches("[0-9a-f]{20}")) {
@@ -355,8 +390,13 @@ public class MainActivity extends Activity {
                     Toast.makeText(MainActivity.this, "Invalid game shortcut ID", Toast.LENGTH_LONG).show();
                     return;
                 }
-                appendRuntimeLog(gameId, "Library launch requested; appPid=" + android.os.Process.myPid()
-                        + " package=" + getPackageName() + " sdk=" + Build.VERSION.SDK_INT);
+                if (!resetRuntimeLogForLaunch(gameId)) {
+                    Toast.makeText(MainActivity.this, "Could not start a fresh runtime log. Check app storage.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                appendRuntimeLog(gameId, "NEW LAUNCH SESSION; previous per-game log truncated; appPid="
+                        + android.os.Process.myPid() + " package=" + getPackageName()
+                        + " sdk=" + Build.VERSION.SDK_INT);
                 try {
                     File nativeHost = new File(getApplicationInfo().nativeLibraryDir, "libngrhost.so");
                     appendRuntimeLog(gameId, "Native host library: " + nativeHost.getAbsolutePath()
