@@ -635,6 +635,35 @@ static int preload_game_dependencies(const char *private_game_dir) {
     return total_loaded;
 }
 
+static void log_game_graphics_config(const char *game_dir) {
+    char path[1200];
+    int n = snprintf(path, sizeof(path), "%s/env.txt", game_dir ? game_dir : "");
+    if (n < 0 || (size_t)n >= sizeof(path)) {
+        LOGE("[config] env.txt path is too long");
+        return;
+    }
+    FILE *f = fopen(path, "r");
+    if (!f) {
+        LOGI("[config] no env.txt at %s (%s)", path, strerror(errno));
+        return;
+    }
+    char line[1024];
+    unsigned logged = 0;
+    while (fgets(line, sizeof(line), f)) {
+        size_t len = strlen(line);
+        while (len && (line[len - 1] == '\\n' || line[len - 1] == '\\r')) line[--len] = 0;
+        if (!len || line[0] == '#') continue;
+        if (!strncmp(line, "DM_VK_", 6) || !strncmp(line, "DM_NVN_", 7) ||
+            !strncmp(line, "DM_GPU_", 7) || !strncmp(line, "DM_SLOWFRAME=", 13) ||
+            !strncmp(line, "DM_OPMODE=", 10) || !strncmp(line, "DM_PRESENT_", 11)) {
+            LOGI("[config] env.txt: %s", line);
+            ++logged;
+        }
+    }
+    fclose(f);
+    if (!logged) LOGI("[config] env.txt contains no explicit Vulkan/NVN/GPU overrides");
+}
+
 __attribute__((visibility("default")))
 void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size_t saved_state_size) {
     LOGI("NativeActivity_onCreate entered; saved_state=%s", saved_state ? "present" : "none");
@@ -662,6 +691,7 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     LOGI("============================================================");
     LOGI("NGR launch session started: game_id=%s sdk=%d abi=arm64-v8a", id, activity->sdkVersion);
     LOGI("NativeActivity paths: internal=%s external=%s", internal ? internal : "(null)", external ? external : "(null)");
+    /* The active game profile is a data-pack env.txt; log only graphics-related switches. */
     char game_dir[1024], private_dir[1024], lib_path[1200], external_lib[1200];
     int a = snprintf(game_dir, sizeof(game_dir), "%s/games/%s", external, id);
     int b = snprintf(private_dir, sizeof(private_dir), "%s/games/%s", internal, id);
@@ -675,6 +705,8 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
         ANativeActivity_finish(activity);
         return;
     }
+    log_game_graphics_config(game_dir);
+
     char marker[1200];
     int m = snprintf(marker, sizeof(marker), "%s/nx2a-data.json", game_dir);
     if (m < 0 || (size_t)m >= sizeof(marker) || access(marker, R_OK) != 0 || access(external_lib, R_OK) != 0) {
