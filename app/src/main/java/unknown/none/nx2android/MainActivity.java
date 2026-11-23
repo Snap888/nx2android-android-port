@@ -239,14 +239,14 @@ public class MainActivity extends Activity {
         File exported = new File(dir, "gameplay-" + gameId + "-export.log");
         try {
             try (java.io.FileOutputStream out = new java.io.FileOutputStream(exported, false)) {
-                out.write(("NGR gameplay diagnostic log\\nGame ID: " + gameId
-                        + "\\n\\n===== Game stdout/stderr + runtime timeline =====\\n")
+                out.write(("NGR gameplay diagnostic log\nGame ID: " + gameId
+                        + "\n\n===== Game stdout/stderr + runtime timeline =====\n")
                         .getBytes(java.nio.charset.StandardCharsets.UTF_8));
                 try (java.io.FileInputStream in = new java.io.FileInputStream(source)) {
                     byte[] buffer = new byte[64 * 1024]; int n;
                     while ((n = in.read(buffer)) > 0) out.write(buffer, 0, n);
                 }
-                out.write("\\n\\n===== Crash / linker / NativeActivity Logcat =====\\n"
+                out.write("\n\n===== Crash / linker / NativeActivity Logcat =====\n"
                         .getBytes(java.nio.charset.StandardCharsets.UTF_8));
                 try {
                     Process p = new ProcessBuilder("logcat", "-d", "-v", "threadtime", "-t", "5000")
@@ -262,15 +262,15 @@ public class MainActivity extends Activity {
                                     || line.contains("FATAL") || line.contains("SIGSEGV")
                                     || line.contains("backtrace") || line.contains("hook_impl")
                                     || line.contains("libdmhost")) {
-                                out.write((line + "\\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                                out.write((line + "\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
                             }
                         }
                     }
                     int code = p.waitFor();
-                    if (code != 0) out.write(("\\n[logcat exited with code " + code + "]\\n")
+                    if (code != 0) out.write(("\n[logcat exited with code " + code + "]\n")
                             .getBytes(java.nio.charset.StandardCharsets.UTF_8));
                 } catch (Exception error) {
-                    out.write(("\\n[logcat capture failed: " + error + "]\\n")
+                    out.write(("\n[logcat capture failed: " + error + "]\n")
                             .getBytes(java.nio.charset.StandardCharsets.UTF_8));
                 }
             }
@@ -300,18 +300,23 @@ public class MainActivity extends Activity {
                     int removed = 0;
                     int failed = 0;
                     File runtime = new File(dir, gameId + ".log");
-                    if (runtime.exists()) {
-                        if (runtime.isFile()) {
-                            try (java.io.FileOutputStream out = new java.io.FileOutputStream(runtime, false)) {
-                                out.getFD().sync();
-                                cleared++;
-                            } catch (Exception e) { failed++; }
-                        } else failed++;
+                    File gameplay = new File(dir, "gameplay-" + gameId + ".log");
+                    for (File logFile : new File[]{runtime, gameplay}) {
+                        if (logFile.exists()) {
+                            if (logFile.isFile()) {
+                                try (java.io.FileOutputStream out = new java.io.FileOutputStream(logFile, false)) {
+                                    out.getFD().sync();
+                                    cleared++;
+                                } catch (Exception e) { failed++; }
+                            } else failed++;
+                        }
                     }
-                    File exported = new File(dir, gameId + "-export.log");
-                    if (exported.exists()) {
-                        if (exported.isFile() && exported.delete()) removed++;
-                        else failed++;
+                    for (File exported : new File[]{new File(dir, gameId + "-export.log"),
+                            new File(dir, "gameplay-" + gameId + "-export.log")}) {
+                        if (exported.exists()) {
+                            if (exported.isFile() && exported.delete()) removed++;
+                            else failed++;
+                        }
                     }
                     File pid = new File(dir, gameId + ".pid");
                     if (pid.exists() && pid.isFile() && pid.delete()) removed++;
@@ -344,7 +349,7 @@ public class MainActivity extends Activity {
         try {
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
-                if (i == 1 || i == 2) {
+                if (i == 2 || i == 3) {
                     if (file.exists() && !file.delete())
                         android.util.Log.w("NGRRuntime", "Could not remove stale diagnostic file " + file);
                     continue;
@@ -389,7 +394,7 @@ public class MainActivity extends Activity {
                         while ((lifecycleN = lifecycleIn.read(lifecycleBuffer)) > 0) out.write(lifecycleBuffer, 0, lifecycleN);
                     }
                 } else {
-                    out.write("[No Application/Activity lifecycle marker was written]\\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                    out.write("[No Application/Activity lifecycle marker was written]\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));
                 }
                 File pidFile = new File(dir, gameId + ".pid");
                 String pid = "";
