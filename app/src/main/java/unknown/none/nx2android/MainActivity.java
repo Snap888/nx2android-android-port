@@ -298,10 +298,29 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** Clear the selected game's log in place. The native runtime reopens the path for
-     * every tagged line, while stdout/stderr may still hold the inode open; truncating
-     * preserves both writers. Unlinking the file made the logger recreate it immediately. */
-    /** Export only the dedicated gameplay stream, including crash/linker context from Logcat. */
+    /** Copy a bounded tail of a per-game diagnostic file into the shareable gameplay export. */
+    private void appendGameDiagnosticFile(java.io.FileOutputStream out, File source,
+                                          String label, long maxBytes) throws java.io.IOException {
+        out.write(("\n\n===== " + label + " =====\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        if (source == null || !source.isFile()) {
+            out.write("[not present]\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            return;
+        }
+        long length = source.length();
+        long start = Math.max(0L, length - maxBytes);
+        if (start > 0) {
+            out.write(("[truncated: showing last " + (length - start) + " of " + length + " bytes]\n")
+                    .getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        }
+        try (java.io.RandomAccessFile in = new java.io.RandomAccessFile(source, "r")) {
+            in.seek(start);
+            byte[] buffer = new byte[32 * 1024];
+            int n;
+            while ((n = in.read(buffer)) > 0) out.write(buffer, 0, n);
+        }
+    }
+
+    /** Export the gameplay stream, the host's redirected stderr, game config/manifest and Logcat. */
     private void exportGameplayLog(String gameId) {
         if (gameId == null || !gameId.matches("[0-9a-f]{20}")) {
             Toast.makeText(this, "Invalid game ID", Toast.LENGTH_LONG).show();
@@ -323,6 +342,19 @@ public class MainActivity extends Activity {
                     byte[] buffer = new byte[64 * 1024]; int n;
                     while ((n = in.read(buffer)) > 0) out.write(buffer, 0, n);
                 }
+                // front_android.c redirects the game's native stderr to <game_dir>/log.txt.
+                // It is separate from NGR's dispatcher stream; omitting it hid NVN,
+                // Vulkan, ROMFS and host-thread initialization from previous exports.
+                File externalFiles = getExternalFilesDir(null);
+                File gameDir = externalFiles == null ? null : new File(new File(externalFiles, "games"), gameId);
+                appendGameDiagnosticFile(out, gameDir == null ? null : new File(gameDir, "log.txt"),
+                        "Native host stderr / game log", 4L * 1024 * 1024);
+                appendGameDiagnosticFile(out, gameDir == null ? null : new File(gameDir, "env.txt"),
+                        "Per-game environment overrides", 64L * 1024);
+                appendGameDiagnosticFile(out, gameDir == null ? null : new File(gameDir, "nx2a-data.json"),
+                        "Game data manifest", 128L * 1024);
+                appendGameDiagnosticFile(out, gameDir == null ? null : new File(gameDir, "profile.json"),
+                        "Compiled game profile metadata", 1024L * 1024);
                 out.write("\n\n===== Crash / linker / NativeActivity Logcat =====\n"
                         .getBytes(java.nio.charset.StandardCharsets.UTF_8));
                 try {
