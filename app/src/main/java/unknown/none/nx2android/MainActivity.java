@@ -224,6 +224,67 @@ public class MainActivity extends Activity {
     /** Clear the selected game's log in place. The native runtime reopens the path for
      * every tagged line, while stdout/stderr may still hold the inode open; truncating
      * preserves both writers. Unlinking the file made the logger recreate it immediately. */
+    /** Export only the dedicated gameplay stream, including crash/linker context from Logcat. */
+    private void exportGameplayLog(String gameId) {
+        if (gameId == null || !gameId.matches("[0-9a-f]{20}")) {
+            Toast.makeText(this, "Invalid game ID", Toast.LENGTH_LONG).show();
+            return;
+        }
+        File dir = new File(getFilesDir(), "ngr-logs");
+        File source = new File(dir, "gameplay-" + gameId + ".log");
+        if (!source.isFile() || source.length() == 0) {
+            Toast.makeText(this, "No gameplay log yet. Launch the game first.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        File exported = new File(dir, "gameplay-" + gameId + "-export.log");
+        try {
+            try (java.io.FileOutputStream out = new java.io.FileOutputStream(exported, false)) {
+                out.write(("NGR gameplay diagnostic log\\nGame ID: " + gameId
+                        + "\\n\\n===== Game stdout/stderr + runtime timeline =====\\n")
+                        .getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                try (java.io.FileInputStream in = new java.io.FileInputStream(source)) {
+                    byte[] buffer = new byte[64 * 1024]; int n;
+                    while ((n = in.read(buffer)) > 0) out.write(buffer, 0, n);
+                }
+                out.write("\\n\\n===== Crash / linker / NativeActivity Logcat =====\\n"
+                        .getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                try {
+                    Process p = new ProcessBuilder("logcat", "-d", "-v", "threadtime", "-t", "5000")
+                            .redirectErrorStream(true).start();
+                    try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                            new java.io.InputStreamReader(p.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            if (line.contains("NGRRuntime") || line.contains("AndroidRuntime")
+                                    || line.contains("linker") || line.contains("libc")
+                                    || line.contains("DEBUG") || line.contains("crash_dump")
+                                    || line.contains(getPackageName()) || line.contains("NativeActivity")
+                                    || line.contains("FATAL") || line.contains("SIGSEGV")
+                                    || line.contains("backtrace") || line.contains("hook_impl")
+                                    || line.contains("libdmhost")) {
+                                out.write((line + "\\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                            }
+                        }
+                    }
+                    int code = p.waitFor();
+                    if (code != 0) out.write(("\\n[logcat exited with code " + code + "]\\n")
+                            .getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                } catch (Exception error) {
+                    out.write(("\\n[logcat capture failed: " + error + "]\\n")
+                            .getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                }
+            }
+            Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".files", exported);
+            Intent share = new Intent(Intent.ACTION_SEND).setType("text/plain")
+                    .putExtra(Intent.EXTRA_STREAM, uri)
+                    .putExtra(Intent.EXTRA_SUBJECT, "NGR gameplay log " + gameId)
+                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(Intent.createChooser(share, "Export gameplay log"));
+        } catch (Exception error) {
+            Toast.makeText(this, "Could not export gameplay log: " + error.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
     private void clearRuntimeLog(String gameId) {
         if (gameId == null || !gameId.matches("[0-9a-f]{20}")) {
             Toast.makeText(this, "Invalid game ID", Toast.LENGTH_LONG).show();
@@ -275,6 +336,7 @@ public class MainActivity extends Activity {
         }
         File[] files = {
                 new File(dir, gameId + ".log"),
+                new File(dir, "gameplay-" + gameId + ".log"),
                 new File(dir, gameId + "-export.log"),
                 new File(dir, gameId + ".pid"),
                 new File(dir, "android-lifecycle.log")
@@ -383,6 +445,7 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface public void installApk(String path) { runOnUiThread(() -> doInstall(path)); }
         @JavascriptInterface public void exportRuntimeLog(String gameId) { runOnUiThread(() -> MainActivity.this.exportRuntimeLog(gameId)); }
+        @JavascriptInterface public void exportGameplayLog(String gameId) { runOnUiThread(() -> MainActivity.this.exportGameplayLog(gameId)); }
         @JavascriptInterface public void clearRuntimeLog(String gameId) { runOnUiThread(() -> MainActivity.this.clearRuntimeLog(gameId)); }
 
         /** Launch a game through NGR's own NativeActivity; no per-game Android package is installed. */
