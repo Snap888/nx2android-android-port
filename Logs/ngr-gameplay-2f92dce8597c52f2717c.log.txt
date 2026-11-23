@@ -2,100 +2,103 @@ NGR gameplay diagnostic log
 Game ID: 2f92dce8597c52f2717c
 
 ===== Game stdout/stderr + runtime timeline =====
-2026-11-24 00:12:45.515 [I] pid=29866 ============================================================
-2026-11-24 00:12:45.515 [I] pid=29866 NGR launch session started: game_id=2f92dce8597c52f2717c sdk=35 abi=arm64-v8a
-2026-11-24 00:12:45.515 [I] pid=29866 NativeActivity paths: internal=/data/user/0/unknown.none.nx2android/files external=/storage/emulated/0/Android/data/unknown.none.nx2android/files
-2026-11-24 00:12:45.515 [I] pid=29866 [config] env.txt: DM_VK_DRIVER=libvulkan_freedreno.so
-2026-11-24 00:12:45.515 [I] pid=29866 [NGR profile] no profile.json; using the compiled game profile (legacy payload)
-2026-11-24 00:12:45.521 [I] pid=29866 removed 7 stale staged native libraries before refreshing runtime
-2026-11-24 00:12:45.800 [I] pid=29866 staged 7 native libraries in private app storage
-2026-11-24 00:12:45.800 [I] pid=29866 [config] NGR default DM_SLOWFRAME=1 (per-dropped-frame breakdown)
-2026-11-24 00:12:45.800 [I] pid=29866 [config] NGR default DM_NVN_LOG=1 (NVN device/pool/queue/window lifecycle)
-2026-11-24 00:12:45.800 [I] pid=29866 [stage 1/8] payload validated; game_dir=/storage/emulated/0/Android/data/unknown.none.nx2android/files/games/2f92dce8597c52f2717c private_dir=/data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c
-2026-11-24 00:12:45.800 [I] pid=29866 [stage 2/8] native libraries staged; runtime=/data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c/libdmhost.so
-2026-11-24 00:12:45.800 [I] pid=29866 [stage 3/8] preloading companion dependencies
-2026-11-24 00:12:45.800 [I] pid=29866 [stage 3/8] leaving libhook_impl.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-24 00:12:45.800 [I] pid=29866 [stage 3/8] leaving libvulkan_freedreno.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-24 00:12:45.800 [I] pid=29866 [stage 3/8] dlopen companion begin: libadrenotools.so flags=GLOBAL
-2026-11-24 00:12:45.801 [I] pid=29866 preloaded game dependency libadrenotools.so handle=0xddbe2fdc008c6997
-2026-11-24 00:12:45.801 [I] pid=29866 [stage 3/8] leaving libmain_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-24 00:12:45.801 [I] pid=29866 [stage 3/8] leaving libfile_redirect_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-24 00:12:45.801 [I] pid=29866 [stage 3/8] leaving libgsl_alloc_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-24 00:12:45.801 [I] pid=29866 [stage 3/8] leaving libhook_impl.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-24 00:12:45.801 [I] pid=29866 [stage 3/8] leaving libvulkan_freedreno.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-24 00:12:45.801 [I] pid=29866 [stage 3/8] leaving libmain_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-24 00:12:45.801 [I] pid=29866 [stage 3/8] leaving libfile_redirect_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-24 00:12:45.801 [I] pid=29866 [stage 3/8] leaving libgsl_alloc_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-24 00:12:45.801 [I] pid=29866 preloaded 1 companion game libraries
-2026-11-24 00:12:45.801 [I] pid=29866 [stage 3/8] dependency preload finished: 1 companion libraries
-2026-11-24 00:12:45.801 [I] pid=29866 [stage 4/8] inspecting main runtime ELF before dlopen: /data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c/libdmhost.so
-2026-11-24 00:12:45.801 [I] pid=29866 [ELF preflight] type=3 machine=183 entry=0x0 phnum=11
-2026-11-24 00:12:45.801 [I] pid=29866 [ELF preflight] DT_INIT=0x0 INIT_ARRAY=0x1c1bb8 INIT_ARRAYSZ=48
-2026-11-24 00:12:45.802 [I] pid=29866 [ELF preflight] DT_RELA=0x10050 RELASZ=133104 RELAENT=24 DT_RELR=0x0 RELRSZ=0 RELRENT=8
-2026-11-24 00:12:45.802 [I] pid=29866 [ELF preflight] DT_RELA mapped file offset=0x10050 entries=5546
-2026-11-24 00:12:45.802 [I] pid=29866 [ELF preflight] init_array[0] relocation: type=1027 symbol=0 addend=0x1b9614
-2026-11-24 00:12:45.802 [I] pid=29866 [ELF preflight] init_array[0] slot=0x1c1bb8 raw=0x0 relocation=present
-2026-11-24 00:12:45.802 [I] pid=29866 [ELF preflight] init_array[1] relocation: type=1027 symbol=0 addend=0x1b9c6c
-2026-11-24 00:12:45.802 [I] pid=29866 [ELF preflight] init_array[1] slot=0x1c1bc0 raw=0x0 relocation=present
-2026-11-24 00:12:45.802 [I] pid=29866 [ELF preflight] init_array[2] relocation: type=1027 symbol=0 addend=0xab134
-2026-11-24 00:12:45.802 [I] pid=29866 [ELF preflight] init_array[2] slot=0x1c1bc8 raw=0x0 relocation=present
-2026-11-24 00:12:45.803 [I] pid=29866 [ELF preflight] init_array[3] relocation: type=1027 symbol=0 addend=0xc2c70
-2026-11-24 00:12:45.803 [I] pid=29866 [ELF preflight] init_array[3] slot=0x1c1bd0 raw=0x0 relocation=present
-2026-11-24 00:12:45.803 [I] pid=29866 [ELF preflight] init_array[4] relocation: type=1027 symbol=0 addend=0xef9f0
-2026-11-24 00:12:45.803 [I] pid=29866 [ELF preflight] init_array[4] slot=0x1c1bd8 raw=0x0 relocation=present
-2026-11-24 00:12:45.803 [I] pid=29866 [ELF preflight] init_array[5] relocation: type=1027 symbol=0 addend=0x1436e0
-2026-11-24 00:12:45.803 [I] pid=29866 [ELF preflight] init_array[5] slot=0x1c1be0 raw=0x0 relocation=present
-2026-11-24 00:12:45.803 [I] pid=29866 [stage 4/8] main runtime dlopen begin: /data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c/libdmhost.so (RTLD_LAZY|RTLD_LOCAL)
+2026-11-24 00:47:39.252 [I] pid=27824 ============================================================
+2026-11-24 00:47:39.252 [I] pid=27824 NGR launch session started: game_id=2f92dce8597c52f2717c sdk=35 abi=arm64-v8a
+2026-11-24 00:47:39.252 [I] pid=27824 NativeActivity paths: internal=/data/user/0/unknown.none.nx2android/files external=/storage/emulated/0/Android/data/unknown.none.nx2android/files
+2026-11-24 00:47:39.253 [I] pid=27824 [config] env.txt: DM_VK_DRIVER=libvulkan_freedreno.so
+2026-11-24 00:47:39.254 [I] pid=27824 [NGR profile] no profile.json; using the compiled game profile (legacy payload)
+2026-11-24 00:47:39.259 [I] pid=27824 removed 7 stale staged native libraries before refreshing runtime
+2026-11-24 00:47:39.361 [I] pid=27824 staged 7 native libraries in private app storage
+2026-11-24 00:47:39.361 [I] pid=27824 [config] NGR default DM_SLOWFRAME=1 (per-dropped-frame breakdown)
+2026-11-24 00:47:39.361 [I] pid=27824 [config] NGR default DM_NVN_LOG=1 (NVN device/pool/queue/window lifecycle)
+2026-11-24 00:47:39.361 [I] pid=27824 [config] NGR default DM_WATCH_STALL=15 (capture state after 1s; rate limited)
+2026-11-24 00:47:39.361 [I] pid=27824 [config] NGR default DM_WATCH_DUMP_ALL=1 (include ordinary gameplay stalls)
+2026-11-24 00:47:39.361 [I] pid=27824 [config] NGR default DM_WATCH_NO_EXIT=1 (diagnostics never terminate the game)
+2026-11-24 00:47:39.361 [I] pid=27824 [stage 1/8] payload validated; game_dir=/storage/emulated/0/Android/data/unknown.none.nx2android/files/games/2f92dce8597c52f2717c private_dir=/data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c
+2026-11-24 00:47:39.361 [I] pid=27824 [stage 2/8] native libraries staged; runtime=/data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c/libdmhost.so
+2026-11-24 00:47:39.361 [I] pid=27824 [stage 3/8] preloading companion dependencies
+2026-11-24 00:47:39.361 [I] pid=27824 [stage 3/8] leaving libhook_impl.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-24 00:47:39.361 [I] pid=27824 [stage 3/8] leaving libvulkan_freedreno.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-24 00:47:39.361 [I] pid=27824 [stage 3/8] dlopen companion begin: libadrenotools.so flags=GLOBAL
+2026-11-24 00:47:39.362 [I] pid=27824 preloaded game dependency libadrenotools.so handle=0xaebd84e270d56359
+2026-11-24 00:47:39.362 [I] pid=27824 [stage 3/8] leaving libmain_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-24 00:47:39.362 [I] pid=27824 [stage 3/8] leaving libfile_redirect_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-24 00:47:39.362 [I] pid=27824 [stage 3/8] leaving libgsl_alloc_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-24 00:47:39.363 [I] pid=27824 [stage 3/8] leaving libhook_impl.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-24 00:47:39.363 [I] pid=27824 [stage 3/8] leaving libvulkan_freedreno.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-24 00:47:39.363 [I] pid=27824 [stage 3/8] leaving libmain_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-24 00:47:39.363 [I] pid=27824 [stage 3/8] leaving libfile_redirect_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-24 00:47:39.363 [I] pid=27824 [stage 3/8] leaving libgsl_alloc_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-24 00:47:39.363 [I] pid=27824 preloaded 1 companion game libraries
+2026-11-24 00:47:39.363 [I] pid=27824 [stage 3/8] dependency preload finished: 1 companion libraries
+2026-11-24 00:47:39.363 [I] pid=27824 [stage 4/8] inspecting main runtime ELF before dlopen: /data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c/libdmhost.so
+2026-11-24 00:47:39.363 [I] pid=27824 [ELF preflight] type=3 machine=183 entry=0x0 phnum=11
+2026-11-24 00:47:39.363 [I] pid=27824 [ELF preflight] DT_INIT=0x0 INIT_ARRAY=0x1c1bb8 INIT_ARRAYSZ=48
+2026-11-24 00:47:39.363 [I] pid=27824 [ELF preflight] DT_RELA=0x10050 RELASZ=133104 RELAENT=24 DT_RELR=0x0 RELRSZ=0 RELRENT=8
+2026-11-24 00:47:39.363 [I] pid=27824 [ELF preflight] DT_RELA mapped file offset=0x10050 entries=5546
+2026-11-24 00:47:39.363 [I] pid=27824 [ELF preflight] init_array[0] relocation: type=1027 symbol=0 addend=0x1b9614
+2026-11-24 00:47:39.363 [I] pid=27824 [ELF preflight] init_array[0] slot=0x1c1bb8 raw=0x0 relocation=present
+2026-11-24 00:47:39.363 [I] pid=27824 [ELF preflight] init_array[1] relocation: type=1027 symbol=0 addend=0x1b9c6c
+2026-11-24 00:47:39.363 [I] pid=27824 [ELF preflight] init_array[1] slot=0x1c1bc0 raw=0x0 relocation=present
+2026-11-24 00:47:39.364 [I] pid=27824 [ELF preflight] init_array[2] relocation: type=1027 symbol=0 addend=0xab134
+2026-11-24 00:47:39.364 [I] pid=27824 [ELF preflight] init_array[2] slot=0x1c1bc8 raw=0x0 relocation=present
+2026-11-24 00:47:39.364 [I] pid=27824 [ELF preflight] init_array[3] relocation: type=1027 symbol=0 addend=0xc2c70
+2026-11-24 00:47:39.364 [I] pid=27824 [ELF preflight] init_array[3] slot=0x1c1bd0 raw=0x0 relocation=present
+2026-11-24 00:47:39.364 [I] pid=27824 [ELF preflight] init_array[4] relocation: type=1027 symbol=0 addend=0xef9f0
+2026-11-24 00:47:39.364 [I] pid=27824 [ELF preflight] init_array[4] slot=0x1c1bd8 raw=0x0 relocation=present
+2026-11-24 00:47:39.365 [I] pid=27824 [ELF preflight] init_array[5] relocation: type=1027 symbol=0 addend=0x1436e0
+2026-11-24 00:47:39.365 [I] pid=27824 [ELF preflight] init_array[5] slot=0x1c1be0 raw=0x0 relocation=present
+2026-11-24 00:47:39.365 [I] pid=27824 [stage 4/8] main runtime dlopen begin: /data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c/libdmhost.so (RTLD_LAZY|RTLD_LOCAL)
 [dm] [nvn] null device: 537 names, 417 implemented (403 semantic + 14 empty, 289 of them on the large host stack), the other 120 go to the red-reporting stub
-2026-11-24 00:12:45.805 [I] pid=29866 [stage 4/8] main runtime dlopen succeeded: handle=0x46c56e731655b35d
-2026-11-24 00:12:45.805 [I] pid=29866 [stage 5/8] resolved ANativeActivity_onCreate at 0x78af146684
-2026-11-24 00:12:45.805 [I] pid=29866 [stage 6/8] dispatching NativeActivity_onCreate to libdmhost.so; activity=0x7a8f6d83d0 env=0xb400007aef6da410 clazz=0x684a assetManager=0x7a3f6fb3f0 internal=/data/user/0/unknown.none.nx2android/files external=/storage/emulated/0/Android/data/unknown.none.nx2android/files sdk=35
-2026-11-24 00:12:45.806 [I] pid=29866 [stage 7/8] game NativeActivity_onCreate returned; game runtime initialization continues asynchronously
-2026-11-24 00:12:45.806 [I] pid=29866 [activity] lifecycle and Surface tracing installed
-2026-11-24 00:12:45.806 [I] pid=29866 [stage 8/8] dispatcher handoff complete; window lifecycle events will be captured from this point
-2026-11-24 00:12:45.808 [I] pid=29866 [activity] onStart begin
-2026-11-24 00:12:45.808 [I] pid=29866 [activity] onStart returned
-2026-11-24 00:12:45.809 [I] pid=29866 [activity] onResume begin
-2026-11-24 00:12:45.809 [I] pid=29866 [activity] onResume returned
-2026-11-24 00:12:45.827 [I] pid=29866 [window] created window=0x7a6f736530 size=2448x1080
-2026-11-24 00:12:45.828 [I] pid=29866 [window] created callback returned
-2026-11-24 00:12:45.828 [I] pid=29866 [window] resized window=0x7a6f736530 size=2448x1080
-2026-11-24 00:12:45.828 [I] pid=29866 [window] resized callback returned
-2026-11-24 00:12:45.828 [I] pid=29866 [activity] onContentRectChanged begin rect=0,0-2344,1080
-2026-11-24 00:12:45.828 [I] pid=29866 [activity] onContentRectChanged returned
-2026-11-24 00:12:45.829 [I] pid=29866 [window] redraw requested window=0x7a6f736530
-2026-11-24 00:12:45.829 [I] pid=29866 [window] redraw callback returned
-2026-11-24 00:12:45.853 [I] pid=29866 [window] redraw requested window=0x7a6f736530
-2026-11-24 00:12:45.853 [I] pid=29866 [window] redraw callback returned
-2026-11-24 00:12:45.873 [I] pid=29866 [window] focus changed focused=1
-2026-11-24 00:12:45.873 [I] pid=29866 [window] focus callback returned
-2026-11-24 00:13:29.880 [I] pid=29866 [window] focus changed focused=0
-2026-11-24 00:13:29.881 [I] pid=29866 [window] focus callback returned
-2026-11-24 00:13:30.953 [I] pid=29866 [activity] onPause begin
-2026-11-24 00:13:30.962 [I] pid=29866 [activity] onPause returned
-2026-11-24 00:13:30.962 [I] pid=29866 [window] destroyed window=0x7a6f736530
-2026-11-24 00:13:31.044 [I] pid=29866 [window] destroyed callback returned
-2026-11-24 00:13:31.044 [I] pid=29866 [activity] onStop begin
-2026-11-24 00:13:31.044 [I] pid=29866 [activity] onStop returned
-2026-11-24 00:13:31.045 [I] pid=29866 [activity] onSaveInstanceState begin
-2026-11-24 00:13:31.045 [I] pid=29866 [activity] onSaveInstanceState returned size=0 state=none
-2026-11-24 00:13:31.054 [I] pid=29866 [activity] onDestroy begin
+2026-11-24 00:47:39.366 [I] pid=27824 [stage 4/8] main runtime dlopen succeeded: handle=0x27b18a7bcbef6711
+2026-11-24 00:47:39.366 [I] pid=27824 [stage 5/8] resolved ANativeActivity_onCreate at 0x7a0a719684
+2026-11-24 00:47:39.367 [I] pid=27824 [stage 6/8] dispatching NativeActivity_onCreate to libdmhost.so; activity=0x7a8f6d5d50 env=0xb400007aef6da410 clazz=0x6936 assetManager=0x7a3f71b790 internal=/data/user/0/unknown.none.nx2android/files external=/storage/emulated/0/Android/data/unknown.none.nx2android/files sdk=35
+2026-11-24 00:47:39.368 [I] pid=27824 [stage 7/8] game NativeActivity_onCreate returned; game runtime initialization continues asynchronously
+2026-11-24 00:47:39.368 [I] pid=27824 [activity] lifecycle and Surface tracing installed
+2026-11-24 00:47:39.368 [I] pid=27824 [stage 8/8] dispatcher handoff complete; window lifecycle events will be captured from this point
+2026-11-24 00:47:39.370 [I] pid=27824 [activity] onStart begin
+2026-11-24 00:47:39.370 [I] pid=27824 [activity] onStart returned
+2026-11-24 00:47:39.371 [I] pid=27824 [activity] onResume begin
+2026-11-24 00:47:39.371 [I] pid=27824 [activity] onResume returned
+2026-11-24 00:47:39.397 [I] pid=27824 [window] created window=0x7a6f73ed70 size=2448x1080
+2026-11-24 00:47:39.397 [I] pid=27824 [window] created callback returned
+2026-11-24 00:47:39.397 [I] pid=27824 [window] resized window=0x7a6f73ed70 size=2448x1080
+2026-11-24 00:47:39.397 [I] pid=27824 [window] resized callback returned
+2026-11-24 00:47:39.398 [I] pid=27824 [activity] onContentRectChanged begin rect=0,0-2344,1080
+2026-11-24 00:47:39.398 [I] pid=27824 [activity] onContentRectChanged returned
+2026-11-24 00:47:39.399 [I] pid=27824 [window] redraw requested window=0x7a6f73ed70
+2026-11-24 00:47:39.399 [I] pid=27824 [window] redraw callback returned
+2026-11-24 00:47:39.421 [I] pid=27824 [window] redraw requested window=0x7a6f73ed70
+2026-11-24 00:47:39.421 [I] pid=27824 [window] redraw callback returned
+2026-11-24 00:47:39.486 [I] pid=27824 [window] focus changed focused=1
+2026-11-24 00:47:39.486 [I] pid=27824 [window] focus callback returned
+2026-11-24 00:48:11.850 [I] pid=27824 [window] focus changed focused=0
+2026-11-24 00:48:11.851 [I] pid=27824 [window] focus callback returned
+2026-11-24 00:48:13.118 [I] pid=27824 [activity] onPause begin
+2026-11-24 00:48:13.122 [I] pid=27824 [activity] onPause returned
+2026-11-24 00:48:13.122 [I] pid=27824 [window] destroyed window=0x7a6f73ed70
+2026-11-24 00:48:13.193 [I] pid=27824 [window] destroyed callback returned
+2026-11-24 00:48:13.194 [I] pid=27824 [activity] onStop begin
+2026-11-24 00:48:13.195 [I] pid=27824 [activity] onStop returned
+2026-11-24 00:48:13.195 [I] pid=27824 [activity] onSaveInstanceState begin
+2026-11-24 00:48:13.195 [I] pid=27824 [activity] onSaveInstanceState returned size=0 state=none
+2026-11-24 00:48:13.219 [I] pid=27824 [activity] onDestroy begin
 
 
 ===== Native host stderr / game log =====
 [dm] NX2A host on Android: files /storage/emulated/0/Android/data/unknown.none.nx2android/files/games/2f92dce8597c52f2717c, RomFS /storage/emulated/0/Android/data/unknown.none.nx2android/files/games/2f92dce8597c52f2717c/RomFS, saves /data/user/0/unknown.none.nx2android/files
-[dm] guest thread slots in TLS_SLOT_APP blocks: K18=1 KTLS=2 KTLR=3 KGATE=4
 [dm] [haptics] device vibrator: yes, on/off only
+[dm] guest thread slots in TLS_SLOT_APP blocks: K18=1 KTLS=2 KTLR=3 KGATE=4
 [dm] front end: shaking the device shakes the controller (threshold 1.50 G)
 [dm] front end: the device's gyroscope (icm4x6xx Gyroscope Non-wakeup) moves the controller's six-axis sensor
 [dm] front end: display rotation 90 degrees: motion axes follow it
 [dm] hid: the device's motion moves player 1's six-axis sensor (gyroscope + accelerometer)
 [dm] main: gates 195 patch_off 0x46f0000 keys 1/2/3/4
-[dm] main: base 0x789f04d000 size 0x47f0000
+[dm] main: base 0x79f9516000 size 0x47f0000
 [dm] subsdk0: gates 17 patch_off 0x6a0000 keys 1/2/3/4
-[dm] subsdk0: base 0x7942d20000 size 0x718000
+[dm] subsdk0: base 0x7a027d2000 size 0x718000
 [dm] sdk: gates 116 patch_off 0xd50000 keys 1/2/3/4
-[dm] sdk: base 0x78a8487000 size 0xdd4000
+[dm] sdk: base 0x7a00c2a000 size 0xdd4000
 [dm] main: undefined weak __rel_dyn_end bound to 0
 [dm] main: undefined weak __rel_dyn_start bound to 0
 [dm] main: undefined weak __rel_plt_end bound to 0
@@ -165,7 +168,7 @@ Game ID: 2f92dce8597c52f2717c
 [dm] [nvn] window origin upper left (as D3D / Metal)
 [dm] [nvn] depth mode near=0 (as D3D / Metal)
 [dm] [nvn] QueueInitialize 0x7100e6d010
-[dm] vi::GetDisplayVsyncEvent: 0x78a3663078 signalled by the host at 60 Hz
+[dm] vi::GetDisplayVsyncEvent: 0x79fdb2c078 signalled by the host at 60 Hz
 [dm] [nvn] DeviceGetInteger 0xf -> 32
 [dm] [nvn] DeviceGetInteger 0x10 -> 32
 [dm] [nvn] DeviceGetInteger 0x24 -> 1048576
@@ -185,12 +188,12 @@ Game ID: 2f92dce8597c52f2717c
 [dm] [nvn] MemoryPool 0x71c407c810 mem=0x71d4000000 size=0x2001000 flags=0x62
 [dm] [vk] memory pool 0x71d6400000 +0x1000000: zero-copy (zero-copy 48.3 MB, copied 0.0 MB)
 [dm] [nvn] MemoryPool 0x71c407ce10 mem=0x71d6400000 size=0x1000000 flags=0x22
-[dm] [nvn] BufferInitialize 0x78a3662ff0 pool=0x71c407ce10 off=0 size=0x60
+[dm] [nvn] BufferInitialize 0x79fdb2bff0 pool=0x71c407ce10 off=0 size=0x60
 [dm] [vk] memory pool 0x70c4000000 +0x21c4000: zero-copy (zero-copy 82.1 MB, copied 0.0 MB)
 [dm] [nvn] MemoryPool 0x71c407d410 mem=0x70c4000000 size=0x21c4000 flags=0xa2
-[dm] [nvn] Texture 0x78a3662a80 1920x1080x1 lv1 fmt=0x38 tgt=1 flags=0x9 size=0x870000
-[dm] [nvn] Texture 0x78a3662b00 1920x1080x1 lv1 fmt=0x38 tgt=1 flags=0x9 size=0x870000
-[dm] [nvn] Texture 0x78a3662b80 1920x1080x1 lv1 fmt=0x38 tgt=1 flags=0x9 size=0x870000
+[dm] [nvn] Texture 0x79fdb2ba80 1920x1080x1 lv1 fmt=0x38 tgt=1 flags=0x9 size=0x870000
+[dm] [nvn] Texture 0x79fdb2bb00 1920x1080x1 lv1 fmt=0x38 tgt=1 flags=0x9 size=0x870000
+[dm] [nvn] Texture 0x79fdb2bb80 1920x1080x1 lv1 fmt=0x38 tgt=1 flags=0x9 size=0x870000
 [dm] [nvn] window builder present interval 1 (from main+0x5ed6b0)
 [dm] [nvn] WindowBuilderSetNumActiveTextures 3 (the host rotates through the SetTextures count)
 [dm] [nvn] WindowInitialize swap chain 3 textures, interval 1, first 1920x1080 format 0x38
@@ -242,122 +245,122 @@ Game ID: 2f92dce8597c52f2717c
 [dm] [nvn] Texture 0x71c3fce908 4x4x1 lv1 fmt=0x38 tgt=1 flags=0 size=0x200
 [dm] [nvn] Texture 0x71c3fce9d8 4x4x1 lv1 fmt=0x38 tgt=1 flags=0 size=0x200
 [dm] [vk] memory pool 0x70c7800000 +0x1000000: zero-copy (zero-copy 114.1 MB, copied 0.0 MB)
-[dm] [nvn] MemoryPool 0x7100ef1010 mem=0x70c7800000 size=0x1000000 flags=0xa2
+[dm] [nvn] MemoryPool 0x7100eee010 mem=0x70c7800000 size=0x1000000 flags=0xa2
 [dm] [nvn] Texture 0x71c3fceaa8 16x16x1 lv1 fmt=0x25 tgt=1 flags=0x8 size=0x400
 [dm] [vk] memory pool 0x70c8c00000 +0x1000000: zero-copy (zero-copy 130.1 MB, copied 0.0 MB)
-[dm] [nvn] MemoryPool 0x7100ef2210 mem=0x70c8c00000 size=0x1000000 flags=0x14
-[dm] [nvn] BufferInitialize 0x71db2c1b28 pool=0x7100ef2210 off=0 size=0x400
-[dm] [nvn] Texture 0x71c3fcf058 4x4x1 lv3 fmt=0x38 tgt=1 flags=0 size=0x600
-[dm] [nvn] Texture 0x71c3fcf128 4x4x1 lv1 fmt=0x38 tgt=1 flags=0 size=0x200
-[dm] [nvn] Texture 0x71c3fcf1f8 4x4x1 lv1 fmt=0x25 tgt=1 flags=0 size=0x200
-[dm] [nvn] Texture 0x71c3fcf2c8 256x2x1 lv1 fmt=0x25 tgt=1 flags=0x8 size=0x2000
-[dm] [nvn] BufferInitialize 0x71db2c1b28 pool=0x7100ef2210 off=0x400 size=0x800
+[dm] [nvn] MemoryPool 0x7100eeec10 mem=0x70c8c00000 size=0x1000000 flags=0x14
+[dm] [nvn] BufferInitialize 0x71d8a48b28 pool=0x7100eeec10 off=0 size=0x400
+[dm] [nvn] Texture 0x71c3fcec48 4x4x1 lv3 fmt=0x38 tgt=1 flags=0 size=0x600
+[dm] [nvn] Texture 0x71c3fced18 4x4x1 lv1 fmt=0x38 tgt=1 flags=0 size=0x200
+[dm] [nvn] Texture 0x71c3fcede8 4x4x1 lv1 fmt=0x25 tgt=1 flags=0 size=0x200
+[dm] [nvn] Texture 0x71c3fceeb8 256x2x1 lv1 fmt=0x25 tgt=1 flags=0x8 size=0x2000
+[dm] [nvn] BufferInitialize 0x71d8a48b28 pool=0x7100eeec10 off=0x400 size=0x800
 [dm] [nvn] TextureBuilderSetSwizzle not identity (0 0 0 2): remapped with a Metal view when sampling
-[dm] [nvn] Texture 0x71c3fcf398 64x64x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x1000
-[dm] [nvn] Texture 0x71c3fcf468 1024x1x1 lv1 fmt=0x6 tgt=1 flags=0 size=0x4000
+[dm] [nvn] Texture 0x71c3fcef88 64x64x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x1000
+[dm] [nvn] Texture 0x71c3fcf058 1024x1x1 lv1 fmt=0x6 tgt=1 flags=0 size=0x4000
+[dm] [nvn] Texture 0x71c3fcf128 1x1x1 lv1 fmt=0x38 tgt=8 flags=0 size=0xc00
+[dm] [nvn] Texture 0x71c3fcf1f8 16x16x1 lv1 fmt=0x38 tgt=1 flags=0x8 size=0x400
+[dm] [nvn] BufferInitialize 0x71d8a48b28 pool=0x7100eeec10 off=0xc00 size=0x400
+[dm] [nvn] Texture 0x71c3fcf2c8 1x1x1 lv1 fmt=0x38 tgt=2 flags=0 size=0x200
+[dm] [nvn] Texture 0x71c3fcf398 1x1x1 lv1 fmt=0x38 tgt=4 flags=0 size=0x200
+[dm] [nvn] Texture 0x71c3fcf468 1x1x6 lv1 fmt=0x38 tgt=9 flags=0 size=0xc00
 [dm] [nvn] Texture 0x71c3fcf538 1x1x1 lv1 fmt=0x38 tgt=8 flags=0 size=0xc00
-[dm] [nvn] Texture 0x71c3fcf608 16x16x1 lv1 fmt=0x38 tgt=1 flags=0x8 size=0x400
-[dm] [nvn] BufferInitialize 0x71db2c1b28 pool=0x7100ef2210 off=0xc00 size=0x400
-[dm] [nvn] Texture 0x71c3fcf6d8 1x1x1 lv1 fmt=0x38 tgt=2 flags=0 size=0x200
-[dm] [nvn] Texture 0x71c3fcf7a8 1x1x1 lv1 fmt=0x38 tgt=4 flags=0 size=0x200
-[dm] [nvn] Texture 0x71c3fcf878 1x1x6 lv1 fmt=0x38 tgt=9 flags=0 size=0xc00
-[dm] [nvn] Texture 0x71c3fcf948 1x1x1 lv1 fmt=0x38 tgt=8 flags=0 size=0xc00
-[dm] [nvn] Texture 0x71c3fcfa18 4x4x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x200
-[dm] [nvn] Texture 0x71c3fcfae8 4x4x16 lv1 fmt=0x1 tgt=2 flags=0 size=0x2000
-[dm] [nvn] Texture 0x71c3fcfbb8 4x64x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x1000
-[dm] [nvn] Texture 0x71c3fcfc88 256x64x1 lv1 fmt=0x6 tgt=1 flags=0 size=0x8000
-[dm] [nvn] Texture 0x71c3fcfd58 32x32x1 lv1 fmt=0x38 tgt=1 flags=0x8 size=0x1000
-[dm] [nvn] BufferInitialize 0x71db2c1b28 pool=0x7100ef2210 off=0x1000 size=0x1000
+[dm] [nvn] Texture 0x71c3fcf608 4x4x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x200
+[dm] [nvn] Texture 0x71c3fcf6d8 4x4x16 lv1 fmt=0x1 tgt=2 flags=0 size=0x2000
+[dm] [nvn] Texture 0x71c3fcf7a8 4x64x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x1000
+[dm] [nvn] Texture 0x71c3fcf878 256x64x1 lv1 fmt=0x6 tgt=1 flags=0 size=0x8000
+[dm] [nvn] Texture 0x71c3fcfa18 32x32x1 lv1 fmt=0x38 tgt=1 flags=0x8 size=0x1000
+[dm] [nvn] BufferInitialize 0x71d8a48b28 pool=0x7100eeec10 off=0x1000 size=0x1000
 [dm] [mem] alias region mapped 0.50 GB (application pool 3.21 GB)
-[dm] [nvn] Texture 0x710202f648 128x128x1 lv8 fmt=0x1 tgt=1 flags=0 size=0x6400
+[dm] [nvn] Texture 0x7101f77648 128x128x1 lv8 fmt=0x1 tgt=1 flags=0 size=0x6400
 [dm] SetThreadActivity 0x1001 → pause (ok)
 [dm] SetThreadActivity 0x1003 → pause (ok)
 [dm] SetThreadActivity 0x1001 → resume (ok)
 [dm] SetThreadActivity 0x1003 → resume (ok)
-[dm] [nvn] Texture 0x710202f8b8 2048x2048x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x400000
-[dm] [nvn] Texture 0x710202fcc8 1024x1024x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x100000
-[dm] [nvn] Texture 0x7101bb6288 128x128x1 lv8 fmt=0x48 tgt=1 flags=0 size=0x5e00
-[dm] [nvn] Texture 0x7101bb6358 2048x2048x1 lv1 fmt=0x46 tgt=1 flags=0 size=0x200000
-[dm] [nvn] Texture 0x7101bb6428 512x512x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x40000
+[dm] [nvn] Texture 0x7101f778b8 2048x2048x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x400000
+[dm] [nvn] Texture 0x7101bb71b8 1024x1024x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x100000
+[dm] [nvn] Texture 0x7101bb7288 128x128x1 lv8 fmt=0x48 tgt=1 flags=0 size=0x5e00
+[dm] [nvn] Texture 0x7101bb7358 2048x2048x1 lv1 fmt=0x46 tgt=1 flags=0 size=0x200000
+[dm] [nvn] Texture 0x7101bb7428 512x512x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x40000
 [dm] hid supported controller styles 0x7
 [dm] [vk] memory pool 0x70ca000000 +0x1000000: zero-copy (zero-copy 146.1 MB, copied 0.0 MB)
-[dm] [nvn] MemoryPool 0x71c52ec810 mem=0x70ca000000 size=0x1000000 flags=0x22
-[dm] [nvn] Texture 0x7101bb8098 2048x4096x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x800000
-[dm] [nvn] Texture 0x7101bb8168 256x256x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x10000
-[dm] [nvn] Texture 0x7101bb8238 2048x2048x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x400000
-[dm] [nvn] Texture 0x7101bb8308 512x512x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x40000
-[dm] [nvn] Texture 0x7101bb83d8 1024x1024x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x100000
-[dm] [nvn] Texture 0x7101bb84a8 1024x1024x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x100000
-[dm] [nvn] Texture 0x7101bb8578 1024x1024x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x100000
-[dm] [nvn] Texture 0x7101bb8648 512x512x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x40000
-[dm] [nvn] Texture 0x7101bb8718 1024x4096x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x400000
-[dm] [nvn] Texture 0x7101bb87e8 512x512x1 lv10 fmt=0x48 tgt=1 flags=0 size=0x55e00
+[dm] [nvn] MemoryPool 0x71c52e6810 mem=0x70ca000000 size=0x1000000 flags=0x22
+[dm] [nvn] Texture 0x7101bb9098 2048x4096x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x800000
+[dm] [nvn] Texture 0x7101bb9168 256x256x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x10000
+[dm] [nvn] Texture 0x7101bb9238 2048x2048x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x400000
+[dm] [nvn] Texture 0x7101bb9308 512x512x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x40000
+[dm] [nvn] Texture 0x7101bb93d8 1024x1024x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x100000
+[dm] [nvn] Texture 0x7101bb94a8 1024x1024x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x100000
+[dm] [nvn] Texture 0x7101bb9578 1024x1024x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x100000
+[dm] [nvn] Texture 0x7101bb9648 512x512x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x40000
+[dm] [nvn] Texture 0x7101bb9718 1024x4096x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x400000
+[dm] [nvn] Texture 0x7101bb97e8 512x512x1 lv10 fmt=0x48 tgt=1 flags=0 size=0x55e00
 [dm] [vk] memory pool 0x70cb400000 +0x1000000: zero-copy (zero-copy 162.1 MB, copied 0.0 MB)
-[dm] [nvn] MemoryPool 0x71c52ece10 mem=0x70cb400000 size=0x1000000 flags=0x22
-[dm] [nvn] Texture 0x7101bb88b8 1024x1024x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x100000
-[dm] [nvn] Texture 0x7101bb8988 2048x2048x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x400000
-[dm] [nvn] Texture 0x7101bb8a58 2048x2048x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x400000
-[dm] [nvn] Texture 0x7101bb8b28 1024x1024x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x100000
-[dm] [nvn] Texture 0x7101bb8bf8 1024x1024x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x100000
-[dm] [nvn] Texture 0x7101bb8cc8 1024x1024x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x100000
-[dm] [nvn] Texture 0x7101bb8d98 1024x1024x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x100000
+[dm] [nvn] MemoryPool 0x71c52e6e10 mem=0x70cb400000 size=0x1000000 flags=0x22
+[dm] [nvn] Texture 0x7101bb98b8 1024x1024x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x100000
+[dm] [nvn] Texture 0x7101bb9988 2048x2048x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x400000
+[dm] [nvn] Texture 0x7101bb9a58 2048x2048x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x400000
+[dm] [nvn] Texture 0x7101bb9b28 1024x1024x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x100000
+[dm] [nvn] Texture 0x7101bb9bf8 1024x1024x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x100000
+[dm] [nvn] Texture 0x7101bb9cc8 1024x1024x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x100000
+[dm] [nvn] Texture 0x7101bb9d98 1024x1024x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x100000
 [dm] [vk] memory pool 0x70cc800000 +0x1000000: zero-copy (zero-copy 178.1 MB, copied 0.0 MB)
-[dm] [nvn] MemoryPool 0x71c52ed410 mem=0x70cc800000 size=0x1000000 flags=0x22
-[dm] [nvn] Texture 0x7101bb8e68 2048x2048x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x400000
-[dm] [nvn] Texture 0x7101bb8f38 512x512x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x40000
-[dm] [nvn] BufferInitialize 0x71c1021dd8 pool=0x71c407ce10 off=0xff0400 size=0x1c20
-[dm] [nvn] BufferInitialize 0x71c1021ef8 pool=0x71c407ce10 off=0xff2200 size=0x168
-[dm] [nvn] BufferInitialize 0x71c1021dd8 pool=0x71c407ce10 off=0xff2400 size=0x1c20
-[dm] [nvn] BufferInitialize 0x71c1021ef8 pool=0x71c407ce10 off=0xff4200 size=0x168
-[dm] [nvn] Texture 0x7107b72428 8x8x1 lv1 fmt=0x29 tgt=1 flags=0x8 size=0x200
-[dm] [nvn] Texture 0x7107b724f8 8x8x1 lv1 fmt=0x32 tgt=1 flags=0x8 size=0x200
-[dm] [nvn] BufferInitialize 0x71c1021a78 pool=0x71c52ec810 off=0xf95e00 size=0x22740
+[dm] [nvn] MemoryPool 0x71c52e7410 mem=0x70cc800000 size=0x1000000 flags=0x22
+[dm] [nvn] Texture 0x7101bb9e68 2048x2048x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x400000
+[dm] [nvn] Texture 0x7101bb9f38 512x512x1 lv1 fmt=0x1 tgt=1 flags=0 size=0x40000
+[dm] [nvn] BufferInitialize 0x7101de0058 pool=0x71c407ce10 off=0xff0400 size=0x1c20
+[dm] [nvn] BufferInitialize 0x7101de05f8 pool=0x71c407ce10 off=0xff2200 size=0x168
+[dm] [nvn] BufferInitialize 0x7101de0058 pool=0x71c407ce10 off=0xff2400 size=0x1c20
+[dm] [nvn] BufferInitialize 0x7101de05f8 pool=0x71c407ce10 off=0xff4200 size=0x168
+[dm] [nvn] Texture 0x7107b73428 8x8x1 lv1 fmt=0x29 tgt=1 flags=0x8 size=0x200
+[dm] [nvn] Texture 0x7107b734f8 8x8x1 lv1 fmt=0x32 tgt=1 flags=0x8 size=0x200
+[dm] [nvn] BufferInitialize 0x7101de0838 pool=0x71c52e6810 off=0xf95e00 size=0x22740
 [dm] [nvn] BufferInitialize 0x71c0427ec0 pool=0x71c407c810 off=0x1900 size=0x1000
 [dm] [nvn] ProgramSetShaders 0x71c0427e40 n=1 data0=0x71d4001900
 [dm] [nvn] BufferInitialize 0x71c0427fc0 pool=0x71c407c810 off=0x2900 size=0x200
 [dm] [nvn] ProgramSetShaders 0x71c0427f40 n=1 data0=0x71d4002900
-[dm] [nvn] BufferInitialize 0x71db2c1b28 pool=0x71c407ce10 off=0xff4400 size=0x200
+[dm] [nvn] BufferInitialize 0x71d8a48b28 pool=0x71c407ce10 off=0xff4400 size=0x200
 [dm] [vk] prewarm: 6 recorded pipelines on 3 threads
 [dm] [vk] target 256x2 format 37 (format-listed): 20480 bytes
 [dm] [vk] passes: render pass objects with imageless framebuffers
 [dm] [vk] prewarm: 6 of 6 pipelines
-[dm] [vk] compute pipelines made ahead: 22 of 22 compute shaders in 6 ms
-[dm] [nvn] BufferInitialize 0x71db2c1b28 pool=0x71c407ce10 off=0xff4400 size=0x200
-[dm] [nvn] BufferInitialize 0x71db2c1b28 pool=0x71c407ce10 off=0xff4400 size=0x200
-[dm] [nvn] BufferInitialize 0x71db2c1b28 pool=0x71c407ce10 off=0xff4400 size=0x200
-[dm] [nvn] BufferInitialize 0x71db2c1b28 pool=0x71c407ce10 off=0xff4400 size=0x200
-[dm] [nvn] BufferInitialize 0x71db2c1b28 pool=0x71c407ce10 off=0xff4400 size=0x200
-[dm] [nvn] Texture 0x7107b725c8 1280x720x1 lv1 fmt=0x38 tgt=1 flags=0x8 size=0x3c0000
-[dm] [nvn] Texture 0x7107b72698 1280x720x1 lv1 fmt=0x35 tgt=1 flags=0x8 size=0x3c0000
-[dm] [nvn] Texture 0x7107b72768 1280x720x1 lv1 fmt=0x38 tgt=1 flags=0x8 size=0x3c0000
-[dm] [nvn] BufferInitialize 0x7102cc7e80 pool=0x71c52ec810 off=0xfb8600 size=0x40000
-[dm] [nvn] BufferInitialize 0x71079606c0 pool=0x71c407c810 off=0x2b00 size=0x300
-[dm] [nvn] ProgramSetShaders 0x7107960640 n=1 data0=0x71d4002b00
-[dm] [nvn] BufferInitialize 0x71079607c0 pool=0x71c407c810 off=0x2e00 size=0x200
-[dm] [nvn] ProgramSetShaders 0x7107960740 n=1 data0=0x71d4002e00
-[dm] [nvn] Texture 0x7107b736d8 1280x720x1 lv1 fmt=0x38 tgt=1 flags=0x8 size=0x3c0000
+[dm] [nvn] BufferInitialize 0x71d8a48b28 pool=0x71c407ce10 off=0xff4400 size=0x200
+[dm] [nvn] BufferInitialize 0x71d8a48b28 pool=0x71c407ce10 off=0xff4400 size=0x200
+[dm] [nvn] BufferInitialize 0x71d8a48b28 pool=0x71c407ce10 off=0xff4400 size=0x200
+[dm] [vk] compute pipelines made ahead: 22 of 22 compute shaders in 24 ms
+[dm] [nvn] BufferInitialize 0x71d8a48b28 pool=0x71c407ce10 off=0xff4400 size=0x200
+[dm] [nvn] BufferInitialize 0x71d8a48b28 pool=0x71c407ce10 off=0xff4400 size=0x200
+[dm] [nvn] Texture 0x7107b735c8 1280x720x1 lv1 fmt=0x38 tgt=1 flags=0x8 size=0x3c0000
+[dm] [nvn] Texture 0x7107b73698 1280x720x1 lv1 fmt=0x35 tgt=1 flags=0x8 size=0x3c0000
+[dm] [nvn] Texture 0x7107b73768 1280x720x1 lv1 fmt=0x38 tgt=1 flags=0x8 size=0x3c0000
+[dm] [nvn] BufferInitialize 0x7102cc9e80 pool=0x71c52e6810 off=0xfb8600 size=0x40000
+[dm] [nvn] BufferInitialize 0x710795d6c0 pool=0x71c407c810 off=0x2b00 size=0x300
+[dm] [nvn] ProgramSetShaders 0x710795d640 n=1 data0=0x71d4002b00
+[dm] [nvn] BufferInitialize 0x710795d7c0 pool=0x71c407c810 off=0x2e00 size=0x200
+[dm] [nvn] ProgramSetShaders 0x710795d740 n=1 data0=0x71d4002e00
+[dm] [nvn] Texture 0x7107b746d8 1280x720x1 lv1 fmt=0x38 tgt=1 flags=0x8 size=0x3c0000
 [dm] [vk] memory pool 0x70cdc00000 +0x1000000: zero-copy (zero-copy 194.1 MB, copied 0.0 MB)
-[dm] [nvn] MemoryPool 0x71c52eda10 mem=0x70cdc00000 size=0x1000000 flags=0xa2
-[dm] [nvn] Texture 0x7107b737a8 1280x720x1 lv1 fmt=0x3d tgt=1 flags=0x8 size=0x3c0000
-[dm] [nvn] Texture 0x7107b73878 1280x720x1 lv1 fmt=0x3d tgt=1 flags=0x8 size=0x3c0000
-[dm] [nvn] BufferInitialize 0x7101e75a78 pool=0x71c407ce10 off=0xff6200 size=0x120
-[dm] [nvn] BufferInitialize 0x7101e75718 pool=0x71c407ce10 off=0xff6400 size=0x78
-[dm] [nvn] BufferInitialize 0x7101e75838 pool=0x71c407ce10 off=0xff6600 size=0x3f0
-[dm] [nvn] BufferInitialize 0x7101e754d8 pool=0x71c407ce10 off=0xff6a00 size=0x1e0
-[dm] [nvn] BufferInitialize 0x7101e75178 pool=0x71c407ce10 off=0xff6c00 size=0x78
-[dm] [nvn] BufferInitialize 0x71c1021838 pool=0x71c407ce10 off=0xff6e00 size=0x24
-[dm] [nvn] BufferInitialize 0x71079608c0 pool=0x71c407c810 off=0x3000 size=0x300
-[dm] [nvn] ProgramSetShaders 0x7107960840 n=1 data0=0x71d4003000
-[dm] [nvn] BufferInitialize 0x7107960ac0 pool=0x71c407c810 off=0x3300 size=0x200
-[dm] [nvn] ProgramSetShaders 0x7107960a40 n=1 data0=0x71d4003300
-[dm] [nvn] BufferInitialize 0x71079609c0 pool=0x71c407c810 off=0x3500 size=0x600
-[dm] [nvn] ProgramSetShaders 0x7107960940 n=1 data0=0x71d4003500
-[dm] [nvn] BufferInitialize 0x7107960bc0 pool=0x71c407c810 off=0x3b00 size=0x200
-[dm] [nvn] ProgramSetShaders 0x7107960b40 n=1 data0=0x71d4003b00
-[dm] [nvn] BufferInitialize 0x7107960cc0 pool=0x71c407c810 off=0x3d00 size=0xa00
-[dm] [nvn] ProgramSetShaders 0x7107960c40 n=1 data0=0x71d4003d00
-[dm] [nvn] BufferInitialize 0x7107960dc0 pool=0x71c407c810 off=0x4700 size=0x600
-[dm] [nvn] ProgramSetShaders 0x7107960d40 n=1 data0=0x71d4004700
+[dm] [nvn] MemoryPool 0x71c52e7a10 mem=0x70cdc00000 size=0x1000000 flags=0xa2
+[dm] [nvn] Texture 0x7107b747a8 1280x720x1 lv1 fmt=0x3d tgt=1 flags=0x8 size=0x3c0000
+[dm] [nvn] Texture 0x7107b74878 1280x720x1 lv1 fmt=0x3d tgt=1 flags=0x8 size=0x3c0000
+[dm] [nvn] BufferInitialize 0x71076aba78 pool=0x71c407ce10 off=0xff6200 size=0x120
+[dm] [nvn] BufferInitialize 0x71076abb98 pool=0x71c407ce10 off=0xff6400 size=0x78
+[dm] [nvn] BufferInitialize 0x71076ab058 pool=0x71c407ce10 off=0xff6600 size=0x3f0
+[dm] [nvn] BufferInitialize 0x71076ab958 pool=0x71c407ce10 off=0xff6a00 size=0x1e0
+[dm] [nvn] BufferInitialize 0x7101e755f8 pool=0x71c407ce10 off=0xff6c00 size=0x78
+[dm] [nvn] BufferInitialize 0x7101e753b8 pool=0x71c407ce10 off=0xff6e00 size=0x24
+[dm] [nvn] BufferInitialize 0x710795d8c0 pool=0x71c407c810 off=0x3000 size=0x300
+[dm] [nvn] ProgramSetShaders 0x710795d840 n=1 data0=0x71d4003000
+[dm] [nvn] BufferInitialize 0x710795dac0 pool=0x71c407c810 off=0x3300 size=0x200
+[dm] [nvn] ProgramSetShaders 0x710795da40 n=1 data0=0x71d4003300
+[dm] [nvn] BufferInitialize 0x710795d9c0 pool=0x71c407c810 off=0x3500 size=0x600
+[dm] [nvn] ProgramSetShaders 0x710795d940 n=1 data0=0x71d4003500
+[dm] [nvn] BufferInitialize 0x710795dbc0 pool=0x71c407c810 off=0x3b00 size=0x200
+[dm] [nvn] ProgramSetShaders 0x710795db40 n=1 data0=0x71d4003b00
+[dm] [nvn] BufferInitialize 0x710795dcc0 pool=0x71c407c810 off=0x3d00 size=0xa00
+[dm] [nvn] ProgramSetShaders 0x710795dc40 n=1 data0=0x71d4003d00
+[dm] [nvn] BufferInitialize 0x710795ddc0 pool=0x71c407c810 off=0x4700 size=0x600
+[dm] [nvn] ProgramSetShaders 0x710795dd40 n=1 data0=0x71d4004700
 [dm] [vk] target 1920x1080 format 43 (format-listed): 8392704 bytes
 [dm] [vk] target 1280x720 format 43 (format-listed): 3710976 bytes
 [dm] [vk] target 1280x720 format 43 (format-listed): 3710976 bytes
@@ -370,242 +373,198 @@ Game ID: 2f92dce8597c52f2717c
 [dm] [vk] target 512x512 format 9 (format-listed): 262144 bytes
 [dm] audio #0 OpenAudioOut (default) channels 2 real output (call site main+0x147e728)
 [dm] audio #0 Start (call site main+0x147e83c)
-[dm] [perf] ADPF session refused (target 16.67 ms, thread 30213; GPU time reported, load increases not signalled)
+[dm] [perf] ADPF session refused (target 16.67 ms, thread 28388; GPU time reported, load increases not signalled)
 [dm] [nvn] init 0: 179 functions 3935 calls | DeviceBuilderSetDefaults=1 DeviceBuilderSetFlags=1 DeviceInitialize=1 DeviceGetProcAddress=1050 DeviceGetInteger=17 DeviceSetWindowOriginMode=1 DeviceSetDepthMode=1 DeviceGetSeparateTextureHandle=13 DeviceGetSeparateSamplerHandle=13 QueueBuilderSetDevice=1 QueueBuilderSetDefaults=1 QueueBuilderSetCommandMemorySize=1 QueueBuilderSetComputeMemorySize=1 QueueBuilderSetControlMemorySize=1 QueueBuilderSetCommandFlushThreshold=1 QueueInitialize=1 QueueSetDebugLabel=1 QueueSubmitCommands=7 QueueFlush=6 QueuePresentTexture=1 WindowBuilderSetDevice=1 WindowBuilderSetDefaults=1 WindowBuilderSetNativeWindow=1 WindowBuilderSetTextures=1 WindowBuilderSetPresentInterval=1 WindowBuilderSetNumActiveTextures=1 WindowInitialize=1 WindowSetDebugLabel=1 WindowAcquireTexture=1 WindowSetCrop=1 ProgramInitialize=21 ProgramSetDebugLabel=21 ProgramSetShaders=21 MemoryPoolBuilderSetDevice=11 MemoryPoolBuilderSetDefaults=11 MemoryPoolBuilderSetStorage=11 MemoryPoolBuilderSetFlags=11 MemoryPoolInitialize=11 MemoryPoolSetDebugLabel=1 MemoryPoolMap=1 MemoryPoolGetBufferAddress=3 MemoryPoolGetFlags=200 TexturePoolInitialize=1 TexturePoolSetDebugLabel=1 TexturePoolRegisterTexture=58 SamplerPoolInitialize=1 SamplerPoolSetDebugLabel=1 SamplerPoolRegisterSampler=8 BufferBuilderSetDevice=32 BufferBuilderSetDefaults=54 BufferBuilderSetStorage=49 BufferInitialize=49 BufferSetDebugLabel=35 BufferFinalize=12 BufferMap=50 BufferGetAddress=62 BufferFlushMappedRange=5 BufferGetMemoryPool=13 BufferGetMemoryOffset=13 BufferGetSize=12 TextureBuilderSetDevice=48 TextureBuilderSetDefaults=59 TextureBuilderSetFlags=16 TextureBuilderSetTarget=58 TextureBuilderSetSize2D=14 TextureBuilderSetSize3D=44 TextureBuilderSetLevels=55 TextureBuilderSetFormat=58 TextureBuilderSetSamples=9 TextureBuilderSetSwizzle=46 TextureBuilderSetDepthStencilMode=3 TextureBuilderGetStorageSize=56 TextureBuilderGetStorageAlignment=56 TextureBuilderSetStorage=58 TextureBuilderGetZCullStorageSize=1 TextureViewSetDefaults=181 TextureViewSetLevels=112 TextureViewSetLayers=19 TextureViewSetTarget=4 TextureInitialize=58 TextureGetZCullStorageSize=3 TextureSetDebugLabel=1 TextureGetFlags=10 TextureGetTarget=32 TextureGetWidth=1 TextureGetHeight=1 TextureGetLevels=26 TextureGetFormat=16 TextureGetSamples=26 TextureWriteTexels=82 TextureGetMemoryPool=1 TextureGetMemoryOffset=1 TextureGetStorageSize=1 SamplerBuilderSetDevice=1 SamplerBuilderSetDefaults=9 SamplerBuilderSetMinMagFilter=8 SamplerBuilderSetWrapMode=8 SamplerBuilderSetLodBias=8 SamplerBuilderSetCompare=8 SamplerBuilderSetMaxAnisotropy=8 SamplerInitialize=8 BlendStateSetDefaults=64 BlendStateSetBlendTarget=64 BlendStateSetBlendFunc=64 BlendStateSetBlendEquation=64 ColorStateSetDefaults=8 ColorStateSetBlendEnable=64 ColorStateSetLogicOp=8 ChannelMaskStateSetDefaults=8 ChannelMaskStateSetChannelMask=64 MultisampleStateSetDefaults=8 MultisampleStateSetMultisampleEnable=6 MultisampleStateSetSamples=6 MultisampleStateSetAlphaToCoverageEnable=8 MultisampleStateGetMultisampleEnable=2 MultisampleStateGetSamples=2 PolygonStateSetDefaults=2 PolygonStateSetCullFace=2 PolygonStateSetFrontFace=2 PolygonStateSetPolygonMode=2 PolygonStateSetPolygonOffsetEnables=2 DepthStencilStateSetDefaults=4 DepthStencilStateSetDepthTestEnable=4 DepthStencilStateSetDepthWriteEnable=4 DepthStencilStateSetDepthFunc=4 DepthStencilStateSetStencilTestEnable=4 DepthStencilStateSetStencilFunc=4 DepthStencilStateSetStencilOp=4 VertexAttribStateSetDefaults=11 VertexAttribStateSetFormat=11 VertexAttribStateSetStreamIndex=11 VertexStreamStateSetDefaults=4 VertexStreamStateSetStride=4 CommandBufferInitialize=1 CommandBufferSetMemoryCallback=1 CommandBufferSetMemoryCallbackData=1 CommandBufferAddCommandMemory=1 CommandBufferBeginRecording=7 CommandBufferEndRecording=7 CommandBufferBindBlendState=32 CommandBufferBindChannelMaskState=4 CommandBufferBindColorState=4 CommandBufferBindMultisampleState=4 CommandBufferBindPolygonState=3 CommandBufferBindDepthStencilState=5 CommandBufferBindVertexAttribState=12 CommandBufferBindVertexStreamState=12 CommandBufferBindProgram=13 CommandBufferBindVertexBuffers=12 CommandBufferBindUniformBuffers=17 CommandBufferDrawArrays=9 CommandBufferDrawElementsBaseVertex=3 CommandBufferClearColor=10 CommandBufferClearDepthStencil=8 CommandBufferSetViewport=2 CommandBufferSetScissor=3 CommandBufferBindSeparateTexture=10 CommandBufferBindSeparateSampler=8 CommandBufferSetStencilValueMask=5 CommandBufferSetStencilMask=5 CommandBufferSetStencilRef=5 CommandBufferSetPointSize=1 CommandBufferSetPolygonOffsetClamp=2 CommandBufferCopyBufferToTexture=4 CommandBufferCopyTextureToBuffer=6 CommandBufferCopyTextureToTexture=1 CommandBufferUpdateUniformBuffer=16 CommandBufferReportCounter=1 CommandBufferSetRenderTargets=16 CommandBufferBarrier=4 CommandBufferSetTexturePool=1 CommandBufferSetSamplerPool=1 CommandBufferSaveZCullData=6 CommandBufferRestoreZCullData=5 CommandBufferIsRecording=6 SyncInitialize=5 QueueFenceSync=7 SyncWait=6 QueueWaitSync=1
-[dm] [nvn] BufferInitialize 0x7102cc8890 pool=0x71c407da10 off=0x80000 size=0x80000
+[dm] [nvn] BufferInitialize 0x7102cca890 pool=0x71c407da10 off=0x80000 size=0x80000
 [dm] [vk] swapchain 1080x2448 format 37, 5 images, pre-rotated (transform 0x2; the window 2448x1080)
 [dm] [vk] swapchain 1080x2448 format 43, 5 images, pre-rotated (transform 0x2; the window 2448x1080)
 [dm] [overlay] window 2448x1080: the phone layout
 [dm] [overlay] gamepad theme, phone layout: 40 sprites, atlas 2048x1024
+[dm] [nvn] BufferInitialize 0x7101de0058 pool=0x71c407ce10 off=0xff7000 size=0x1c20
+[dm] [nvn] BufferInitialize 0x7101de05f8 pool=0x71c407ce10 off=0xff8e00 size=0x168
 [dm] [overlay] window 2448x1080, density 345 dpi: face buttons 11.6 mm, controls x1.00
-[dm] [nvn] BufferInitialize 0x71c1021dd8 pool=0x71c407ce10 off=0xff7000 size=0x1c20
-[dm] [nvn] BufferInitialize 0x71c1021ef8 pool=0x71c407ce10 off=0xff8e00 size=0x168
-[dm] [nvn] BufferInitialize 0x7102cc8900 pool=0x71c52ece10 off=0xd00000 size=0x40000
+[dm] [nvn] BufferInitialize 0x7102cca900 pool=0x71c52e6e10 off=0xd00000 size=0x40000
 [dm] [vk] target 1920x1080 format 43 (format-listed): 8392704 bytes
 [dm] [perf] window frame rate 60 fps
 [dm] [nvn] frame 1: 68 functions 467 calls | DeviceGetCurrentTimestampInNanoseconds=1 DeviceGetSeparateTextureHandle=13 DeviceGetSeparateSamplerHandle=13 QueueSubmitCommands=1 QueuePresentTexture=1 WindowAcquireTexture=1 MemoryPoolGetFlags=10 BufferBuilderSetDevice=4 BufferBuilderSetDefaults=6 BufferBuilderSetStorage=4 BufferInitialize=4 BufferSetDebugLabel=2 BufferFinalize=2 BufferMap=4 BufferGetAddress=8 BufferGetMemoryPool=3 BufferGetMemoryOffset=3 BufferGetSize=2 TextureViewSetDefaults=108 TextureViewSetLevels=22 TextureGetFlags=4 TextureGetTarget=22 TextureGetWidth=1 TextureGetHeight=1 TextureGetLevels=22 TextureGetFormat=4 TextureGetSamples=22 MultisampleStateSetMultisampleEnable=6 MultisampleStateSetSamples=6 MultisampleStateGetMultisampleEnable=3 MultisampleStateGetSamples=3 CommandBufferAddCommandMemory=1 CommandBufferAddControlMemory=1 CommandBufferBeginRecording=1 CommandBufferEndRecording=1 CommandBufferBindBlendState=24 CommandBufferBindChannelMaskState=3 CommandBufferBindColorState=3 CommandBufferBindMultisampleState=3 CommandBufferBindPolygonState=2 CommandBufferBindDepthStencilState=4 CommandBufferBindVertexAttribState=6 CommandBufferBindVertexStreamState=6 CommandBufferBindProgram=10 CommandBufferBindVertexBuffers=6 CommandBufferBindUniformBuffers=11 CommandBufferDrawArrays=3 CommandBufferDrawElementsBaseVertex=3 CommandBufferClearColor=4 CommandBufferClearDepthStencil=2 CommandBufferSetViewport=1 CommandBufferSetScissor=2 CommandBufferBindSeparateTexture=8 CommandBufferBindSeparateSampler=5 CommandBufferSetStencilValueMask=4 CommandBufferSetStencilMask=4 CommandBufferSetStencilRef=4 CommandBufferSetPolygonOffsetClamp=1 CommandBufferCopyTextureToTexture=1 CommandBufferUpdateUniformBuffer=9 CommandBufferReportCounter=2 CommandBufferSetRenderTargets=13 CommandBufferBarrier=2 CommandBufferSaveZCullData=4 CommandBufferRestoreZCullData=4 QueueFenceSync=1 SyncWait=1 QueueWaitSync=1
-[dm] [nvn] BufferInitialize 0x7102cc8970 pool=0x71c407da10 off=0x100000 size=0x80000
-[dm] [nvn] BufferInitialize 0x71c1021dd8 pool=0x71c407ce10 off=0xff9000 size=0x1c20
-[dm] [nvn] BufferInitialize 0x71c1021ef8 pool=0x71c407ce10 off=0xffae00 size=0x168
-[dm] [nvn] BufferInitialize 0x7102cc89e0 pool=0x71c52ece10 off=0xd40000 size=0x40000
+[dm] [nvn] BufferInitialize 0x7102cca970 pool=0x71c407da10 off=0x100000 size=0x80000
+[dm] [nvn] BufferInitialize 0x7101de0058 pool=0x71c407ce10 off=0xff9000 size=0x1c20
+[dm] [nvn] BufferInitialize 0x7101de05f8 pool=0x71c407ce10 off=0xffae00 size=0x168
+[dm] [nvn] BufferInitialize 0x7102cca9e0 pool=0x71c52e6e10 off=0xd40000 size=0x40000
 [dm] [vk] target 1920x1080 format 43 (format-listed): 8392704 bytes
 [dm] [nvn] frame 2: 70 functions 472 calls | DeviceGetCurrentTimestampInNanoseconds=1 DeviceGetTimestampInNanoseconds=2 DeviceGetSeparateTextureHandle=13 DeviceGetSeparateSamplerHandle=13 QueueSubmitCommands=1 QueueFlush=1 QueuePresentTexture=1 WindowAcquireTexture=1 MemoryPoolGetFlags=10 BufferBuilderSetDevice=4 BufferBuilderSetDefaults=6 BufferBuilderSetStorage=4 BufferInitialize=4 BufferSetDebugLabel=2 BufferFinalize=2 BufferMap=5 BufferGetAddress=8 BufferGetMemoryPool=3 BufferGetMemoryOffset=3 BufferGetSize=2 TextureViewSetDefaults=108 TextureViewSetLevels=22 TextureGetFlags=4 TextureGetTarget=22 TextureGetWidth=1 TextureGetHeight=1 TextureGetLevels=22 TextureGetFormat=4 TextureGetSamples=22 MultisampleStateSetMultisampleEnable=6 MultisampleStateSetSamples=6 MultisampleStateGetMultisampleEnable=3 MultisampleStateGetSamples=3 CommandBufferAddCommandMemory=1 CommandBufferAddControlMemory=1 CommandBufferBeginRecording=1 CommandBufferEndRecording=1 CommandBufferBindBlendState=24 CommandBufferBindChannelMaskState=3 CommandBufferBindColorState=3 CommandBufferBindMultisampleState=3 CommandBufferBindPolygonState=2 CommandBufferBindDepthStencilState=4 CommandBufferBindVertexAttribState=6 CommandBufferBindVertexStreamState=6 CommandBufferBindProgram=10 CommandBufferBindVertexBuffers=6 CommandBufferBindUniformBuffers=11 CommandBufferDrawArrays=3 CommandBufferDrawElementsBaseVertex=3 CommandBufferClearColor=4 CommandBufferClearDepthStencil=2 CommandBufferSetViewport=1 CommandBufferSetScissor=2 CommandBufferBindSeparateTexture=8 CommandBufferBindSeparateSampler=5 CommandBufferSetStencilValueMask=4 CommandBufferSetStencilMask=4 CommandBufferSetStencilRef=4 CommandBufferSetPolygonOffsetClamp=1 CommandBufferCopyTextureToTexture=1 CommandBufferUpdateUniformBuffer=9 CommandBufferReportCounter=2 CommandBufferSetRenderTargets=13 CommandBufferBarrier=2 CommandBufferSaveZCullData=4 CommandBufferRestoreZCullData=4 QueueFenceSync=1 SyncWait=2 QueueWaitSync=1
 [dm] [vk] [perf] display timing: refresh 16.667 ms
-[dm] [nvn] BufferInitialize 0x71c1021dd8 pool=0x71c407ce10 off=0xff0400 size=0x1c20
-[dm] [nvn] BufferInitialize 0x71c1021ef8 pool=0x71c407ce10 off=0xff2200 size=0x168
-[dm] [nvn] BufferInitialize 0x71084609b0 pool=0x71c52ece10 off=0xd80000 size=0x40000
+[dm] [nvn] BufferInitialize 0x7101de0058 pool=0x71c407ce10 off=0xff0400 size=0x1c20
+[dm] [nvn] BufferInitialize 0x7101de05f8 pool=0x71c407ce10 off=0xff2200 size=0x168
+[dm] [nvn] BufferInitialize 0x710845c9b0 pool=0x71c52e6e10 off=0xd80000 size=0x40000
 [dm] [nvn] frame 3: 70 functions 463 calls | DeviceGetCurrentTimestampInNanoseconds=1 DeviceGetTimestampInNanoseconds=2 DeviceGetSeparateTextureHandle=13 DeviceGetSeparateSamplerHandle=13 QueueSubmitCommands=1 QueueFlush=1 QueuePresentTexture=1 WindowAcquireTexture=1 MemoryPoolGetFlags=8 BufferBuilderSetDevice=3 BufferBuilderSetDefaults=5 BufferBuilderSetStorage=3 BufferInitialize=3 BufferSetDebugLabel=1 BufferFinalize=2 BufferMap=4 BufferGetAddress=7 BufferGetMemoryPool=3 BufferGetMemoryOffset=3 BufferGetSize=2 TextureViewSetDefaults=108 TextureViewSetLevels=22 TextureGetFlags=4 TextureGetTarget=22 TextureGetWidth=1 TextureGetHeight=1 TextureGetLevels=22 TextureGetFormat=4 TextureGetSamples=22 MultisampleStateSetMultisampleEnable=6 MultisampleStateSetSamples=6 MultisampleStateGetMultisampleEnable=3 MultisampleStateGetSamples=3 CommandBufferAddCommandMemory=1 CommandBufferAddControlMemory=1 CommandBufferBeginRecording=1 CommandBufferEndRecording=1 CommandBufferBindBlendState=24 CommandBufferBindChannelMaskState=3 CommandBufferBindColorState=3 CommandBufferBindMultisampleState=3 CommandBufferBindPolygonState=2 CommandBufferBindDepthStencilState=4 CommandBufferBindVertexAttribState=6 CommandBufferBindVertexStreamState=6 CommandBufferBindProgram=10 CommandBufferBindVertexBuffers=6 CommandBufferBindUniformBuffers=11 CommandBufferDrawArrays=3 CommandBufferDrawElementsBaseVertex=3 CommandBufferClearColor=4 CommandBufferClearDepthStencil=2 CommandBufferSetViewport=1 CommandBufferSetScissor=2 CommandBufferBindSeparateTexture=8 CommandBufferBindSeparateSampler=5 CommandBufferSetStencilValueMask=4 CommandBufferSetStencilMask=4 CommandBufferSetStencilRef=4 CommandBufferSetPolygonOffsetClamp=1 CommandBufferCopyTextureToTexture=1 CommandBufferUpdateUniformBuffer=9 CommandBufferReportCounter=2 CommandBufferSetRenderTargets=13 CommandBufferBarrier=2 CommandBufferSaveZCullData=4 CommandBufferRestoreZCullData=4 QueueFenceSync=1 SyncWait=2 QueueWaitSync=1
-[dm] [nvn] BufferInitialize 0x71c1021dd8 pool=0x71c407ce10 off=0xff2400 size=0x1c20
-[dm] [nvn] BufferInitialize 0x71c1021ef8 pool=0x71c407ce10 off=0xff4200 size=0x168
-[dm] [nvn] BufferInitialize 0x71c1021dd8 pool=0x71c407ce10 off=0xff7000 size=0x1c20
-[dm] [nvn] BufferInitialize 0x71c1021ef8 pool=0x71c407ce10 off=0xff8e00 size=0x168
-[dm] [nvn] BufferInitialize 0x71c1021dd8 pool=0x71c407ce10 off=0xff9000 size=0x1c20
-[dm] [nvn] BufferInitialize 0x71c1021ef8 pool=0x71c407ce10 off=0xffae00 size=0x168
-[dm] [nvn] BufferInitialize 0x71c1021dd8 pool=0x71c407ce10 off=0xff0400 size=0x1c20
-[dm] [nvn] BufferInitialize 0x71c1021ef8 pool=0x71c407ce10 off=0xff2200 size=0x168
-[dm] [nvn] BufferInitialize 0x71c1021dd8 pool=0x71c407ce10 off=0xff2400 size=0x1c20
-[dm] [nvn] BufferInitialize 0x71c1021ef8 pool=0x71c407ce10 off=0xff4200 size=0x168
+[dm] [nvn] BufferInitialize 0x7101de0058 pool=0x71c407ce10 off=0xff2400 size=0x1c20
+[dm] [nvn] BufferInitialize 0x7101de05f8 pool=0x71c407ce10 off=0xff4200 size=0x168
+[dm] [nvn] BufferInitialize 0x7101de0058 pool=0x71c407ce10 off=0xff7000 size=0x1c20
+[dm] [nvn] BufferInitialize 0x7101de05f8 pool=0x71c407ce10 off=0xff8e00 size=0x168
+[dm] [nvn] BufferInitialize 0x7101de0058 pool=0x71c407ce10 off=0xff9000 size=0x1c20
+[dm] [nvn] BufferInitialize 0x7101de05f8 pool=0x71c407ce10 off=0xffae00 size=0x168
+[dm] [nvn] BufferInitialize 0x7101de0058 pool=0x71c407ce10 off=0xff0400 size=0x1c20
+[dm] [nvn] BufferInitialize 0x7101de05f8 pool=0x71c407ce10 off=0xff2200 size=0x168
+[dm] [nvn] BufferInitialize 0x7101de0058 pool=0x71c407ce10 off=0xff2400 size=0x1c20
+[dm] [nvn] BufferInitialize 0x7101de05f8 pool=0x71c407ce10 off=0xff4200 size=0x168
 [slowframe]	#	up to frame 0	judged=0	slow=0	criterion=on-screen interval
-[dm] [nvn] BufferInitialize 0x71c1021dd8 pool=0x71c407ce10 off=0xff7000 size=0x1c20
-[dm] [nvn] BufferInitialize 0x71c1021ef8 pool=0x71c407ce10 off=0xff8e00 size=0x168
-[dm] [longframe] frame 1 (14.22 s) whole frame 99.5 ms, submit+present 4.0 ms, GPU 0.7 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
-[dm] [nvn] BufferInitialize 0x71c1021dd8 pool=0x71c407ce10 off=0xff9000 size=0x1c20
-[dm] [nvn] BufferInitialize 0x71c1021ef8 pool=0x71c407ce10 off=0xffae00 size=0x168
-[dm] [nvn] BufferInitialize 0x71c1021dd8 pool=0x71c407ce10 off=0xff0400 size=0x1c20
-[dm] [nvn] BufferInitialize 0x71c1021ef8 pool=0x71c407ce10 off=0xff2200 size=0x168
-[dm] [longframe] frame 3 (14.34 s) whole frame 117.1 ms, submit+present 0.9 ms, GPU 0.7 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
-[slowframe]	3	@late_ms=0.000	@frame_ms=117.122	@work_ms=117.028	@nvn_ms=0.880	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.507	@proc_cpu_ms=101.433	@call_ms=14337.201	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=14.337	@drawable_ms=0.000	@sub_wall_ms=0.861	@sub_cpu_ms=0.839	@sub_instr=0.000	@display_ms=103.925	@gpu_ms=0.700	@presented_ms=32.851	@pres_at_ms=14362.088	@prev3_max_frame_ms=99.512
-[dm] [nvn] BufferInitialize 0x71c1021dd8 pool=0x71c407ce10 off=0xff2400 size=0x1c20
-[dm] [nvn] BufferInitialize 0x71c1021ef8 pool=0x71c407ce10 off=0xff4200 size=0x168
-[dm] [nvn] BufferInitialize 0x71c1021dd8 pool=0x71c407ce10 off=0xff7000 size=0x1c20
-[dm] [nvn] BufferInitialize 0x71c1021ef8 pool=0x71c407ce10 off=0xff8e00 size=0x168
-[dm] [nvn] BufferInitialize 0x71c1021dd8 pool=0x71c407ce10 off=0xff9000 size=0x1c20
-[dm] [nvn] BufferInitialize 0x71c1021ef8 pool=0x71c407ce10 off=0xffae00 size=0x168
-[dm] [nvn] BufferInitialize 0x71c1021dd8 pool=0x71c407ce10 off=0xff0400 size=0x1c20
-[dm] [nvn] BufferInitialize 0x71c1021ef8 pool=0x71c407ce10 off=0xff2200 size=0x168
-[dm] [nvn] BufferInitialize 0x71c1021dd8 pool=0x71c407ce10 off=0xff2400 size=0x1c20
-[dm] [nvn] BufferInitialize 0x71c1021ef8 pool=0x71c407ce10 off=0xff4200 size=0x168
-[dm] [longframe] frame 11 (14.46 s) whole frame 27.8 ms, submit+present 0.4 ms, GPU 0.7 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
-[slowframe]	39	@late_ms=0.000	@frame_ms=16.604	@work_ms=16.551	@nvn_ms=0.562	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.000	@cpu_ms=0.584	@proc_cpu_ms=2.600	@call_ms=14913.839	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=14.914	@drawable_ms=0.000	@sub_wall_ms=0.550	@sub_cpu_ms=0.331	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.446	@presented_ms=32.852	@pres_at_ms=14969.811	@prev3_max_frame_ms=16.887
-[slowframe]	107	@late_ms=0.000	@frame_ms=15.250	@work_ms=15.110	@nvn_ms=1.099	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=2.058	@proc_cpu_ms=8.821	@call_ms=16049.845	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=16.050	@drawable_ms=0.000	@sub_wall_ms=1.051	@sub_cpu_ms=1.001	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.458	@presented_ms=32.844	@pres_at_ms=16103.080	@prev3_max_frame_ms=20.799
-[dm] [vk] [perf] display timing: refresh 16.421 ms
-[slowframe]	154	@late_ms=0.000	@frame_ms=17.818	@work_ms=17.721	@nvn_ms=0.952	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.002	@cpu_ms=1.296	@proc_cpu_ms=5.886	@call_ms=16832.853	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=16.833	@drawable_ms=0.000	@sub_wall_ms=0.745	@sub_cpu_ms=0.612	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.456	@presented_ms=32.848	@pres_at_ms=16891.334	@prev3_max_frame_ms=16.788
-[slowframe]	222	@late_ms=0.000	@frame_ms=17.100	@work_ms=16.821	@nvn_ms=1.010	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=2.068	@proc_cpu_ms=8.393	@call_ms=17967.806	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=17.968	@drawable_ms=0.000	@sub_wall_ms=0.968	@sub_cpu_ms=0.966	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.458	@presented_ms=32.859	@pres_at_ms=18024.663	@prev3_max_frame_ms=17.692
-[dm] [vk] [perf] display timing: refresh 16.427 ms
-[slowframe]	274	@late_ms=0.000	@frame_ms=17.043	@work_ms=16.981	@nvn_ms=0.613	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.055	@proc_cpu_ms=5.780	@call_ms=18832.125	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=18.832	@drawable_ms=0.000	@sub_wall_ms=0.592	@sub_cpu_ms=0.558	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.491	@presented_ms=32.848	@pres_at_ms=18895.102	@prev3_max_frame_ms=16.779
-[dm] [nvn] timing up to frame 300: frame time p50 16.69 / p95 19.67 / max 117.12 ms (299 frames); frame work p50 16.56 / p95 19.59 / max 117.03 ms (299 frames); NVN submit+present p50 0.60 / p95 1.68 / max 3.97 ms (299 frames); GPU p50 1.45 / p95 1.54 / max 1.70 ms (292 frames);
-[dm] [nvn] frame interval up to frame 300: >16.7ms 156 / 299 frames, p99 27.80 ms
-[dm] [nvn] on-screen up to frame 300: 289 frames, dropped 6 (discarded 0), p99 32.85 ms; footprint 690 MiB; brightness -1.00; thermal -1
+[dm] [nvn] BufferInitialize 0x7101de0058 pool=0x71c407ce10 off=0xff7000 size=0x1c20
+[dm] [nvn] BufferInitialize 0x7101de05f8 pool=0x71c407ce10 off=0xff8e00 size=0x168
+[dm] [longframe] frame 1 (26.47 s) whole frame 136.6 ms, submit+present 4.9 ms, GPU 0.7 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[dm] [nvn] BufferInitialize 0x7101de0058 pool=0x71c407ce10 off=0xff9000 size=0x1c20
+[dm] [nvn] BufferInitialize 0x7101de05f8 pool=0x71c407ce10 off=0xffae00 size=0x168
+[dm] [nvn] BufferInitialize 0x7101de0058 pool=0x71c407ce10 off=0xff0400 size=0x1c20
+[dm] [nvn] BufferInitialize 0x7101de05f8 pool=0x71c407ce10 off=0xff2200 size=0x168
+[dm] [longframe] frame 3 (26.57 s) whole frame 101.4 ms, submit+present 0.8 ms, GPU 0.8 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[slowframe]	3	@late_ms=0.000	@frame_ms=101.430	@work_ms=101.323	@nvn_ms=0.815	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.536	@proc_cpu_ms=95.331	@call_ms=26573.722	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=26.574	@drawable_ms=0.000	@sub_wall_ms=0.793	@sub_cpu_ms=0.793	@sub_instr=0.000	@display_ms=91.687	@gpu_ms=0.803	@presented_ms=32.866	@pres_at_ms=26599.608	@prev3_max_frame_ms=136.563
+[dm] [nvn] BufferInitialize 0x7101de0058 pool=0x71c407ce10 off=0xff2400 size=0x1c20
+[dm] [nvn] BufferInitialize 0x7101de05f8 pool=0x71c407ce10 off=0xff4200 size=0x168
+[dm] [nvn] BufferInitialize 0x7101de0058 pool=0x71c407ce10 off=0xff7000 size=0x1c20
+[dm] [nvn] BufferInitialize 0x7101de05f8 pool=0x71c407ce10 off=0xff8e00 size=0x168
+[dm] [nvn] BufferInitialize 0x7101de0058 pool=0x71c407ce10 off=0xff9000 size=0x1c20
+[dm] [nvn] BufferInitialize 0x7101de05f8 pool=0x71c407ce10 off=0xffae00 size=0x168
+[dm] [nvn] BufferInitialize 0x7101de0058 pool=0x71c407ce10 off=0xff0400 size=0x1c20
+[dm] [nvn] BufferInitialize 0x7101de05f8 pool=0x71c407ce10 off=0xff2200 size=0x168
+[dm] [nvn] BufferInitialize 0x7101de0058 pool=0x71c407ce10 off=0xff2400 size=0x1c20
+[dm] [nvn] BufferInitialize 0x7101de05f8 pool=0x71c407ce10 off=0xff4200 size=0x168
+[dm] [nvn] BufferInitialize 0x7101de0058 pool=0x71c407ce10 off=0xff7000 size=0x1c20
+[dm] [nvn] BufferInitialize 0x7101de05f8 pool=0x71c407ce10 off=0xff8e00 size=0x168
+[dm] [longframe] frame 11 (26.70 s) whole frame 30.7 ms, submit+present 0.5 ms, GPU 0.9 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[slowframe]	41	@late_ms=0.000	@frame_ms=17.467	@work_ms=17.418	@nvn_ms=0.579	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.074	@proc_cpu_ms=5.278	@call_ms=27183.022	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=27.183	@drawable_ms=0.000	@sub_wall_ms=0.558	@sub_cpu_ms=0.557	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.436	@presented_ms=32.873	@pres_at_ms=27240.605	@prev3_max_frame_ms=16.875
+[dm] [longframe] frame 79 (27.83 s) whole frame 25.3 ms, submit+present 1.4 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[dm] [longframe] frame 88 (27.97 s) whole frame 24.1 ms, submit+present 1.7 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[slowframe]	112	@late_ms=0.000	@frame_ms=17.316	@work_ms=17.268	@nvn_ms=0.589	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.079	@proc_cpu_ms=5.311	@call_ms=28366.267	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=28.366	@drawable_ms=0.000	@sub_wall_ms=0.571	@sub_cpu_ms=0.570	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.437	@presented_ms=32.867	@pres_at_ms=28423.975	@prev3_max_frame_ms=17.200
+[dm] [vk] [perf] display timing: refresh 16.436 ms
+[slowframe]	156	@late_ms=0.000	@frame_ms=17.305	@work_ms=17.162	@nvn_ms=0.484	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.034	@proc_cpu_ms=5.313	@call_ms=29099.629	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=29.100	@drawable_ms=0.000	@sub_wall_ms=0.468	@sub_cpu_ms=0.466	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.434	@presented_ms=32.872	@pres_at_ms=29163.545	@prev3_max_frame_ms=17.687
+[dm] [longframe] frame 203 (29.90 s) whole frame 28.6 ms, submit+present 4.1 ms, GPU 1.5 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[slowframe]	228	@late_ms=0.000	@frame_ms=15.932	@work_ms=15.855	@nvn_ms=0.545	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.065	@proc_cpu_ms=5.493	@call_ms=30299.170	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=30.299	@drawable_ms=0.000	@sub_wall_ms=0.519	@sub_cpu_ms=0.520	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.457	@presented_ms=32.875	@pres_at_ms=30363.453	@prev3_max_frame_ms=18.380
+[dm] [vk] [perf] display timing: refresh 16.437 ms
+[dm] [longframe] frame 237 (30.46 s) whole frame 24.9 ms, submit+present 2.4 ms, GPU 1.5 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[slowframe]	276	@late_ms=0.000	@frame_ms=15.779	@work_ms=15.634	@nvn_ms=1.202	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=2.096	@proc_cpu_ms=9.068	@call_ms=31101.172	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=31.101	@drawable_ms=0.000	@sub_wall_ms=1.153	@sub_cpu_ms=1.050	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.462	@presented_ms=32.871	@pres_at_ms=31168.838	@prev3_max_frame_ms=17.434
+[dm] [nvn] timing up to frame 300: frame time p50 16.64 / p95 19.15 / max 136.56 ms (299 frames); frame work p50 16.55 / p95 18.86 / max 126.88 ms (299 frames); NVN submit+present p50 0.58 / p95 1.95 / max 5.80 ms (299 frames); GPU p50 1.44 / p95 1.50 / max 1.68 ms (292 frames);
+[dm] [nvn] frame interval up to frame 300: >16.7ms 145 / 299 frames, p99 30.68 ms
+[dm] [nvn] on-screen up to frame 300: 289 frames, dropped 6 (discarded 0), p99 32.87 ms; footprint 676 MiB; brightness -1.00; thermal -1
 [dm] [nvn] thread policy: main thread real-time computation 0.00 ms / period 0.00 ms, real-time policy not in effect, current priority 10 (base 10, policy 0); 36 worker threads QoS 0x21; present QoS 0
 [dm] [nvn] packaged textures: first uploads 0, re-uploads on pool content change 0; write-protection faults 0, pages unprotected before host writes 0; missed 0 (cumulative)
 [dm] [nvn] frame 300: 62 functions 424 calls
 [slowframe]	#	up to frame 300	judged=299	slow=6	criterion=on-screen interval
-[slowframe]	342	@late_ms=0.000	@frame_ms=10.057	@work_ms=9.790	@nvn_ms=1.205	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.816	@proc_cpu_ms=7.132	@call_ms=19966.142	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=19.967	@drawable_ms=0.000	@sub_wall_ms=0.913	@sub_cpu_ms=0.872	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.450	@presented_ms=32.850	@pres_at_ms=20028.372	@prev3_max_frame_ms=18.644
-[dm] [vk] [perf] display timing: refresh 16.426 ms
-[slowframe]	394	@late_ms=0.000	@frame_ms=17.836	@work_ms=17.628	@nvn_ms=1.659	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=2.441	@proc_cpu_ms=10.814	@call_ms=20834.193	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=20.834	@drawable_ms=0.000	@sub_wall_ms=1.470	@sub_cpu_ms=1.130	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.483	@presented_ms=32.853	@pres_at_ms=20898.891	@prev3_max_frame_ms=17.434
-[slowframe]	463	@late_ms=0.000	@frame_ms=14.238	@work_ms=14.027	@nvn_ms=1.580	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.002	@cpu_ms=2.378	@proc_cpu_ms=10.330	@call_ms=21984.220	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=21.984	@drawable_ms=0.000	@sub_wall_ms=1.546	@sub_cpu_ms=1.190	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.484	@presented_ms=32.840	@pres_at_ms=22048.740	@prev3_max_frame_ms=21.546
-[dm] [vk] [perf] display timing: refresh 16.425 ms
-[dm] [longframe] frame 477 (22.22 s) whole frame 23.9 ms, submit+present 1.2 ms, GPU 1.5 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
-[slowframe]	515	@late_ms=0.000	@frame_ms=16.799	@work_ms=16.717	@nvn_ms=0.617	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.052	@proc_cpu_ms=12.608	@call_ms=22848.120	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=22.848	@drawable_ms=0.000	@sub_wall_ms=0.575	@sub_cpu_ms=0.548	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.445	@presented_ms=32.858	@pres_at_ms=22919.374	@prev3_max_frame_ms=16.735
-[slowframe]	583	@late_ms=0.000	@frame_ms=16.707	@work_ms=16.624	@nvn_ms=0.550	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.149	@proc_cpu_ms=5.353	@call_ms=23981.651	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=23.982	@drawable_ms=0.000	@sub_wall_ms=0.534	@sub_cpu_ms=0.534	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.460	@presented_ms=32.850	@pres_at_ms=24052.846	@prev3_max_frame_ms=16.364
+[slowframe]	347	@late_ms=0.000	@frame_ms=15.385	@work_ms=15.299	@nvn_ms=0.577	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.000	@cpu_ms=1.055	@proc_cpu_ms=5.773	@call_ms=32282.414	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=32.282	@drawable_ms=0.000	@sub_wall_ms=0.552	@sub_cpu_ms=0.552	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.454	@presented_ms=32.865	@pres_at_ms=32352.110	@prev3_max_frame_ms=17.231
+[dm] [vk] [perf] display timing: refresh 16.431 ms
+[slowframe]	396	@late_ms=0.000	@frame_ms=16.511	@work_ms=16.412	@nvn_ms=0.557	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.239	@proc_cpu_ms=6.166	@call_ms=33099.269	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=33.099	@drawable_ms=0.000	@sub_wall_ms=0.539	@sub_cpu_ms=0.537	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.454	@presented_ms=32.865	@pres_at_ms=33173.700	@prev3_max_frame_ms=16.937
+[slowframe]	465	@late_ms=0.000	@frame_ms=16.648	@work_ms=16.570	@nvn_ms=0.624	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.289	@proc_cpu_ms=6.018	@call_ms=34249.938	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=34.250	@drawable_ms=0.000	@sub_wall_ms=0.598	@sub_cpu_ms=0.598	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.441	@presented_ms=32.868	@pres_at_ms=34323.921	@prev3_max_frame_ms=17.951
+[dm] [vk] [perf] display timing: refresh 16.436 ms
+[slowframe]	516	@late_ms=0.000	@frame_ms=16.906	@work_ms=16.834	@nvn_ms=0.676	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.156	@proc_cpu_ms=5.695	@call_ms=35099.866	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=35.100	@drawable_ms=0.000	@sub_wall_ms=0.669	@sub_cpu_ms=0.609	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.438	@presented_ms=32.873	@pres_at_ms=35178.543	@prev3_max_frame_ms=17.461
+[dm] [longframe] frame 561 (35.86 s) whole frame 24.7 ms, submit+present 2.1 ms, GPU 1.5 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[slowframe]	586	@late_ms=0.000	@frame_ms=13.472	@work_ms=13.154	@nvn_ms=1.545	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=2.410	@proc_cpu_ms=10.215	@call_ms=36271.076	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=36.271	@drawable_ms=0.000	@sub_wall_ms=1.508	@sub_cpu_ms=1.035	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.440	@presented_ms=32.854	@pres_at_ms=36345.294	@prev3_max_frame_ms=20.116
 [dm] audio #0 device callbacks 2000: 240–240 frames each, 4.0 blocks queued on average at callback; in these 2000, 0 underruns, 0.0 ms zero-padded
 [dm] [vk] replay up to present 600: draws 3606, skipped (no program 0, no target 0, no pipeline 0), passes 2408, clears folded 3012, dispatches 0, pipelines 6; presents shown 599, no image 0, never drawn 0; uniform updates landed 3609 (superseded 1798, shadows 6007, CPU reads racing a GPU write 0), same targets kept 3000, most draws in one pass 4
-[dm] [vk] replay per frame (last 600): 6 draws, replay 0.52 ms (descriptor sets 0.12, pipeline keys 0.02), queue submit 0.11 ms, uniform shadows 2 KB; GPU busy 1.43 ms; texture uploads 0.0 (0.00 MB, 0.00 ms); descriptor sets reused 600, new 6012 (collecting 0.06 ms, hashing 0.00, new ones 0.05), kept per stage 1 a frame (memo differences 0)
-[dm] [nvn] timing up to frame 600: frame time p50 16.71 / p95 19.36 / max 23.86 ms (300 frames); frame work p50 16.57 / p95 19.24 / max 23.79 ms (300 frames); NVN submit+present p50 0.64 / p95 2.24 / max 8.12 ms (300 frames); GPU p50 1.45 / p95 1.57 / max 1.71 ms (300 frames);
-[dm] [nvn] frame interval up to frame 600: >16.7ms 153 / 300 frames, p99 22.21 ms
-[dm] [nvn] on-screen up to frame 600: 300 frames, dropped 5 (discarded 0), p99 32.85 ms; footprint 662 MiB; brightness -1.00; thermal -1
+[dm] [vk] replay per frame (last 600): 6 draws, replay 0.56 ms (descriptor sets 0.15, pipeline keys 0.02), queue submit 0.10 ms, uniform shadows 2 KB; GPU busy 1.44 ms; texture uploads 0.0 (0.00 MB, 0.00 ms); descriptor sets reused 600, new 6012 (collecting 0.08 ms, hashing 0.00, new ones 0.06), kept per stage 1 a frame (memo differences 0)
+[dm] [nvn] timing up to frame 600: frame time p50 16.68 / p95 19.02 / max 24.75 ms (300 frames); frame work p50 16.59 / p95 18.87 / max 24.64 ms (300 frames); NVN submit+present p50 0.59 / p95 1.64 / max 7.47 ms (300 frames); GPU p50 1.46 / p95 1.51 / max 1.69 ms (300 frames);
+[dm] [nvn] frame interval up to frame 600: >16.7ms 150 / 300 frames, p99 22.81 ms
+[dm] [nvn] on-screen up to frame 600: 300 frames, dropped 5 (discarded 0), p99 32.87 ms; footprint 653 MiB; brightness -1.00; thermal -1
 [dm] [nvn] vertex bindings up to frame 600: per frame address lookups 0 / reused 0, vertex table writes 0 / skipped 0
 [dm] [nvn] thread policy: main thread real-time computation 0.00 ms / period 0.00 ms, real-time policy not in effect, current priority 10 (base 10, policy 0); 36 worker threads QoS 0x21; present QoS 0
 [dm] [nvn] packaged textures: first uploads 0, re-uploads on pool content change 0; write-protection faults 0, pages unprotected before host writes 0; missed 0 (cumulative)
 [dm] [nvn] frame 600: 62 functions 424 calls
 [dm] [vk] [perf] display timing: 600 frames, 0 resyncs, 0 shown a vsync or more after their time (cumulative)
-[dm] [vk] [perf] display timing: refresh 16.422 ms
+[dm] [vk] [perf] display timing: refresh 16.428 ms
 [slowframe]	#	up to frame 600	judged=599	slow=11	criterion=on-screen interval
-[slowframe]	635	@late_ms=0.000	@frame_ms=20.312	@work_ms=20.121	@nvn_ms=0.754	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.629	@proc_cpu_ms=11.036	@call_ms=24853.130	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=24.853	@drawable_ms=0.000	@sub_wall_ms=0.727	@sub_cpu_ms=0.700	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.452	@presented_ms=32.862	@pres_at_ms=24923.424	@prev3_max_frame_ms=17.537
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[slowframe]	705	@late_ms=0.000	@frame_ms=19.370	@work_ms=18.803	@nvn_ms=1.159	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.964	@proc_cpu_ms=10.129	@call_ms=26018.746	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=26.019	@drawable_ms=0.000	@sub_wall_ms=1.119	@sub_cpu_ms=1.018	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.442	@presented_ms=32.853	@pres_at_ms=26090.033	@prev3_max_frame_ms=20.351
-[dm] [vk] [perf] display timing: refresh 16.429 ms
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[slowframe]	755	@late_ms=0.000	@frame_ms=17.129	@work_ms=17.070	@nvn_ms=0.729	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=0.996	@proc_cpu_ms=5.572	@call_ms=26848.624	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=26.849	@drawable_ms=0.000	@sub_wall_ms=0.722	@sub_cpu_ms=0.550	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.443	@presented_ms=32.864	@pres_at_ms=26927.981	@prev3_max_frame_ms=16.797
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[slowframe]	824	@late_ms=0.000	@frame_ms=16.819	@work_ms=16.751	@nvn_ms=0.694	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=0.836	@proc_cpu_ms=5.524	@call_ms=27998.410	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=27.998	@drawable_ms=0.000	@sub_wall_ms=0.689	@sub_cpu_ms=0.435	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.437	@presented_ms=32.848	@pres_at_ms=28077.877	@prev3_max_frame_ms=17.411
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [vk] [perf] display timing: refresh 16.425 ms
-[dm] [RED] [haptics] Java exception in vibrate
-[slowframe]	875	@late_ms=0.000	@frame_ms=17.112	@work_ms=16.963	@nvn_ms=1.055	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.002	@cpu_ms=2.138	@proc_cpu_ms=9.326	@call_ms=28850.399	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=28.851	@drawable_ms=0.000	@sub_wall_ms=1.044	@sub_cpu_ms=1.019	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.440	@presented_ms=32.849	@pres_at_ms=28932.070	@prev3_max_frame_ms=17.093
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [nvn] timing up to frame 900: frame time p50 16.66 / p95 18.79 / max 22.63 ms (300 frames); frame work p50 16.57 / p95 18.62 / max 22.51 ms (300 frames); NVN submit+present p50 0.58 / p95 1.81 / max 3.01 ms (300 frames); GPU p50 1.44 / p95 1.49 / max 1.70 ms (300 frames);
-[dm] [nvn] frame interval up to frame 900: >16.7ms 149 / 300 frames, p99 20.57 ms
-[dm] [nvn] on-screen up to frame 900: 300 frames, dropped 5 (discarded 0), p99 32.85 ms; footprint 664 MiB; brightness -1.00; thermal -1
+[slowframe]	636	@late_ms=0.000	@frame_ms=20.337	@work_ms=20.266	@nvn_ms=1.980	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=2.490	@proc_cpu_ms=11.459	@call_ms=37103.096	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=37.104	@drawable_ms=0.000	@sub_wall_ms=1.967	@sub_cpu_ms=1.352	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.463	@presented_ms=32.866	@pres_at_ms=37183.312	@prev3_max_frame_ms=17.207
+[slowframe]	706	@late_ms=0.000	@frame_ms=16.372	@work_ms=16.315	@nvn_ms=0.462	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=0.949	@proc_cpu_ms=4.678	@call_ms=38266.126	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=38.266	@drawable_ms=0.000	@sub_wall_ms=0.453	@sub_cpu_ms=0.447	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.460	@presented_ms=32.873	@pres_at_ms=38350.201	@prev3_max_frame_ms=17.361
+[dm] [vk] [perf] display timing: refresh 16.435 ms
+[dm] [longframe] frame 729 (38.66 s) whole frame 23.3 ms, submit+present 1.3 ms, GPU 1.5 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[slowframe]	756	@late_ms=0.000	@frame_ms=16.730	@work_ms=16.655	@nvn_ms=0.522	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=0.975	@proc_cpu_ms=5.133	@call_ms=39099.296	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=39.099	@drawable_ms=0.000	@sub_wall_ms=0.516	@sub_cpu_ms=0.501	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.454	@presented_ms=32.867	@pres_at_ms=39188.311	@prev3_max_frame_ms=16.788
+[slowframe]	826	@late_ms=0.000	@frame_ms=15.862	@work_ms=15.697	@nvn_ms=1.573	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=2.210	@proc_cpu_ms=8.409	@call_ms=40268.626	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=40.269	@drawable_ms=0.000	@sub_wall_ms=1.553	@sub_cpu_ms=1.136	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.463	@presented_ms=32.871	@pres_at_ms=40355.073	@prev3_max_frame_ms=17.015
+[dm] [vk] [perf] display timing: refresh 16.434 ms
+[slowframe]	876	@late_ms=0.000	@frame_ms=13.875	@work_ms=13.786	@nvn_ms=0.551	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.052	@proc_cpu_ms=4.147	@call_ms=41098.834	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=41.099	@drawable_ms=0.000	@sub_wall_ms=0.541	@sub_cpu_ms=0.542	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.450	@presented_ms=32.860	@pres_at_ms=41193.122	@prev3_max_frame_ms=18.955
+[dm] [nvn] timing up to frame 900: frame time p50 16.63 / p95 19.64 / max 23.31 ms (300 frames); frame work p50 16.56 / p95 19.24 / max 23.25 ms (300 frames); NVN submit+present p50 0.60 / p95 2.07 / max 9.54 ms (300 frames); GPU p50 1.46 / p95 1.49 / max 1.70 ms (300 frames);
+[dm] [nvn] frame interval up to frame 900: >16.7ms 143 / 300 frames, p99 22.39 ms
+[dm] [nvn] on-screen up to frame 900: 300 frames, dropped 5 (discarded 0), p99 32.87 ms; footprint 654 MiB; brightness -1.00; thermal -1
 [dm] [nvn] vertex bindings up to frame 900: per frame address lookups 0 / reused 0, vertex table writes 0 / skipped 0
 [dm] [nvn] thread policy: main thread real-time computation 0.00 ms / period 0.00 ms, real-time policy not in effect, current priority 10 (base 10, policy 0); 36 worker threads QoS 0x21; present QoS 0
 [dm] [nvn] packaged textures: first uploads 0, re-uploads on pool content change 0; write-protection faults 0, pages unprotected before host writes 0; missed 0 (cumulative)
 [dm] [nvn] frame 900: 62 functions 424 calls
-[dm] [RED] [haptics] Java exception in vibrate
 [slowframe]	#	up to frame 900	judged=899	slow=16	criterion=on-screen interval
-[dm] [RED] [haptics] Java exception in vibrate
-[slowframe]	944	@late_ms=0.000	@frame_ms=16.039	@work_ms=15.871	@nvn_ms=1.666	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=2.465	@proc_cpu_ms=10.105	@call_ms=30001.016	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=30.001	@drawable_ms=0.000	@sub_wall_ms=1.645	@sub_cpu_ms=1.124	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.486	@presented_ms=32.866	@pres_at_ms=30082.110	@prev3_max_frame_ms=19.032
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [vk] [perf] display timing: refresh 16.431 ms
-[dm] [longframe] frame 956 (30.21 s) whole frame 26.2 ms, submit+present 1.3 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
-[dm] [longframe] frame 963 (30.32 s) whole frame 24.2 ms, submit+present 2.0 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
-[dm] [RED] [haptics] Java exception in vibrate
-[slowframe]	995	@late_ms=0.000	@frame_ms=17.366	@work_ms=17.310	@nvn_ms=0.526	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.282	@proc_cpu_ms=6.768	@call_ms=30849.489	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=30.850	@drawable_ms=0.000	@sub_wall_ms=0.519	@sub_cpu_ms=0.518	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.443	@presented_ms=32.854	@pres_at_ms=30936.342	@prev3_max_frame_ms=17.542
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [longframe] frame 1063 (31.99 s) whole frame 25.4 ms, submit+present 2.9 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
-[slowframe]	1063	@late_ms=0.000	@frame_ms=25.375	@work_ms=25.219	@nvn_ms=2.945	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=3.220	@proc_cpu_ms=14.888	@call_ms=31990.362	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=31.991	@drawable_ms=0.000	@sub_wall_ms=2.930	@sub_cpu_ms=1.797	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.442	@presented_ms=32.848	@pres_at_ms=32069.674	@prev3_max_frame_ms=17.009
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [vk] [perf] display timing: refresh 16.426 ms
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [perf] adaptive frame rate: 60 fps, frame work p50 16.2 / p90 16.6 / p95 16.6 ms (last 16.1 ms); late on screen 1 of 64, step-downs held back 69
-[dm] [RED] [haptics] Java exception in vibrate
-[slowframe]	1114	@late_ms=0.000	@frame_ms=16.897	@work_ms=16.728	@nvn_ms=0.631	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.141	@proc_cpu_ms=5.395	@call_ms=32831.589	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=32.832	@drawable_ms=0.000	@sub_wall_ms=0.621	@sub_cpu_ms=0.558	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.428	@presented_ms=32.846	@pres_at_ms=32923.762	@prev3_max_frame_ms=18.932
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[slowframe]	1182	@late_ms=0.000	@frame_ms=14.710	@work_ms=14.648	@nvn_ms=0.490	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=0.944	@proc_cpu_ms=4.880	@call_ms=33964.637	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=33.965	@drawable_ms=0.000	@sub_wall_ms=0.479	@sub_cpu_ms=0.479	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.435	@presented_ms=32.860	@pres_at_ms=34057.103	@prev3_max_frame_ms=17.864
+[dm] [longframe] frame 933 (42.06 s) whole frame 24.7 ms, submit+present 1.3 ms, GPU 1.5 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[slowframe]	946	@late_ms=0.000	@frame_ms=16.546	@work_ms=16.372	@nvn_ms=1.226	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=2.348	@proc_cpu_ms=10.742	@call_ms=42271.248	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=42.271	@drawable_ms=0.000	@sub_wall_ms=1.207	@sub_cpu_ms=1.106	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.461	@presented_ms=32.865	@pres_at_ms=42359.795	@prev3_max_frame_ms=18.720
+[dm] [vk] [perf] display timing: refresh 16.433 ms
+[dm] [longframe] frame 982 (42.88 s) whole frame 24.0 ms, submit+present 4.5 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[slowframe]	996	@late_ms=0.000	@frame_ms=13.649	@work_ms=13.556	@nvn_ms=0.563	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.469	@proc_cpu_ms=9.992	@call_ms=43102.070	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=43.102	@drawable_ms=0.000	@sub_wall_ms=0.552	@sub_cpu_ms=0.552	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.448	@presented_ms=32.862	@pres_at_ms=43197.849	@prev3_max_frame_ms=18.169
+[dm] [longframe] frame 1001 (43.19 s) whole frame 23.2 ms, submit+present 0.8 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[dm] [longframe] frame 1051 (44.03 s) whole frame 23.9 ms, submit+present 4.2 ms, GPU 1.5 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[slowframe]	1066	@late_ms=0.000	@frame_ms=17.089	@work_ms=17.029	@nvn_ms=0.484	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.066	@proc_cpu_ms=5.885	@call_ms=44266.182	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=44.266	@drawable_ms=0.000	@sub_wall_ms=0.477	@sub_cpu_ms=0.477	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.452	@presented_ms=32.860	@pres_at_ms=44364.616	@prev3_max_frame_ms=17.222
+[dm] [vk] [perf] display timing: refresh 16.433 ms
+[dm] [perf] adaptive frame rate: 60 fps, frame work p50 15.9 / p90 16.6 / p95 16.6 ms (last 14.5 ms); late on screen 1 of 64, step-downs held back 0
+[slowframe]	1116	@late_ms=0.000	@frame_ms=16.252	@work_ms=16.103	@nvn_ms=0.968	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.906	@proc_cpu_ms=10.004	@call_ms=45101.614	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=45.102	@drawable_ms=0.000	@sub_wall_ms=0.950	@sub_cpu_ms=0.888	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.459	@presented_ms=32.861	@pres_at_ms=45202.758	@prev3_max_frame_ms=17.277
+[dm] [longframe] frame 1121 (45.20 s) whole frame 25.4 ms, submit+present 2.0 ms, GPU 1.5 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[slowframe]	1186	@late_ms=0.000	@frame_ms=17.538	@work_ms=17.324	@nvn_ms=1.748	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=2.362	@proc_cpu_ms=10.155	@call_ms=46269.196	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=46.269	@drawable_ms=0.000	@sub_wall_ms=1.735	@sub_cpu_ms=1.183	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.462	@presented_ms=32.855	@pres_at_ms=46369.439	@prev3_max_frame_ms=17.298
 [dm] audio #0 device callbacks 4000: 240–240 frames each, 4.0 blocks queued on average at callback; in these 2000, 0 underruns, 0.0 ms zero-padded
 [dm] [vk] replay up to present 1200: draws 7206, skipped (no program 0, no target 0, no pipeline 0), passes 4808, clears folded 6012, dispatches 0, pipelines 6; presents shown 1199, no image 0, never drawn 0; uniform updates landed 7209 (superseded 3598, shadows 12007, CPU reads racing a GPU write 0), same targets kept 6000, most draws in one pass 4
-[dm] [vk] replay per frame (last 600): 6 draws, replay 0.44 ms (descriptor sets 0.08, pipeline keys 0.02), queue submit 0.10 ms, uniform shadows 2 KB; GPU busy 1.45 ms; texture uploads 0.0 (0.00 MB, 0.00 ms); descriptor sets reused 1200, new 12012 (collecting 0.05 ms, hashing 0.00, new ones 0.02), kept per stage 1 a frame (memo differences 0)
-[dm] [nvn] timing up to frame 1200: frame time p50 16.65 / p95 19.03 / max 26.23 ms (300 frames); frame work p50 16.54 / p95 18.91 / max 26.18 ms (300 frames); NVN submit+present p50 0.58 / p95 1.85 / max 4.06 ms (300 frames); GPU p50 1.44 / p95 1.46 / max 1.69 ms (300 frames);
-[dm] [nvn] frame interval up to frame 1200: >16.7ms 149 / 300 frames, p99 24.16 ms
-[dm] [nvn] on-screen up to frame 1200: 300 frames, dropped 5 (discarded 0), p99 32.85 ms; footprint 665 MiB; brightness -1.00; thermal -1
+[dm] [vk] replay per frame (last 600): 6 draws, replay 0.56 ms (descriptor sets 0.10, pipeline keys 0.03), queue submit 0.11 ms, uniform shadows 2 KB; GPU busy 1.46 ms; texture uploads 0.0 (0.00 MB, 0.00 ms); descriptor sets reused 1200, new 12012 (collecting 0.06 ms, hashing 0.00, new ones 0.03), kept per stage 1 a frame (memo differences 0)
+[dm] [longframe] frame 1191 (46.36 s) whole frame 26.5 ms, submit+present 1.2 ms, GPU 1.5 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[dm] [nvn] timing up to frame 1200: frame time p50 16.61 / p95 20.20 / max 26.51 ms (300 frames); frame work p50 16.48 / p95 20.04 / max 26.41 ms (300 frames); NVN submit+present p50 1.10 / p95 1.84 / max 5.52 ms (300 frames); GPU p50 1.46 / p95 1.47 / max 1.50 ms (300 frames);
+[dm] [nvn] frame interval up to frame 1200: >16.7ms 141 / 300 frames, p99 24.74 ms
+[dm] [nvn] on-screen up to frame 1200: 300 frames, dropped 5 (discarded 0), p99 32.86 ms; footprint 653 MiB; brightness -1.00; thermal -1
 [dm] [nvn] vertex bindings up to frame 1200: per frame address lookups 0 / reused 0, vertex table writes 0 / skipped 0
 [dm] [nvn] thread policy: main thread real-time computation 0.00 ms / period 0.00 ms, real-time policy not in effect, current priority 10 (base 10, policy 0); 36 worker threads QoS 0x21; present QoS 0
 [dm] [nvn] packaged textures: first uploads 0, re-uploads on pool content change 0; write-protection faults 0, pages unprotected before host writes 0; missed 0 (cumulative)
 [dm] [nvn] frame 1200: 62 functions 424 calls
 [dm] [vk] [perf] display timing: 1200 frames, 0 resyncs, 0 shown a vsync or more after their time (cumulative)
-[dm] [vk] [perf] display timing: refresh 16.426 ms
+[dm] [vk] [perf] display timing: refresh 16.429 ms
 [slowframe]	#	up to frame 1200	judged=1199	slow=21	criterion=on-screen interval
-[slowframe]	1235	@late_ms=0.000	@frame_ms=17.499	@work_ms=17.435	@nvn_ms=0.728	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.001	@cpu_ms=1.150	@proc_cpu_ms=5.439	@call_ms=34848.913	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=34.849	@drawable_ms=0.000	@sub_wall_ms=0.722	@sub_cpu_ms=0.566	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.439	@presented_ms=32.855	@pres_at_ms=34944.068	@prev3_max_frame_ms=16.828
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] audio suspended (background / interruption)
-[dm] [menu] opened: the game is paused
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] oe operation mode 0 → 1
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] [RED] [haptics] Java exception in vibrate
-[dm] audio resumed (foreground / interruption ended)
-[dm] [menu] closed: the game goes on (gamepad on, opacity 70%, rumble off, frame rate shown, docked)
-[dm] oe notification popped by the game: 30
-[dm] oe notification popped by the game: 31
-[dm] [longframe] frame 1302 (46.06 s) whole frame 10111.3 ms, submit+present 0.7 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
-[dm] [longframe] frame 1305 (46.23 s) whole frame 149.6 ms, submit+present 0.5 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
-[dm] [vk] [perf] display timing: refresh 16.427 ms
-[slowframe]	1355	@late_ms=0.069	@frame_ms=15.669	@work_ms=15.602	@nvn_ms=0.403	@itv=1.000	@wait_ms=0.839	@pq_wait_ms=7.578	@cpu_ms=0.706	@proc_cpu_ms=4.595	@call_ms=47038.792	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=47.039	@drawable_ms=0.000	@sub_wall_ms=0.394	@sub_cpu_ms=0.393	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.439	@presented_ms=32.856	@pres_at_ms=47147.922	@prev3_max_frame_ms=17.732
-[dm] [longframe] frame 1360 (47.14 s) whole frame 32.4 ms, submit+present 1.4 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
-[slowframe]	1424	@late_ms=0.084	@frame_ms=16.660	@work_ms=16.536	@nvn_ms=0.640	@itv=1.000	@wait_ms=0.603	@pq_wait_ms=8.164	@cpu_ms=1.177	@proc_cpu_ms=5.546	@call_ms=48189.701	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=48.190	@drawable_ms=0.000	@sub_wall_ms=0.628	@sub_cpu_ms=0.625	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.435	@presented_ms=32.866	@pres_at_ms=48298.066	@prev3_max_frame_ms=16.710
-[dm] [longframe] frame 1429 (48.29 s) whole frame 33.8 ms, submit+present 0.7 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[slowframe]	1235	@late_ms=0.000	@frame_ms=20.090	@work_ms=19.943	@nvn_ms=2.013	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=0.002	@cpu_ms=2.760	@proc_cpu_ms=12.834	@call_ms=47088.993	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=47.089	@drawable_ms=0.000	@sub_wall_ms=1.991	@sub_cpu_ms=1.411	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.462	@presented_ms=32.864	@pres_at_ms=47190.982	@prev3_max_frame_ms=18.822
+[dm] [longframe] frame 1240 (47.18 s) whole frame 30.5 ms, submit+present 2.4 ms, GPU 1.5 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[dm] [longframe] frame 1272 (47.72 s) whole frame 24.3 ms, submit+present 1.7 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[slowframe]	1305	@late_ms=0.000	@frame_ms=16.661	@work_ms=16.591	@nvn_ms=0.611	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=1.339	@cpu_ms=1.039	@proc_cpu_ms=5.236	@call_ms=48249.841	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=48.250	@drawable_ms=0.000	@sub_wall_ms=0.599	@sub_cpu_ms=0.597	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.437	@presented_ms=32.867	@pres_at_ms=48357.640	@prev3_max_frame_ms=17.031
+[dm] [longframe] frame 1310 (48.35 s) whole frame 32.9 ms, submit+present 0.9 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
 [dm] [vk] [perf] display timing: refresh 16.433 ms
-[slowframe]	1475	@late_ms=0.000	@frame_ms=15.887	@work_ms=15.826	@nvn_ms=0.822	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=11.717	@cpu_ms=1.154	@proc_cpu_ms=6.186	@call_ms=49043.978	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=49.044	@drawable_ms=0.000	@sub_wall_ms=0.809	@sub_cpu_ms=0.598	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.432	@presented_ms=32.854	@pres_at_ms=49152.463	@prev3_max_frame_ms=17.670
-[dm] [longframe] frame 1480 (49.14 s) whole frame 32.8 ms, submit+present 0.7 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
-[dm] [nvn] timing up to frame 1500: frame time p50 16.55 / p95 19.71 / max 10111.31 ms (300 frames); frame work p50 16.44 / p95 19.61 / max 10111.24 ms (300 frames); NVN submit+present p50 0.67 / p95 2.01 / max 3.94 ms (300 frames); GPU p50 1.44 / p95 1.46 / max 1.50 ms (300 frames);
-[dm] [nvn] frame interval up to frame 1500: >16.7ms 126 / 300 frames, p99 33.83 ms
-[dm] [nvn] on-screen up to frame 1500: 294 frames, dropped 4 (discarded 0), p99 32.85 ms; footprint 665 MiB; brightness -1.00; thermal -1
+[slowframe]	1356	@late_ms=0.000	@frame_ms=16.279	@work_ms=16.164	@nvn_ms=0.618	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=5.712	@cpu_ms=0.983	@proc_cpu_ms=5.104	@call_ms=49104.788	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=49.105	@drawable_ms=0.000	@sub_wall_ms=0.607	@sub_cpu_ms=0.589	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.432	@presented_ms=32.864	@pres_at_ms=49212.109	@prev3_max_frame_ms=17.068
+[dm] [longframe] frame 1361 (49.20 s) whole frame 32.7 ms, submit+present 0.7 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[slowframe]	1426	@late_ms=0.000	@frame_ms=15.651	@work_ms=15.412	@nvn_ms=1.138	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=4.406	@cpu_ms=1.789	@proc_cpu_ms=9.372	@call_ms=50271.593	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=50.272	@drawable_ms=0.000	@sub_wall_ms=1.059	@sub_cpu_ms=0.953	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.453	@presented_ms=32.862	@pres_at_ms=50378.801	@prev3_max_frame_ms=18.214
+[dm] [longframe] frame 1431 (50.37 s) whole frame 33.2 ms, submit+present 1.4 ms, GPU 1.5 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[dm] [vk] [perf] display timing: refresh 16.432 ms
+[slowframe]	1476	@late_ms=0.000	@frame_ms=16.592	@work_ms=16.445	@nvn_ms=1.283	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=10.027	@cpu_ms=2.093	@proc_cpu_ms=9.484	@call_ms=51110.845	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=51.111	@drawable_ms=0.000	@sub_wall_ms=1.263	@sub_cpu_ms=1.152	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.450	@presented_ms=32.856	@pres_at_ms=51216.907	@prev3_max_frame_ms=18.152
+[dm] [longframe] frame 1481 (51.21 s) whole frame 35.5 ms, submit+present 1.2 ms, GPU 1.5 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[dm] [nvn] timing up to frame 1500: frame time p50 16.39 / p95 18.82 / max 35.47 ms (300 frames); frame work p50 16.22 / p95 18.72 / max 35.35 ms (300 frames); NVN submit+present p50 1.07 / p95 2.01 / max 8.25 ms (300 frames); GPU p50 1.45 / p95 1.46 / max 1.47 ms (300 frames);
+[dm] [nvn] frame interval up to frame 1500: >16.7ms 109 / 300 frames, p99 32.88 ms
+[dm] [nvn] on-screen up to frame 1500: 300 frames, dropped 5 (discarded 0), p99 32.86 ms; footprint 653 MiB; brightness -1.00; thermal -1
 [dm] [nvn] vertex bindings up to frame 1500: per frame address lookups 0 / reused 0, vertex table writes 0 / skipped 0
 [dm] [nvn] thread policy: main thread real-time computation 0.00 ms / period 0.00 ms, real-time policy not in effect, current priority 10 (base 10, policy 0); 36 worker threads QoS 0x21; present QoS 0
 [dm] [nvn] packaged textures: first uploads 0, re-uploads on pool content change 0; write-protection faults 0, pages unprotected before host writes 0; missed 0 (cumulative)
 [dm] [nvn] frame 1500: 62 functions 424 calls
-[slowframe]	#	up to frame 1500	judged=1493	slow=25	criterion=on-screen interval
-[slowframe]	1545	@late_ms=0.000	@frame_ms=12.584	@work_ms=12.238	@nvn_ms=1.211	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=10.250	@cpu_ms=2.077	@proc_cpu_ms=9.199	@call_ms=50213.854	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=50.214	@drawable_ms=0.000	@sub_wall_ms=1.189	@sub_cpu_ms=1.137	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.452	@presented_ms=32.857	@pres_at_ms=50318.924	@prev3_max_frame_ms=19.916
-[dm] [longframe] frame 1550 (50.31 s) whole frame 33.8 ms, submit+present 1.3 ms, GPU 1.5 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
-[dm] [vk] [perf] display timing: refresh 16.426 ms
-[slowframe]	1595	@late_ms=0.000	@frame_ms=18.689	@work_ms=18.521	@nvn_ms=2.952	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=14.796	@cpu_ms=2.130	@proc_cpu_ms=12.078	@call_ms=51052.472	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=51.053	@drawable_ms=0.000	@sub_wall_ms=2.929	@sub_cpu_ms=1.370	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.437	@presented_ms=32.853	@pres_at_ms=51156.756	@prev3_max_frame_ms=18.126
-[dm] [longframe] frame 1600 (51.15 s) whole frame 33.5 ms, submit+present 0.6 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
-[slowframe]	1665	@late_ms=0.000	@frame_ms=16.460	@work_ms=16.310	@nvn_ms=1.707	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=13.903	@cpu_ms=1.723	@proc_cpu_ms=8.136	@call_ms=52216.420	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=52.217	@drawable_ms=0.000	@sub_wall_ms=1.689	@sub_cpu_ms=1.034	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.438	@presented_ms=32.867	@pres_at_ms=52323.331	@prev3_max_frame_ms=17.173
-[dm] [longframe] frame 1670 (52.32 s) whole frame 32.9 ms, submit+present 1.8 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
-[dm] [vk] [perf] display timing: refresh 16.431 ms
-[slowframe]	1715	@late_ms=0.000	@frame_ms=16.218	@work_ms=16.047	@nvn_ms=1.449	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=13.905	@cpu_ms=1.906	@proc_cpu_ms=10.991	@call_ms=53055.466	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=53.056	@drawable_ms=0.000	@sub_wall_ms=1.429	@sub_cpu_ms=1.084	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.436	@presented_ms=32.862	@pres_at_ms=53161.185	@prev3_max_frame_ms=19.066
-[dm] [longframe] frame 1720 (53.15 s) whole frame 32.2 ms, submit+present 1.4 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[slowframe]	#	up to frame 1500	judged=1499	slow=26	criterion=on-screen interval
+[slowframe]	1546	@late_ms=0.000	@frame_ms=16.379	@work_ms=16.238	@nvn_ms=1.131	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=10.257	@cpu_ms=2.078	@proc_cpu_ms=10.468	@call_ms=52277.343	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=52.278	@drawable_ms=0.000	@sub_wall_ms=1.108	@sub_cpu_ms=1.108	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.462	@presented_ms=32.867	@pres_at_ms=52383.579	@prev3_max_frame_ms=17.153
+[dm] [longframe] frame 1551 (52.38 s) whole frame 35.2 ms, submit+present 1.4 ms, GPU 1.5 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[dm] [vk] [perf] display timing: refresh 16.432 ms
+[dm] [longframe] frame 1579 (52.85 s) whole frame 25.4 ms, submit+present 7.1 ms, GPU 1.5 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[slowframe]	1595	@late_ms=0.000	@frame_ms=16.390	@work_ms=16.313	@nvn_ms=0.952	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=14.650	@cpu_ms=1.096	@proc_cpu_ms=4.850	@call_ms=53096.991	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=53.097	@drawable_ms=0.000	@sub_wall_ms=0.939	@sub_cpu_ms=0.703	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.438	@presented_ms=32.869	@pres_at_ms=53205.141	@prev3_max_frame_ms=17.261
+[dm] [longframe] frame 1600 (53.20 s) whole frame 32.2 ms, submit+present 0.8 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[slowframe]	1666	@late_ms=0.000	@frame_ms=17.828	@work_ms=17.749	@nvn_ms=0.768	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=16.010	@cpu_ms=1.149	@proc_cpu_ms=5.772	@call_ms=54281.425	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=54.282	@drawable_ms=0.000	@sub_wall_ms=0.757	@sub_cpu_ms=0.695	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.432	@presented_ms=32.868	@pres_at_ms=54388.298	@prev3_max_frame_ms=17.353
+[dm] [longframe] frame 1671 (54.38 s) whole frame 32.6 ms, submit+present 0.6 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[dm] [vk] [perf] display timing: refresh 16.432 ms
+[slowframe]	1715	@late_ms=0.000	@frame_ms=16.893	@work_ms=16.810	@nvn_ms=1.086	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=15.305	@cpu_ms=1.442	@proc_cpu_ms=7.711	@call_ms=55102.492	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=55.103	@drawable_ms=0.000	@sub_wall_ms=1.075	@sub_cpu_ms=0.882	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.428	@presented_ms=32.866	@pres_at_ms=55209.859	@prev3_max_frame_ms=17.759
+[dm] [longframe] frame 1720 (55.20 s) whole frame 35.5 ms, submit+present 0.9 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[slowframe]	1785	@late_ms=0.000	@frame_ms=16.877	@work_ms=16.742	@nvn_ms=1.091	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=15.306	@cpu_ms=1.084	@proc_cpu_ms=5.541	@call_ms=56268.464	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=56.269	@drawable_ms=0.000	@sub_wall_ms=1.084	@sub_cpu_ms=0.677	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.426	@presented_ms=32.858	@pres_at_ms=56376.522	@prev3_max_frame_ms=18.317
 [dm] audio #0 device callbacks 6000: 240–240 frames each, 4.0 blocks queued on average at callback; in these 2000, 0 underruns, 0.0 ms zero-padded
-[slowframe]	1784	@late_ms=0.000	@frame_ms=16.817	@work_ms=16.757	@nvn_ms=0.541	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=15.980	@cpu_ms=0.861	@proc_cpu_ms=4.594	@call_ms=54202.440	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=54.202	@drawable_ms=0.000	@sub_wall_ms=0.534	@sub_cpu_ms=0.533	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.428	@presented_ms=32.854	@pres_at_ms=54311.165	@prev3_max_frame_ms=16.754
-[dm] [longframe] frame 1789 (54.30 s) whole frame 33.3 ms, submit+present 0.5 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[dm] oe focus state → 2
+[dm] oe notification popped by the game: 15
+[dm] [longframe] frame 1790 (56.38 s) whole frame 42.8 ms, submit+present 0.8 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
 [dm] [vk] replay up to present 1800: draws 10806, skipped (no program 0, no target 0, no pipeline 0), passes 7208, clears folded 9012, dispatches 0, pipelines 6; presents shown 1799, no image 0, never drawn 0; uniform updates landed 10809 (superseded 5398, shadows 18007, CPU reads racing a GPU write 0), same targets kept 9000, most draws in one pass 4
-[dm] [vk] replay per frame (last 600): 6 draws, replay 0.61 ms (descriptor sets 0.11, pipeline keys 0.03), queue submit 0.08 ms, uniform shadows 2 KB; GPU busy 1.44 ms; texture uploads 0.0 (0.00 MB, 0.00 ms); descriptor sets reused 1800, new 18012 (collecting 0.06 ms, hashing 0.00, new ones 0.03), kept per stage 1 a frame (memo differences 0)
-[dm] [nvn] timing up to frame 1800: frame time p50 16.42 / p95 18.80 / max 33.77 ms (300 frames); frame work p50 16.27 / p95 18.65 / max 33.61 ms (300 frames); NVN submit+present p50 1.11 / p95 1.96 / max 2.96 ms (300 frames); GPU p50 1.44 / p95 1.45 / max 1.68 ms (300 frames);
-[dm] [nvn] frame interval up to frame 1800: >16.7ms 105 / 300 frames, p99 33.33 ms
-[dm] [nvn] on-screen up to frame 1800: 300 frames, dropped 5 (discarded 0), p99 32.86 ms; footprint 665 MiB; brightness -1.00; thermal -1
+[dm] [vk] replay per frame (last 600): 6 draws, replay 0.63 ms (descriptor sets 0.11, pipeline keys 0.04), queue submit 0.09 ms, uniform shadows 2 KB; GPU busy 1.44 ms; texture uploads 0.0 (0.00 MB, 0.00 ms); descriptor sets reused 1800, new 18012 (collecting 0.06 ms, hashing 0.00, new ones 0.03), kept per stage 1 a frame (memo differences 0)
+[dm] [nvn] timing up to frame 1800: frame time p50 16.39 / p95 20.16 / max 42.79 ms (300 frames); frame work p50 16.29 / p95 19.93 / max 42.68 ms (300 frames); NVN submit+present p50 0.78 / p95 1.84 / max 9.12 ms (300 frames); GPU p50 1.44 / p95 1.46 / max 1.70 ms (300 frames);
+[dm] [nvn] frame interval up to frame 1800: >16.7ms 118 / 300 frames, p99 35.24 ms
+[dm] [nvn] on-screen up to frame 1800: 300 frames, dropped 5 (discarded 0), p99 32.87 ms; footprint 652 MiB; brightness -1.00; thermal -1
 [dm] [nvn] vertex bindings up to frame 1800: per frame address lookups 0 / reused 0, vertex table writes 0 / skipped 0
 [dm] [nvn] thread policy: main thread real-time computation 0.00 ms / period 0.00 ms, real-time policy not in effect, current priority 10 (base 10, policy 0); 36 worker threads QoS 0x21; present QoS 0
 [dm] [nvn] packaged textures: first uploads 0, re-uploads on pool content change 0; write-protection faults 0, pages unprotected before host writes 0; missed 0 (cumulative)
+[slowframe]	1791	@late_ms=0.000	@frame_ms=7.825	@work_ms=7.719	@nvn_ms=0.657	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=6.758	@cpu_ms=1.109	@proc_cpu_ms=5.618	@call_ms=56385.236	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=56.385	@drawable_ms=0.000	@sub_wall_ms=0.643	@sub_cpu_ms=0.641	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.429	@presented_ms=32.860	@pres_at_ms=56491.527	@prev3_max_frame_ms=42.793
 [dm] [nvn] frame 1800: 62 functions 424 calls
-[dm] [vk] [perf] display timing: 1800 frames, 2 resyncs, 0 shown a vsync or more after their time (cumulative)
-[dm] [vk] [perf] display timing: refresh 16.428 ms
-[slowframe]	#	up to frame 1800	judged=1793	slow=30	criterion=on-screen interval
-[slowframe]	1835	@late_ms=0.000	@frame_ms=17.333	@work_ms=17.218	@nvn_ms=2.005	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=14.679	@cpu_ms=1.818	@proc_cpu_ms=9.305	@call_ms=55058.885	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=55.059	@drawable_ms=0.000	@sub_wall_ms=1.994	@sub_cpu_ms=1.118	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.672	@presented_ms=32.862	@pres_at_ms=55165.484	@prev3_max_frame_ms=16.746
-[dm] [longframe] frame 1840 (55.16 s) whole frame 33.3 ms, submit+present 1.3 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
-[slowframe]	1904	@late_ms=0.000	@frame_ms=16.270	@work_ms=16.112	@nvn_ms=1.655	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=13.404	@cpu_ms=2.031	@proc_cpu_ms=9.537	@call_ms=56209.400	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=56.210	@drawable_ms=0.000	@sub_wall_ms=1.634	@sub_cpu_ms=1.106	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.445	@presented_ms=32.855	@pres_at_ms=56315.519	@prev3_max_frame_ms=17.126
-[dm] [longframe] frame 1909 (56.31 s) whole frame 36.0 ms, submit+present 1.7 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[dm] [vk] [perf] display timing: 1800 frames, 0 resyncs, 1 shown a vsync or more after their time (cumulative)
 [dm] [vk] [perf] display timing: refresh 16.429 ms
-[dm] oe focus state → 2
-[dm] oe notification popped by the game: 15
-[dm] [longframe] frame 1918 (56.46 s) whole frame 24.8 ms, submit+present 0.8 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
-[slowframe]	1918	@late_ms=0.000	@frame_ms=24.790	@work_ms=24.552	@nvn_ms=0.763	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=23.373	@cpu_ms=1.227	@proc_cpu_ms=6.393	@call_ms=56463.578	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=56.464	@drawable_ms=0.000	@sub_wall_ms=0.650	@sub_cpu_ms=0.622	@sub_instr=0.000	@display_ms=24.828	@gpu_ms=1.432	@presented_ms=32.861	@pres_at_ms=56561.961	@prev3_max_frame_ms=18.965
-[dm] [longframe] frame 1924 (56.58 s) whole frame 34.6 ms, submit+present 7.2 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
-[slowframe]	1956	@late_ms=0.081	@frame_ms=16.857	@work_ms=16.778	@nvn_ms=0.652	@itv=1.000	@wait_ms=3.197	@pq_wait_ms=0.001	@cpu_ms=1.054	@proc_cpu_ms=5.996	@call_ms=57084.475	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=57.085	@drawable_ms=0.000	@sub_wall_ms=0.643	@sub_cpu_ms=0.533	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.460	@presented_ms=32.862	@pres_at_ms=57186.413	@prev3_max_frame_ms=16.731
-[dm] [longframe] frame 1961 (57.18 s) whole frame 26.1 ms, submit+present 0.7 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
+[slowframe]	#	up to frame 1800	judged=1797	slow=32	criterion=on-screen interval
+[slowframe]	1835	@late_ms=0.000	@frame_ms=17.447	@work_ms=17.370	@nvn_ms=0.725	@itv=1.000	@wait_ms=0.000	@pq_wait_ms=9.066	@cpu_ms=1.103	@proc_cpu_ms=4.544	@call_ms=57107.535	@passes=0.000	@draws=0.000	@rt_load_mb=0.000	@rt_store_mb=0.000	@pass_full_rw=0.000	@unwritten_dc_mb=0.000	@args_enc=0.000	@args_reuse=0.000	@ds_omit=0.000	@use_call=0.000	@use_skip=0.000	@faults=0.000	@reuploads=0.000	@mprotect_calls=0.000	@mprotect_pages=0.000	@mprotect_ms=0.000	@upload_ms=0.000	@upload_gpu_ms=0.000	@lib_new=0.000	@pso_new=0.000	@t_s=57.108	@drawable_ms=0.000	@sub_wall_ms=0.717	@sub_cpu_ms=0.667	@sub_instr=0.000	@display_ms=16.667	@gpu_ms=1.445	@presented_ms=32.865	@pres_at_ms=57214.489	@prev3_max_frame_ms=16.995
+[dm] [longframe] frame 1840 (57.21 s) whole frame 29.1 ms, submit+present 0.7 ms, GPU 1.4 ms; new pipelines 0 + shader libraries 0, 0.0 ms in all; texture uploads 0 first + 0 re-uploads, 0.0 MB / 0.0 ms
 [dm] oe focus state → 3
 [dm] audio suspended (background / interruption)
 [dm] [nvn] graphics suspended: in-flight GPU work drained
@@ -854,33 +813,18 @@ DM_VK_DRIVER=libvulkan_freedreno.so
 11-23 11:39:03.924 27217 27217 F DEBUG   :       #36 pc 00000000000f23b8  /system/lib64/libandroid_runtime.so (android::AndroidRuntime::start(char const*, android::Vector<android::String8> const&, bool)+916) (BuildId: b4e8bb77c51d0aa602fe4bfdeec32337)
 11-23 11:39:03.924 27217 27217 F DEBUG   :       #37 pc 0000000000002654  /system/bin/app_process64 (main+1428) (BuildId: cf8363ee21ac2741a6c8dbbb8c562607)
 11-23 11:39:03.924 27217 27217 F DEBUG   :       #38 pc 000000000005628c  /apex/com.android.runtime/lib64/bionic/libc.so (__libc_init+120) (BuildId: 0a8ff12d1999606f4dc98ab8012e827d)
-11-24 00:12:06.137 29198 29198 D ADPFLog : getCurrentThermalStatus(), caller:11270,[unknown.none.nx2android]
-11-24 00:12:06.138 29198 29303 D ADPFLog : addThermalStatusListener(listener), caller:11270,[unknown.none.nx2android]
-11-24 00:12:06.138 29198 29303 D ADPFLog : addThermalStatusListener(executor, listener), caller:11270,[unknown.none.nx2android]
-11-24 00:12:33.511 29866 29866 D ADPFLog : getCurrentThermalStatus(), caller:11270,[unknown.none.nx2android]
-11-24 00:12:33.513 29866 29900 D ADPFLog : addThermalStatusListener(listener), caller:11270,[unknown.none.nx2android]
-11-24 00:12:33.513 29866 29900 D ADPFLog : addThermalStatusListener(executor, listener), caller:11270,[unknown.none.nx2android]
-11-24 00:13:29.880 29866 29866 I NGRRuntime: [window] focus changed focused=0
-11-24 00:13:29.881 29866 29866 I NGRRuntime: [window] focus callback returned
-11-24 00:13:30.953 29866 29866 I NGRRuntime: [activity] onPause begin
-11-24 00:13:30.962 29866 29866 I NGRRuntime: [activity] onPause returned
-11-24 00:13:30.962 29866 29866 I NGRRuntime: [window] destroyed window=0x7a6f736530
-11-24 00:13:31.044 29866 29866 I NGRRuntime: [window] destroyed callback returned
-11-24 00:13:31.044 29866 29866 I NGRRuntime: [activity] onStop begin
-11-24 00:13:31.044 29866 29866 I NGRRuntime: [activity] onStop returned
-11-24 00:13:31.044 29866 29866 I NGRRuntime: [activity] onSaveInstanceState begin
-11-24 00:13:31.045 29866 29866 I NGRRuntime: [activity] onSaveInstanceState returned size=0 state=none
-11-24 00:13:31.054 29866 29866 I NGRRuntime: [activity] onDestroy begin
-11-24 00:13:34.091 30748 30748 I libc    : SetHeapTaggingLevel: tag level set to 0
-11-24 00:13:34.127 30748 30748 D nativeloader: Configuring clns-7 for other apk /data/app/~~VxnyfsENSBYA78yWdRGWDQ==/unknown.none.nx2android-3nQDvYdUwoOrYFZJRD--sA==/base.apk. target_sdk_version=28, uses_libraries=, library_path=/data/app/~~VxnyfsENSBYA78yWdRGWDQ==/unknown.none.nx2android-3nQDvYdUwoOrYFZJRD--sA==/lib/arm64:/data/app/~~VxnyfsENSBYA78yWdRGWDQ==/unknown.none.nx2android-3nQDvYdUwoOrYFZJRD--sA==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/unknown.none.nx2android
-11-24 00:13:34.139 30748 30748 V Monotype: SetAppTypeFace- try to flip, app = unknown.none.nx2android
-11-24 00:13:34.186 30748 30748 I NGRRuntime: Application.onCreate process=unknown.none.nx2android
-11-24 00:13:34.194 30748 30769 D vulkan  : searching for layers in '/data/app/~~VxnyfsENSBYA78yWdRGWDQ==/unknown.none.nx2android-3nQDvYdUwoOrYFZJRD--sA==/lib/arm64'
-11-24 00:13:34.194 30748 30769 D vulkan  : searching for layers in '/data/app/~~VxnyfsENSBYA78yWdRGWDQ==/unknown.none.nx2android-3nQDvYdUwoOrYFZJRD--sA==/base.apk!/lib/arm64-v8a'
-11-24 00:13:34.201 30748 30748 V Monotype: SetAppTypeFace- try to flip, app = unknown.none.nx2android
-11-24 00:13:34.263 30748 30748 D ADPFLog : getCurrentThermalStatus(), caller:11270,[unknown.none.nx2android]
-11-24 00:13:34.272 30748 30789 D ADPFLog : addThermalStatusListener(listener), caller:11270,[unknown.none.nx2android]
-11-24 00:13:34.272 30748 30789 D ADPFLog : addThermalStatusListener(executor, listener), caller:11270,[unknown.none.nx2android]
-11-24 00:13:34.382 30748 30748 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
-11-24 00:13:34.382 30748 30748 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
-11-24 00:13:39.296 30748 30928 D ProfileInstaller: Installing profile for unknown.none.nx2android
+11-24 00:47:15.569 27824 27824 D ADPFLog : getCurrentThermalStatus(), caller:11270,[unknown.none.nx2android]
+11-24 00:47:15.571 27824 27862 D ADPFLog : addThermalStatusListener(listener), caller:11270,[unknown.none.nx2android]
+11-24 00:47:15.571 27824 27862 D ADPFLog : addThermalStatusListener(executor, listener), caller:11270,[unknown.none.nx2android]
+11-24 00:50:04.803 31461 31461 I libc    : SetHeapTaggingLevel: tag level set to 0
+11-24 00:50:04.844 31461 31461 D nativeloader: Configuring clns-7 for other apk /data/app/~~D2m_fippF-xiR3nBOHqglw==/unknown.none.nx2android-XfunxuR_50_TgiqYTSKCtg==/base.apk. target_sdk_version=28, uses_libraries=, library_path=/data/app/~~D2m_fippF-xiR3nBOHqglw==/unknown.none.nx2android-XfunxuR_50_TgiqYTSKCtg==/lib/arm64:/data/app/~~D2m_fippF-xiR3nBOHqglw==/unknown.none.nx2android-XfunxuR_50_TgiqYTSKCtg==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/unknown.none.nx2android
+11-24 00:50:04.856 31461 31461 V Monotype: SetAppTypeFace- try to flip, app = unknown.none.nx2android
+11-24 00:50:04.904 31461 31461 I NGRRuntime: Application.onCreate process=unknown.none.nx2android
+11-24 00:50:04.911 31461 31481 D vulkan  : searching for layers in '/data/app/~~D2m_fippF-xiR3nBOHqglw==/unknown.none.nx2android-XfunxuR_50_TgiqYTSKCtg==/lib/arm64'
+11-24 00:50:04.911 31461 31481 D vulkan  : searching for layers in '/data/app/~~D2m_fippF-xiR3nBOHqglw==/unknown.none.nx2android-XfunxuR_50_TgiqYTSKCtg==/base.apk!/lib/arm64-v8a'
+11-24 00:50:04.928 31461 31461 V Monotype: SetAppTypeFace- try to flip, app = unknown.none.nx2android
+11-24 00:50:05.000 31461 31461 D ADPFLog : getCurrentThermalStatus(), caller:11270,[unknown.none.nx2android]
+11-24 00:50:05.002 31461 31495 D ADPFLog : addThermalStatusListener(listener), caller:11270,[unknown.none.nx2android]
+11-24 00:50:05.002 31461 31495 D ADPFLog : addThermalStatusListener(executor, listener), caller:11270,[unknown.none.nx2android]
+11-24 00:50:05.134 31461 31461 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-24 00:50:05.134 31461 31461 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
