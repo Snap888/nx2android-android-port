@@ -510,5 +510,47 @@ patch('NGR profile hash computation', 'porter/pipeline.py', 'NX2A_PROFILE_HASH',
 """),
 ])
 
+# 12. Trace the Android host thread independently of the dispatcher. The game's
+# own stderr is redirected to <game_dir>/log.txt; these markers show whether the
+# thread starts, enters dm/host/main.c, completes module loading and reaches nnMain.
+patch('NGR host boot trace', 'nxnative/dm/android/front_android.c', 'NX2A_NGR_HOST_BOOT_TRACE', [
+("""static void *host_thread(void *a) {
+    (void)a;
+    char mods[600]; snprintf(mods, sizeof mods, "%s/mods", g_root);
+    char *argv[] = {"dmhost", mods, NULL};
+    atomic_store(&g_running, 1);
+    int rc = main(2, argv);
+    LOG("host returned %d", rc);
+""", """static void *host_thread(void *a) {
+    (void)a;
+    char mods[600]; snprintf(mods, sizeof mods, "%s/mods", g_root);
+    char *argv[] = {"dmhost", mods, NULL};
+    LOG("[NGR host] thread entered; root=%s mods=%s", g_root, mods);
+    atomic_store(&g_running, 1);
+    LOG("[NGR host] entering dm host main");
+    int rc = main(2, argv);
+    LOG("[NGR host] dm host main returned rc=%d", rc);
+    LOG("host returned %d", rc);
+"""),
+("""    if (pthread_create(&t, &at, host_thread, NULL)) LOG("[RED] cannot start the host thread"); else pthread_detach(t);
+""", """    if (pthread_create(&t, &at, host_thread, NULL)) LOG("[RED] cannot start the host thread");
+    else { pthread_detach(t); LOG("[NGR host] detached host thread created; stack=%zu MB", ssz >> 20); }
+"""),
+])
+
+patch('NGR boot profiling', 'nxnative/dm/host/main.c', 'NX2A_NGR_BOOT_PROF', [
+("""    load_modules(argv[1], names, n);
+    dm_sdk_major();   // logs the SDK version, which SDK-dependent behaviour follows (loader.c)
+""", """    LOG("[NGR boot] loading %d guest modules from %s; profile=%s", n, argv[1], DM_GAME_ID);
+    load_modules(argv[1], names, n);
+    LOG("[NGR boot] guest modules loaded; resolving SDK and entering guest startup");
+    dm_sdk_major();   // logs the SDK version, which SDK-dependent behaviour follows (loader.c)
+"""),
+("""    LOG(">>> nnMain"); ((fn0)req("nnMain"))();
+""", """    LOG("[NGR boot] SDK startup and module constructors complete");
+    LOG(">>> nnMain"); ((fn0)req("nnMain"))();
+"""),
+])
+
 # All patch groups must run before reporting failures.
 sys.exit(1 if failed else 0)
