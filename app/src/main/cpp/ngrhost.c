@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 #include <android/log.h>
 #include <android/native_activity.h>
+#include <android/native_window.h>
 #include <dlfcn.h>
 #include <jni.h>
 #include <dirent.h>
@@ -71,6 +72,43 @@ static void append_log_line(const char *path, const char *line, size_t len) {
 #define LOGI(...) runtime_log_emit(ANDROID_LOG_INFO, __VA_ARGS__)
 
 typedef void (*game_on_create_fn)(ANativeActivity *, void *, size_t);
+static ANativeActivityCallbacks g_game_callbacks;
+
+static void ngr_window_created(ANativeActivity *activity, ANativeWindow *window) {
+    LOGI("[window] created window=%p size=%dx%d", (void *)window, window ? ANativeWindow_getWidth(window) : 0, window ? ANativeWindow_getHeight(window) : 0);
+    if (g_game_callbacks.onNativeWindowCreated) g_game_callbacks.onNativeWindowCreated(activity, window);
+    LOGI("[window] created callback returned");
+}
+static void ngr_window_resized(ANativeActivity *activity, ANativeWindow *window) {
+    LOGI("[window] resized window=%p size=%dx%d", (void *)window, window ? ANativeWindow_getWidth(window) : 0, window ? ANativeWindow_getHeight(window) : 0);
+    if (g_game_callbacks.onNativeWindowResized) g_game_callbacks.onNativeWindowResized(activity, window);
+    LOGI("[window] resized callback returned");
+}
+static void ngr_window_redraw(ANativeActivity *activity, ANativeWindow *window) {
+    LOGI("[window] redraw requested window=%p", (void *)window);
+    if (g_game_callbacks.onNativeWindowRedrawNeeded) g_game_callbacks.onNativeWindowRedrawNeeded(activity, window);
+    LOGI("[window] redraw callback returned");
+}
+static void ngr_window_destroyed(ANativeActivity *activity, ANativeWindow *window) {
+    LOGI("[window] destroyed window=%p", (void *)window);
+    if (g_game_callbacks.onNativeWindowDestroyed) g_game_callbacks.onNativeWindowDestroyed(activity, window);
+    LOGI("[window] destroyed callback returned");
+}
+static void ngr_window_focus(ANativeActivity *activity, int focused) {
+    LOGI("[window] focus changed focused=%d", focused);
+    if (g_game_callbacks.onWindowFocusChanged) g_game_callbacks.onWindowFocusChanged(activity, focused);
+    LOGI("[window] focus callback returned");
+}
+static void ngr_install_window_tracing(ANativeActivity *activity) {
+    if (!activity || !activity->callbacks) { LOGE("[window] cannot install callback tracing: callbacks missing"); return; }
+    g_game_callbacks = *activity->callbacks;
+    activity->callbacks->onNativeWindowCreated = ngr_window_created;
+    activity->callbacks->onNativeWindowResized = ngr_window_resized;
+    activity->callbacks->onNativeWindowRedrawNeeded = ngr_window_redraw;
+    activity->callbacks->onNativeWindowDestroyed = ngr_window_destroyed;
+    activity->callbacks->onWindowFocusChanged = ngr_window_focus;
+    LOGI("[window] lifecycle tracing installed");
+}
 static void *g_game_handles[64];
 static char g_game_loaded_names[64][256];
 static size_t g_game_handle_count;
@@ -698,6 +736,7 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
          activity->sdkVersion);
     on_create(activity, saved_state, saved_state_size);
     LOGI("[stage 7/8] game NativeActivity_onCreate returned; game runtime initialization continues asynchronously");
-    LOGI("[stage 8/8] dispatcher handoff complete; subsequent native output is captured from stdout/stderr and Logcat");
+    ngr_install_window_tracing(activity);
+    LOGI("[stage 8/8] dispatcher handoff complete; window lifecycle events will be captured from this point");
 
 }
