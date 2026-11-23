@@ -207,6 +207,83 @@ public class MainActivity extends Activity {
         web.evaluateJavascript("nx2aPicked(" + org.json.JSONObject.quote(pickId) + "," + org.json.JSONObject.quote(p) + ")", null);
     }
 
+    /** Publish a private diagnostic staging file into the user-visible Download/launcher folder.
+     * MediaStore is required on Android 10+; direct filesystem paths are used only on legacy Android. */
+    private Uri publishLogToDownloads(File source, String displayName) throws Exception {
+        if (source == null || !source.isFile()) throw new java.io.IOException("Log source is missing");
+        if (Build.VERSION.SDK_INT >= 29) {
+            android.content.ContentResolver resolver = getContentResolver();
+            Uri collection = android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI;
+            String relativePath = Environment.DIRECTORY_DOWNLOADS + "/launcher/";
+            resolver.delete(collection,
+                    android.provider.MediaStore.MediaColumns.DISPLAY_NAME + "=? AND "
+                            + android.provider.MediaStore.MediaColumns.RELATIVE_PATH + "=?",
+                    new String[]{displayName, relativePath});
+            android.content.ContentValues values = new android.content.ContentValues();
+            values.put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, displayName);
+            values.put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "text/plain");
+            values.put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, relativePath);
+            values.put(android.provider.MediaStore.MediaColumns.IS_PENDING, 1);
+            Uri item = resolver.insert(collection, values);
+            if (item == null) throw new java.io.IOException("MediaStore could not create Download/launcher/" + displayName);
+            boolean published = false;
+            try {
+                try (java.io.InputStream in = new java.io.FileInputStream(source);
+                     java.io.OutputStream out = resolver.openOutputStream(item, "w")) {
+                    if (out == null) throw new java.io.IOException("Could not open exported log");
+                    byte[] buffer = new byte[64 * 1024]; int n;
+                    while ((n = in.read(buffer)) != -1) out.write(buffer, 0, n);
+                    out.flush();
+                }
+                android.content.ContentValues ready = new android.content.ContentValues();
+                ready.put(android.provider.MediaStore.MediaColumns.IS_PENDING, 0);
+                if (resolver.update(item, ready, null, null) <= 0)
+                    throw new java.io.IOException("Could not publish exported log");
+                published = true;
+                return item;
+            } finally {
+                if (!published) resolver.delete(item, null, null);
+            }
+        }
+        File folder = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOWNLOADS), "launcher");
+        if (!folder.isDirectory() && !folder.mkdirs())
+            throw new java.io.IOException("Cannot create " + folder);
+        File target = new File(folder, displayName);
+        try (java.io.InputStream in = new java.io.FileInputStream(source);
+             java.io.OutputStream out = new java.io.FileOutputStream(target, false)) {
+            byte[] buffer = new byte[64 * 1024]; int n;
+            while ((n = in.read(buffer)) != -1) out.write(buffer, 0, n);
+            out.flush();
+        }
+        return FileProvider.getUriForFile(this, getPackageName() + ".files", target);
+    }
+
+    /** Remove the public copy too, so Clear logs and the next launch clean Download/launcher. */
+    private boolean deletePublishedLog(String displayName) {
+        try {
+            if (Build.VERSION.SDK_INT >= 29) {
+                int count = getContentResolver().delete(
+                        android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                        android.provider.MediaStore.MediaColumns.DISPLAY_NAME + "=? AND "
+                                + android.provider.MediaStore.MediaColumns.RELATIVE_PATH + "=?",
+                        new String[]{displayName, Environment.DIRECTORY_DOWNLOADS + "/launcher/"});
+                return count >= 0;
+            }
+            File file = new File(new File(Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DOWNLOADS), "launcher"), displayName);
+            return !file.exists() || file.delete();
+        } catch (Exception error) {
+            android.util.Log.w("NGRRuntime", "Could not delete public log " + displayName, error);
+            return false;
+        }
+    }
+
+    private void deletePublishedLogsForGame(String gameId) {
+        deletePublishedLog("ngr-runtime-" + gameId + ".log");
+        deletePublishedLog("ngr-gameplay-" + gameId + ".log");
+    }
+
     private void appendRuntimeLog(String gameId, String message) {
         try {
             File dir = new File(getFilesDir(), "ngr-logs");
@@ -274,11 +351,12 @@ public class MainActivity extends Activity {
                             .getBytes(java.nio.charset.StandardCharsets.UTF_8));
                 }
             }
-            Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".files", exported);
+            Uri uri = publishLogToDownloads(exported, "ngr-gameplay-" + gameId + ".log");
             Intent share = new Intent(Intent.ACTION_SEND).setType("text/plain")
                     .putExtra(Intent.EXTRA_STREAM, uri)
                     .putExtra(Intent.EXTRA_SUBJECT, "NGR gameplay log " + gameId)
                     .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            Toast.makeText(this, "Saved to Download/launcher/ngr-gameplay-" + gameId + ".log", Toast.LENGTH_LONG).show();
             startActivity(Intent.createChooser(share, "Export gameplay log"));
         } catch (Exception error) {
             Toast.makeText(this, "Could not export gameplay log: " + error.getMessage(), Toast.LENGTH_LONG).show();
@@ -320,6 +398,8 @@ public class MainActivity extends Activity {
                     }
                     File pid = new File(dir, gameId + ".pid");
                     if (pid.exists() && pid.isFile() && pid.delete()) removed++;
+                    if (!deletePublishedLog("ngr-runtime-" + gameId + ".log")) failed++;
+                    if (!deletePublishedLog("ngr-gameplay-" + gameId + ".log")) failed++;
                     String message = "Runtime log cleared";
                     if (cleared == 0 && !runtime.exists()) message += " (no log file existed)";
                     message += "; " + removed + " auxiliary file(s) removed";
@@ -339,6 +419,8 @@ public class MainActivity extends Activity {
             android.util.Log.e("NGRRuntime", "Cannot create runtime log directory " + dir);
             return false;
         }
+        // Each new game session also removes the previous user-visible exports.
+        deletePublishedLogsForGame(gameId);
         File[] files = {
                 new File(dir, gameId + ".log"),
                 new File(dir, "gameplay-" + gameId + ".log"),
@@ -427,11 +509,12 @@ public class MainActivity extends Activity {
                     out.write(("\n[logcat capture failed: " + e + "]\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
                 }
             }
-            Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".files", exported);
+            Uri uri = publishLogToDownloads(exported, "ngr-runtime-" + gameId + ".log");
             Intent share = new Intent(Intent.ACTION_SEND).setType("text/plain")
                     .putExtra(Intent.EXTRA_STREAM, uri)
                     .putExtra(Intent.EXTRA_SUBJECT, "NGR runtime log " + gameId)
                     .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            Toast.makeText(this, "Saved to Download/launcher/ngr-runtime-" + gameId + ".log", Toast.LENGTH_LONG).show();
             startActivity(Intent.createChooser(share, "Export NGR runtime log"));
         } catch (Exception e) {
             Toast.makeText(this, "Could not export runtime log: " + e.getMessage(), Toast.LENGTH_LONG).show();
