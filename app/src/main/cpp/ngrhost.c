@@ -762,6 +762,12 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     setenv("DM_GAME_DIR", game_dir, 1);
     setenv("NGR_PRIVATE_GAME_DIR", private_dir, 1);
     setenv("NGR_GAME_ID", id, 1);
+    /* Low-overhead upstream diagnostic: one breakdown line per dropped frame.
+       Preserve an explicit process setting; a game's env.txt may override it later. */
+    if (!getenv("DM_SLOWFRAME")) {
+        setenv("DM_SLOWFRAME", "1", 0);
+        LOGI("[config] NGR default DM_SLOWFRAME=1 (per-dropped-frame breakdown)");
+    }
     LOGI("[stage 1/8] payload validated; game_dir=%s private_dir=%s", game_dir, private_dir);
     LOGI("[stage 2/8] native libraries staged; runtime=%s", lib_path);
     LOGI("[stage 3/8] preloading companion dependencies");
