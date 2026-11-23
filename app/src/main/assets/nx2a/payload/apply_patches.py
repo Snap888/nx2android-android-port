@@ -400,6 +400,11 @@ patch('NGR no per-game APK', 'porter/pipeline.py', 'NX2A_NGR_NO_APK', [
 """, """    def ngr_runtime_files(self):
         if os.environ.get('NX2A_NGR') != '1': return {}
         files = {'libdmhost.so': self.so}
+        # NGR packages every native library produced by this game's source build.
+        # No hand-maintained companion list and no modification of prebuilt binaries.
+        for library in sorted(self.so.parent.glob('*.so')):
+            if library.is_file():
+                files[library.name] = library
         driver = self.o.vulkan_driver
         if driver:
             if driver.name != driver_lib_name(driver):
@@ -407,9 +412,6 @@ patch('NGR no per-game APK', 'porter/pipeline.py', 'NX2A_NGR_NO_APK', [
                 shutil.copyfile(driver, packed)
                 driver = packed
             files[driver.name] = driver
-            for name in ADRENOTOOLS_LIBS:
-                companion = self.so.parent / name
-                if companion.is_file(): files[name] = companion
         theme = android_profile.theme(self.g.id)
         for name in ('theme.tsv', 'tablet.png', 'phone.png'):
             asset = theme / name
@@ -419,6 +421,16 @@ patch('NGR no per-game APK', 'porter/pipeline.py', 'NX2A_NGR_NO_APK', [
         return files
 
     def data(self):
+"""),
+])
+
+# NGR builds AdrenoTools and its hook libraries from source as part of the game's
+# runtime build. They are packaged with the game even when the system Vulkan
+# driver is selected, so switching drivers later does not require recompilation.
+patch('NGR build complete native runtime', 'porter/pipeline.py', 'NX2A_NGR_ADRENOTOOLS', [
+("""                 + (['--adrenotools'] if self.o.vulkan_driver else []), self.logs / 'android_host.log', env=self.env)
+""",
+ """                 + (['--adrenotools'] if self.o.vulkan_driver or os.environ.get('NX2A_NGR') == '1' else []), self.logs / 'android_host.log', env=self.env)  # NX2A_NGR_ADRENOTOOLS
 """),
 ])
 
