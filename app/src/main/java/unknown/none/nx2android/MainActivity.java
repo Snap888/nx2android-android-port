@@ -216,7 +216,9 @@ public class MainActivity extends Activity {
             try (java.io.FileOutputStream out = new java.io.FileOutputStream(log, true)) {
                 out.write(line.getBytes(java.nio.charset.StandardCharsets.UTF_8));
             }
-        } catch (Exception ignored) { }
+        } catch (Exception error) {
+            android.util.Log.e("NGRRuntime", "Could not append per-game runtime log for " + gameId, error);
+        }
     }
 
     /** Clear the selected game's log in place. The native runtime reopens the path for
@@ -268,7 +270,7 @@ public class MainActivity extends Activity {
         if (gameId == null || !gameId.matches("[0-9a-f]{20}")) return false;
         File dir = new File(getFilesDir(), "ngr-logs");
         if (!dir.isDirectory() && !dir.mkdirs()) {
-            Log.e("NGRRuntime", "Cannot create runtime log directory " + dir);
+            android.util.Log.e("NGRRuntime", "Cannot create runtime log directory " + dir);
             return false;
         }
         File[] files = {
@@ -282,7 +284,7 @@ public class MainActivity extends Activity {
                 File file = files[i];
                 if (i == 1 || i == 2) {
                     if (file.exists() && !file.delete())
-                        Log.w("NGRRuntime", "Could not remove stale diagnostic file " + file);
+                        android.util.Log.w("NGRRuntime", "Could not remove stale diagnostic file " + file);
                     continue;
                 }
                 try (java.io.FileOutputStream out = new java.io.FileOutputStream(file, false)) {
@@ -291,7 +293,7 @@ public class MainActivity extends Activity {
             }
             return true;
         } catch (Exception error) {
-            Log.e("NGRRuntime", "Could not reset runtime log for " + gameId, error);
+            android.util.Log.e("NGRRuntime", "Could not reset runtime log for " + gameId, error);
             return false;
         }
     }
