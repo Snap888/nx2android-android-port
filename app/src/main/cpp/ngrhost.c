@@ -651,7 +651,7 @@ static void log_game_graphics_config(const char *game_dir) {
     unsigned logged = 0;
     while (fgets(line, sizeof(line), f)) {
         size_t len = strlen(line);
-        while (len && (line[len - 1] == '\\n' || line[len - 1] == '\\r')) line[--len] = 0;
+        while (len && (line[len - 1] == '\n' || line[len - 1] == '\r')) line[--len] = 0;
         if (!len || line[0] == '#') continue;
         if (!strncmp(line, "DM_VK_", 6) || !strncmp(line, "DM_NVN_", 7) ||
             !strncmp(line, "DM_GPU_", 7) || !strncmp(line, "DM_SLOWFRAME=", 13) ||
