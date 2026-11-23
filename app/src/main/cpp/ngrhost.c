@@ -388,9 +388,12 @@ static int log_runtime_elf_metadata(const char *path) {
  * Old diagnostic/repaired copies must never be dlopened as companion libraries:
  * their constructors may be incompatible with the current runtime ABI. */
 static int is_main_runtime_alias(const char *name) {
-    return name && (!strncmp(name, "libdmhost.", 10) ||
-                    !strncmp(name, "libdmhost-", 10) ||
-                    !strncmp(name, "libdmhost_", 10));
+    /* The canonical host is libdmhost.so. Do not classify it as an alias:
+       the dot-prefix test below also matches the canonical ".so" suffix. */
+    if (!name || !strcmp(name, "libdmhost.so")) return 0;
+    return !strncmp(name, "libdmhost.", 10) ||
+           !strncmp(name, "libdmhost-", 10) ||
+           !strncmp(name, "libdmhost_", 10);
 }
 
 static int game_library_loaded(const char *name) {
