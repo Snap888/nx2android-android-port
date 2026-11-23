@@ -99,15 +99,66 @@ static void ngr_window_focus(ANativeActivity *activity, int focused) {
     if (g_game_callbacks.onWindowFocusChanged) g_game_callbacks.onWindowFocusChanged(activity, focused);
     LOGI("[window] focus callback returned");
 }
+
+/* Trace the complete NativeActivity lifecycle as well as the Surface callbacks.
+ * A focus-loss/window-destroy pair alone cannot distinguish a user exit from an
+ * Activity being stopped by Android while the game is still initializing. */
+static void ngr_activity_start(ANativeActivity *a) {
+    LOGI("[activity] onStart begin");
+    if (g_game_callbacks.onStart) g_game_callbacks.onStart(a);
+    LOGI("[activity] onStart returned");
+}
+static void ngr_activity_resume(ANativeActivity *a) {
+    LOGI("[activity] onResume begin");
+    if (g_game_callbacks.onResume) g_game_callbacks.onResume(a);
+    LOGI("[activity] onResume returned");
+}
+static void ngr_activity_pause(ANativeActivity *a) {
+    LOGI("[activity] onPause begin");
+    if (g_game_callbacks.onPause) g_game_callbacks.onPause(a);
+    LOGI("[activity] onPause returned");
+}
+static void ngr_activity_stop(ANativeActivity *a) {
+    LOGI("[activity] onStop begin");
+    if (g_game_callbacks.onStop) g_game_callbacks.onStop(a);
+    LOGI("[activity] onStop returned");
+}
+static void ngr_activity_destroy(ANativeActivity *a) {
+    LOGI("[activity] onDestroy begin");
+    if (g_game_callbacks.onDestroy) g_game_callbacks.onDestroy(a);
+    LOGI("[activity] onDestroy returned");
+}
+static void *ngr_activity_save_state(ANativeActivity *a, size_t *size) {
+    LOGI("[activity] onSaveInstanceState begin");
+    void *state = g_game_callbacks.onSaveInstanceState
+        ? g_game_callbacks.onSaveInstanceState(a, size) : NULL;
+    LOGI("[activity] onSaveInstanceState returned size=%zu state=%s",
+         size ? *size : 0, state ? "present" : "none");
+    return state;
+}
+static void ngr_activity_content_rect(ANativeActivity *a, const ARect *rect) {
+    LOGI("[activity] onContentRectChanged begin rect=%d,%d-%d,%d",
+         rect ? rect->left : 0, rect ? rect->top : 0,
+         rect ? rect->right : 0, rect ? rect->bottom : 0);
+    if (g_game_callbacks.onContentRectChanged) g_game_callbacks.onContentRectChanged(a, rect);
+    LOGI("[activity] onContentRectChanged returned");
+}
 static void ngr_install_window_tracing(ANativeActivity *activity) {
-    if (!activity || !activity->callbacks) { LOGE("[window] cannot install callback tracing: callbacks missing"); return; }
+    if (!activity || !activity->callbacks) { LOGE("[activity] cannot install callback tracing: callbacks missing"); return; }
     g_game_callbacks = *activity->callbacks;
+    activity->callbacks->onStart = ngr_activity_start;
+    activity->callbacks->onResume = ngr_activity_resume;
+    activity->callbacks->onPause = ngr_activity_pause;
+    activity->callbacks->onStop = ngr_activity_stop;
+    activity->callbacks->onDestroy = ngr_activity_destroy;
+    activity->callbacks->onSaveInstanceState = ngr_activity_save_state;
+    activity->callbacks->onContentRectChanged = ngr_activity_content_rect;
     activity->callbacks->onNativeWindowCreated = ngr_window_created;
     activity->callbacks->onNativeWindowResized = ngr_window_resized;
     activity->callbacks->onNativeWindowRedrawNeeded = ngr_window_redraw;
     activity->callbacks->onNativeWindowDestroyed = ngr_window_destroyed;
     activity->callbacks->onWindowFocusChanged = ngr_window_focus;
-    LOGI("[window] lifecycle tracing installed");
+    LOGI("[activity] lifecycle and Surface tracing installed");
 }
 static void *g_game_handles[64];
 static char g_game_loaded_names[64][256];
