@@ -384,6 +384,15 @@ static int log_runtime_elf_metadata(const char *path) {
     return 0;
 }
 
+/* Only the exact libdmhost.so is the selected NativeActivity host.
+ * Old diagnostic/repaired copies must never be dlopened as companion libraries:
+ * their constructors may be incompatible with the current runtime ABI. */
+static int is_main_runtime_alias(const char *name) {
+    return name && (!strncmp(name, "libdmhost.", 10) ||
+                    !strncmp(name, "libdmhost-", 10) ||
+                    !strncmp(name, "libdmhost_", 10));
+}
+
 static int game_library_loaded(const char *name) {
     for (size_t i = 0; i < g_game_handle_count; ++i)
         if (!strcmp(g_game_loaded_names[i], name)) return 1;
@@ -402,6 +411,13 @@ static int stage_native_libs(const char *external_game_dir, const char *private_
         size_t n = strlen(ent->d_name);
         if (n < 4 || strcmp(ent->d_name + n - 3, ".so")) continue;
         char src[1400], dst[1400];
+        if (is_main_runtime_alias(ent->d_name)) {
+            int alias_len = snprintf(dst, sizeof(dst), "%s/%s", private_game_dir, ent->d_name);
+            if (alias_len > 0 && (size_t)alias_len < sizeof(dst) && unlink(dst) == 0)
+                LOGI("removed stale private runtime alias %s", ent->d_name);
+            LOGI("skipping non-canonical main runtime copy %s; only libdmhost.so may be dispatched", ent->d_name);
+            continue;
+        }
         snprintf(src, sizeof(src), "%s/%s", external_game_dir, ent->d_name);
         snprintf(dst, sizeof(dst), "%s/%s", private_game_dir, ent->d_name);
         struct stat st;
@@ -426,6 +442,7 @@ static int preload_game_dependencies(const char *private_game_dir) {
             size_t n = strlen(ent->d_name);
             if (n < 4 || strcmp(ent->d_name + n - 3, ".so") ||
                 !strcmp(ent->d_name, "libdmhost.so") ||
+                is_main_runtime_alias(ent->d_name) ||
                 game_library_loaded(ent->d_name)) continue;
             if (g_game_handle_count >= (sizeof(g_game_handles) / sizeof(g_game_handles[0])) - 1) {
                 LOGE("too many game native libraries; refusing to overflow runtime handle table");
