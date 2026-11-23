@@ -387,8 +387,8 @@ patch('NGR no per-game APK', 'porter/pipeline.py', 'NX2A_NGR_NO_APK', [
 """, """        pack_files = {**self.fps_files, **font_files, **self.ngr_runtime_files()}
         man = datapack.build(dst, profile=self.ap, version=self.pkg_ver, display=self.display, patched=self.patched, romfs=romfs, shaders=self.dmsv,
 """),
-("""                             files={**self.fps_files, **font_files}, profile_h=getattr(self, 'profile_h', None),
-""", """                             files=pack_files, profile_h=getattr(self, 'profile_h', None),
+("""                             files={**self.fps_files, **font_files},
+""", """                             files=pack_files, profile_h=profile_h,
 """),
 ("""        self.data_path = dst; self.result['data'] = str(dst)
 """, """        self.data_path = dst; self.result['data'] = str(dst)
@@ -490,6 +490,27 @@ patch('NGR per-game data-pack paths', 'porter/datapack.py', 'NX2A_GAME_FILES', [
 ("""    if profile_h: man['profile_h'] = profile_h
 """, """    if profile_h: man['profile_h'] = profile_h
     if os.environ.get('NX2A_GAME_ID'): man['game_id'] = os.environ['NX2A_GAME_ID']
+"""),
+])
+
+# 11. Keep the exact profile header hash in the data-pack manifest. The NGR exporter
+# uses it to select the same game / Android profile that produced libdmhost.so.
+patch('NGR profile hash manifest', 'porter/datapack.py', 'NX2A_PROFILE_HASH', [
+("""def build(dst, *, profile, version, display, patched, romfs, shaders, aoc=None, sysdata=None, language='en-US', package=None, env=(), settings=None, files=None, progress=None):
+""", """def build(dst, *, profile, version, display, patched, romfs, shaders, aoc=None, sysdata=None, language='en-US', package=None, env=(), settings=None, files=None, profile_h=None, progress=None):  # NX2A_PROFILE_HASH
+"""),
+("""    man = dict(title_id=profile.id, name=profile.name, package=package, version=version, display=display, language=language, requires=profile.requires,
+""", """    man = dict(title_id=profile.id, name=profile.name, package=package, version=version, display=display, language=language, requires=profile.requires, profile_h=profile_h,
+"""),
+])
+
+patch('NGR profile hash computation', 'porter/pipeline.py', 'NX2A_PROFILE_HASH', [
+("""    def data(self):
+        PROG.stage('data pack', step='button-icon font')
+""", """    def data(self):
+        import hashlib  # NX2A_PROFILE_HASH
+        profile_h = hashlib.sha256(game.header(self.g).encode('utf-8')).hexdigest()
+        PROG.stage('data pack', step='button-icon font')
 """),
 ])
 
