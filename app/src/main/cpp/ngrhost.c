@@ -768,6 +768,13 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
         setenv("DM_SLOWFRAME", "1", 0);
         LOGI("[config] NGR default DM_SLOWFRAME=1 (per-dropped-frame breakdown)");
     }
+    /* A game can stall before its first NVN present. DM_SLOWFRAME only reports
+       frames after presentation starts, so enable the low-volume NVN object
+       lifecycle log as well. Preserve a game's explicit env.txt override. */
+    if (!getenv("DM_NVN_LOG")) {
+        setenv("DM_NVN_LOG", "1", 0);
+        LOGI("[config] NGR default DM_NVN_LOG=1 (NVN device/pool/queue/window lifecycle)");
+    }
     LOGI("[stage 1/8] payload validated; game_dir=%s private_dir=%s", game_dir, private_dir);
     LOGI("[stage 2/8] native libraries staged; runtime=%s", lib_path);
     LOGI("[stage 3/8] preloading companion dependencies");
