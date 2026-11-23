@@ -580,4 +580,41 @@ static int g_watch_dump_all, g_watch_no_exit;  // NX2A_WATCH_DUMP_ALL
 """),
 ]);
 # All patch groups must run before reporting failures.
+
+# 14. NGR loading snapshots: the game can keep presenting a static loading frame
+# while its guest main thread is blocked on a file, event, mutex or worker. The
+# generic watchdog only observes frame progress, so take a small bounded series
+# of independent snapshots from its host thread during startup/loading.
+patch('NGR timed loading thread snapshots', 'nxnative/dm/host/crash.c', 'NX2A_LOAD_SNAPSHOTS', [
+("""static unsigned g_watch_stall;
+""", """static unsigned g_watch_stall;
+static unsigned g_watch_load_dumps, g_watch_load_interval = 10;  // NX2A_LOAD_SNAPSHOTS
+"""),
+("""static void *watchdog_main(void *arg) {
+    (void)arg;
+    for (;;) {
+        usleep(250000);
+""", """static void *watchdog_main(void *arg) {
+    (void)arg;
+    uint64_t watch_started = watch_now_ns();
+    unsigned load_dumps = 0;
+    for (;;) {
+        usleep(250000);
+        // At most three snapshots at 10-second intervals; this runs on the
+        // watchdog host thread and does not require a stalled present/tick.
+        if (g_watch_load_dumps && load_dumps < g_watch_load_dumps &&
+            watch_now_ns() - watch_started >= (uint64_t)(load_dumps + 1) * g_watch_load_interval * 1000000000ull) {
+            load_dumps++;
+            crash_dump_now("NGR timed loading snapshot");
+        }
+"""),
+("""    const char *watch = getenv("DM_WATCH"), *stall = getenv("DM_WATCH_STALL");
+""", """    const char *watch = getenv("DM_WATCH"), *stall = getenv("DM_WATCH_STALL");
+    const char *load_dumps = getenv("DM_WATCH_LOAD_DUMPS"), *load_interval = getenv("DM_WATCH_LOAD_INTERVAL");
+    g_watch_load_dumps = load_dumps ? (unsigned)atoi(load_dumps) : 0;
+    if (g_watch_load_dumps > 3) g_watch_load_dumps = 3;
+    if (load_interval) { unsigned v = (unsigned)atoi(load_interval); if (v >= 5 && v <= 60) g_watch_load_interval = v; }
+"""),
+]);
+
 sys.exit(1 if failed else 0)
