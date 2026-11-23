@@ -1,5 +1,5 @@
 # Rune Factory: Guardians of Azuma (this app's keys for an experimental port; never used once upstream has its own android.tsv)
 # The old Adreno 710 test forced every new pipeline onto the replay thread and enabled GPU timestamps.
-# On Adreno 740 restore the default background pipeline builder: synchronous compilation can stall the first frames.
+# Restore the default background pipeline builder on this device: synchronous compilation can stall the first frames.
 # GPU pass timestamps disturb Adreno binning; keep the lower-overhead dropped-frame breakdown instead.
 env	DM_SLOWFRAME=1
