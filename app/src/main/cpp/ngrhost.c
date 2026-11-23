@@ -26,6 +26,7 @@
 #define TAG "NGRRuntime"
 static char g_runtime_log_path[1400];
 static char g_runtime_log_dir[1200];
+static char g_gameplay_log_path[1400];
 
 static void runtime_log_emit(int priority, const char *fmt, ...) {
     char message[4096];
@@ -48,11 +49,16 @@ static void runtime_log_emit(int priority, const char *fmt, ...) {
         (long)getpid(), message);
     if (len <= 0) return;
     if ((size_t)len >= sizeof(line)) len = (int)sizeof(line) - 1;
-    int fd = open(g_runtime_log_path, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC | O_NOFOLLOW, 0600);
+    append_log_line(g_runtime_log_path, line, (size_t)len);
+    if (g_gameplay_log_path[0]) append_log_line(g_gameplay_log_path, line, (size_t)len);
+}
+static void append_log_line(const char *path, const char *line, size_t len) {
+    if (!path || !path[0] || !line || !len) return;
+    int fd = open(path, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC | O_NOFOLLOW, 0600);
     if (fd < 0) return;
     size_t off = 0;
-    while (off < (size_t)len) {
-        ssize_t n = write(fd, line + off, (size_t)len - off);
+    while (off < len) {
+        ssize_t n = write(fd, line + off, len - off);
         if (n < 0 && errno == EINTR) continue;
         if (n <= 0) break;
         off += (size_t)n;
@@ -120,8 +126,10 @@ static int runtime_log_init(const char *internal_root, const char *game_id) {
     if (!internal_root || !*internal_root || !game_id || !*game_id) return -1;
     int a = snprintf(g_runtime_log_dir, sizeof(g_runtime_log_dir), "%s/ngr-logs", internal_root);
     int b = snprintf(g_runtime_log_path, sizeof(g_runtime_log_path), "%s/%s.log", g_runtime_log_dir, game_id);
-    if (a < 0 || (size_t)a >= sizeof(g_runtime_log_dir) || b < 0 || (size_t)b >= sizeof(g_runtime_log_path)) {
-        g_runtime_log_path[0] = 0; return -1;
+    int c = snprintf(g_gameplay_log_path, sizeof(g_gameplay_log_path), "%s/gameplay-%s.log", g_runtime_log_dir, game_id);
+    if (a < 0 || (size_t)a >= sizeof(g_runtime_log_dir) || b < 0 || (size_t)b >= sizeof(g_runtime_log_path) ||
+        c < 0 || (size_t)c >= sizeof(g_gameplay_log_path)) {
+        g_runtime_log_path[0] = 0; g_gameplay_log_path[0] = 0; return -1;
     }
     if (mkdirs(g_runtime_log_dir)) { g_runtime_log_path[0] = 0; return -1; }
     char pid_path[1500];
@@ -137,8 +145,12 @@ static int runtime_log_init(const char *internal_root, const char *game_id) {
     int fd = open(g_runtime_log_path, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC | O_NOFOLLOW, 0600);
     if (fd < 0) { g_runtime_log_path[0] = 0; return -1; }
     close(fd);
-    /* Capture printf/fprintf(stderr) from the game host as well as our tagged logs. */
-    fd = open(g_runtime_log_path, O_WRONLY | O_APPEND | O_CLOEXEC | O_NOFOLLOW);
+    fd = open(g_gameplay_log_path, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC | O_NOFOLLOW, 0600);
+    if (fd < 0) { g_gameplay_log_path[0] = 0; return -1; }
+    close(fd);
+    /* Keep raw game stdout/stderr in a separate file; structured NGR events
+       are mirrored there with timestamps for a single chronological trace. */
+    fd = open(g_gameplay_log_path, O_WRONLY | O_APPEND | O_CLOEXEC | O_NOFOLLOW);
     if (fd >= 0) {
         (void)dup2(fd, STDOUT_FILENO);
         (void)dup2(fd, STDERR_FILENO);
