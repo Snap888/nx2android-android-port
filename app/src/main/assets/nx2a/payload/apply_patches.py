@@ -552,5 +552,32 @@ patch('NGR boot profiling', 'nxnative/dm/host/main.c', 'NX2A_NGR_BOOT_PROF', [
 """),
 ])
 
+
+# 13. NGR captures a thread-state snapshot when frame progress stops. The upstream
+# watchdog already knows how to dump guest thread PCs/backtraces and graphics wait
+# points; expose it during normal gameplay, but never terminate the game process.
+patch('NGR non-terminating stall snapshots', 'nxnative/dm/host/crash.c', 'NX2A_WATCH_DUMP_ALL', [
+("""static unsigned g_watch_stall;
+""", """static unsigned g_watch_stall;
+static int g_watch_dump_all, g_watch_no_exit;  // NX2A_WATCH_DUMP_ALL
+"""),
+("""        // Dump only after entering a run; at most 3 dumps per process, at least 10 seconds between two dumps (the loading screen and the pause menu also stop ticks, do not let them flood the log)
+        { static int dumps; static uint64_t last_dump, dumped_for;
+          if (g_watch_stall && !atomic_load(&g_watch_pregame) && atomic_load(&g_watch_tick) > 0 && now - last >= 1000000000ull && now - last < (uint64_t)g_watch_stall * 1000000000ull
+""", """        // NGR can request snapshots during normal gameplay even while the generic pregame flag remains set.
+        // Keep the upstream rate limit: at most 3 dumps per process, at least 10 seconds apart.
+        { static int dumps; static uint64_t last_dump, dumped_for;
+          if (g_watch_stall && (g_watch_dump_all ? atomic_load(&g_watch_count) > 0 : (!atomic_load(&g_watch_pregame) && atomic_load(&g_watch_tick) > 0)) && now - last >= 1000000000ull && now - last < (uint64_t)g_watch_stall * 1000000000ull
+"""),
+("""        if (g_watch_stall && now - last >= (uint64_t)g_watch_stall * 1000000000ull) {
+""", """        if (g_watch_stall && !g_watch_no_exit && now - last >= (uint64_t)g_watch_stall * 1000000000ull) {
+"""),
+("""    const char *watch = getenv("DM_WATCH"), *stall = getenv("DM_WATCH_STALL");
+""", """    const char *watch = getenv("DM_WATCH"), *stall = getenv("DM_WATCH_STALL");
+    const char *dump_all = getenv("DM_WATCH_DUMP_ALL"), *no_exit = getenv("DM_WATCH_NO_EXIT");
+    g_watch_dump_all = dump_all && atoi(dump_all) != 0;
+    g_watch_no_exit = no_exit && atoi(no_exit) != 0;
+"""),
+]);
 # All patch groups must run before reporting failures.
 sys.exit(1 if failed else 0)
