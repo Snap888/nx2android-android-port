@@ -461,9 +461,16 @@ static int preload_game_dependencies(const char *private_game_dir) {
                runtime is being relocated. The game runtime may still load it
                through its own DT_NEEDED dependency group. */
             int load_flags = RTLD_NOW | RTLD_GLOBAL;
-            if (!strcmp(ent->d_name, "libgsl_alloc_hook.so")) {
+            /* Hook implementations must not interpose on unrelated Android
+             * runtime symbols process-wide. They remain available to libdmhost
+             * through its DT_NEEDED dependency group when the main ELF is loaded.
+             * The allocator shim is also strictly local for the same reason. */
+            if (!strcmp(ent->d_name, "libgsl_alloc_hook.so") ||
+                !strcmp(ent->d_name, "libhook_impl.so") ||
+                !strcmp(ent->d_name, "libmain_hook.so") ||
+                !strcmp(ent->d_name, "libfile_redirect_hook.so")) {
                 load_flags = RTLD_NOW | RTLD_LOCAL;
-                LOGI("[stage 3/8] isolating allocator shim from global linker scope");
+                LOGI("[stage 3/8] isolating hook/allocator library from process-global symbol scope: %s", ent->d_name);
             }
             LOGI("[stage 3/8] dlopen companion begin: %s flags=%s",
                  ent->d_name, (load_flags & RTLD_GLOBAL) ? "GLOBAL" : "LOCAL");
@@ -632,7 +639,12 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     g_game_handles[g_game_handle_count] = game_handle;
     snprintf(g_game_loaded_names[g_game_handle_count], sizeof(g_game_loaded_names[0]), "%s", "libdmhost.so");
     g_game_handle_count++;
-    LOGI("[stage 6/8] dispatching NativeActivity_onCreate to libdmhost.so");
+    LOGI("[stage 6/8] dispatching NativeActivity_onCreate to libdmhost.so; activity=%p env=%p clazz=%p assetManager=%p internal=%s external=%s sdk=%d",
+         (void *)activity, (void *)activity->env, (void *)activity->clazz,
+         (void *)activity->assetManager,
+         activity->internalDataPath ? activity->internalDataPath : "(null)",
+         activity->externalDataPath ? activity->externalDataPath : "(null)",
+         activity->sdkVersion);
     on_create(activity, saved_state, saved_state_size);
     LOGI("[stage 7/8] game NativeActivity_onCreate returned; game runtime initialization continues asynchronously");
     LOGI("[stage 8/8] dispatcher handoff complete; subsequent native output is captured from stdout/stderr and Logcat");
