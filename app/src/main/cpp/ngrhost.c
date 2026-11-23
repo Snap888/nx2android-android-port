@@ -133,7 +133,7 @@ static int runtime_log_init(const char *internal_root, const char *game_id) {
         c < 0 || (size_t)c >= sizeof(g_gameplay_log_path)) {
         g_runtime_log_path[0] = 0; g_gameplay_log_path[0] = 0; return -1;
     }
-    if (mkdirs(g_runtime_log_dir)) { g_runtime_log_path[0] = 0; return -1; }
+    if (mkdirs(g_runtime_log_dir)) { g_runtime_log_path[0] = 0; g_gameplay_log_path[0] = 0; return -1; }
     char pid_path[1500];
     int n = snprintf(pid_path, sizeof(pid_path), "%s/%s.pid", g_runtime_log_dir, game_id);
     if (n > 0 && (size_t)n < sizeof(pid_path)) {
@@ -144,10 +144,10 @@ static int runtime_log_init(const char *internal_root, const char *game_id) {
             close(fd);
         }
     }
-    int fd = open(g_runtime_log_path, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC | O_NOFOLLOW, 0600);
+    int fd = open(g_runtime_log_path, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC | O_NOFOLLOW, 0600);
     if (fd < 0) { g_runtime_log_path[0] = 0; return -1; }
     close(fd);
-    fd = open(g_gameplay_log_path, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC | O_NOFOLLOW, 0600);
+    fd = open(g_gameplay_log_path, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC | O_NOFOLLOW, 0600);
     if (fd < 0) { g_gameplay_log_path[0] = 0; return -1; }
     close(fd);
     /* Keep raw game stdout/stderr in a separate file; structured NGR events
