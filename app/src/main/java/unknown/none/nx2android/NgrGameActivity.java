@@ -37,6 +37,14 @@ public final class NgrGameActivity extends NativeActivity {
         super.onResume();
     }
 
+    /** Called from the native overlay input thread; finish must run on Android's UI thread. */
+    public void finishFromNative() {
+        runOnUiThread(() -> {
+            NgrApplication.writeLifecycle("NgrGameActivity.finishFromNative requested");
+            if (!isFinishing()) finish();
+        });
+    }
+
     @Override protected void onDestroy() {
         NgrApplication.writeLifecycle("NgrGameActivity.onDestroy");
         super.onDestroy();
