@@ -487,10 +487,6 @@ patch('NGR per-game data-pack paths', 'porter/datapack.py', 'NX2A_GAME_FILES', [
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(src, target); n += 1; b += Path(src).stat().st_size
 """),
-("""    if profile_h: man['profile_h'] = profile_h
-""", """    if profile_h: man['profile_h'] = profile_h
-    if os.environ.get('NX2A_GAME_ID'): man['game_id'] = os.environ['NX2A_GAME_ID']
-"""),
 ])
 
 # 11. Keep the exact profile header hash in the data-pack manifest. The NGR exporter
@@ -500,7 +496,7 @@ patch('NGR profile hash manifest', 'porter/datapack.py', 'NX2A_PROFILE_HASH', [
 """, """def build(dst, *, profile, version, display, patched, romfs, shaders, aoc=None, sysdata=None, language='en-US', package=None, env=(), settings=None, files=None, profile_h=None, progress=None):  # NX2A_PROFILE_HASH
 """),
 ("""    man = dict(title_id=profile.id, name=profile.name, package=package, version=version, display=display, language=language, requires=profile.requires,
-""", """    man = dict(title_id=profile.id, name=profile.name, package=package, version=version, display=display, language=language, requires=profile.requires, profile_h=profile_h,
+""", """    man = dict(title_id=profile.id, name=profile.name, package=package, version=version, display=display, language=language, requires=profile.requires, profile_h=profile_h, game_id=os.environ.get('NX2A_GAME_ID', ''),
 """),
 ])
 
