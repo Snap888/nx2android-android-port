@@ -28,6 +28,8 @@ static char g_runtime_log_path[1400];
 static char g_runtime_log_dir[1200];
 static char g_gameplay_log_path[1400];
 
+static void append_log_line(const char *path, const char *line, size_t len);
+
 static void runtime_log_emit(int priority, const char *fmt, ...) {
     char message[4096];
     va_list ap;
