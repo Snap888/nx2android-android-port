@@ -490,7 +490,12 @@ public class MainActivity extends Activity {
                             new java.io.InputStreamReader(p.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
                         String line;
                         while ((line = reader.readLine()) != null) {
-                            if (line.contains("NGRRuntime") || line.contains("AndroidRuntime")
+                            // Keep every line emitted by the game process, not only crash tags.
+                            // Vulkan/Turnip/NVN diagnostics often use their own tags and were
+                            // previously filtered out, hiding the first failing graphics call.
+                            boolean gameProcessLine = !pid.isEmpty() && line.contains(" " + pid + " ");
+                            if (gameProcessLine
+                                    || line.contains("NGRRuntime") || line.contains("AndroidRuntime")
                                     || line.contains("ActivityTaskManager") || line.contains("ActivityManager")
                                     || line.contains("linker") || line.contains("libc")
                                     || line.contains("DEBUG") || line.contains("crash_dump")
@@ -498,7 +503,17 @@ public class MainActivity extends Activity {
                                     || line.contains("NgrGameActivity") || line.contains("Permission Denial")
                                     || line.contains("Unable to") || line.contains("FATAL")
                                     || line.contains("START ") || line.contains("Displayed ")
-                                    || line.contains("Process ") || line.contains("not found")) {
+                                    || line.contains("Process ") || line.contains("not found")
+                                    || line.contains("Vulkan") || line.contains("vulkan")
+                                    || line.contains("Adreno") || line.contains("Turnip")
+                                    || line.contains("freedreno") || line.contains("adrenotools")
+                                    || line.contains("hook_impl") || line.contains("main_hook")
+                                    || line.contains("file_redirect_hook") || line.contains("NVN")
+                                    || line.contains("nvn") || line.contains("dmhost")
+                                    || line.contains("[dm]") || line.contains("KGSL")
+                                    || line.contains("kgsl") || line.contains("gfx_vk")
+                                    || line.contains("swapchain") || line.contains("SurfaceFlinger")
+                                    || line.contains("BufferQueue") || line.contains("pipeline")) {
                                 out.write((line + "\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
                             }
                         }
