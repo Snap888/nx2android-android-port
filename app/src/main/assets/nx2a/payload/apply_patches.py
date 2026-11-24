@@ -746,7 +746,6 @@ def ensure_twelve_minutes_profile():
         return
     d.mkdir(parents=True, exist_ok=True)
     game.write_text("""# NGR profile based on the measured nxnative Twelve Minutes profile (seedds/nxnative ff b06d6).
-# Android remains experimental until tested on the target device. NX2A_TWELVE_MINUTES_PROFILE
 title_id\t0100CD701434C000
 program_id\t0100CD701434C000
 name\tTwelve Minutes
@@ -758,8 +757,6 @@ shader_versions\tv0
 modules\tmain subsdk0 sdk
 romfs_marker\tData/resources.assets
 zip_store\t.assets:.bank:.dat:.resource:.ress:.metallib
-# 5.5 GiB guest block, 4.875 GiB alias region; the default 4.375 GiB layout cannot
-# fit Unity's 16.25 MiB region request during first load.
 mem_reserve\t0x160000000
 mem_alias\t0x138000000
 mem_stack\t0x10000000
