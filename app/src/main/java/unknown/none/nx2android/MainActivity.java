@@ -572,6 +572,22 @@ public class MainActivity extends Activity {
         }
     }
 
+    /** Map the proot-visible /root path back to this app's real private filesystem. */
+    private String resolveNgrGameDataPath(String path) {
+        if (path == null || !path.startsWith("/root/")) return null;
+        try {
+            File root = new File(new File(getFilesDir(), "ubuntu"), "root").getCanonicalFile();
+            File game = new File(root, path.substring("/root/".length())).getCanonicalFile();
+            String prefix = root.getPath() + File.separator;
+            if (!game.getPath().startsWith(prefix) || !new File(game, "nx2a-data.json").isFile()
+                    || !new File(game, "libdmhost.so").isFile()) return null;
+            return game.getAbsolutePath();
+        } catch (Exception error) {
+            appendRuntimeLog("00000000000000000000", "Could not resolve game payload path: " + error);
+            return null;
+        }
+    }
+
     private class Bridge {
         @JavascriptInterface public void pick(String id, boolean dir) { runOnUiThread(() -> startPick(id, dir)); }
         @JavascriptInterface public void runProotExperiments() {
@@ -588,7 +604,7 @@ public class MainActivity extends Activity {
         @JavascriptInterface public void clearRuntimeLog(String gameId) { runOnUiThread(() -> MainActivity.this.clearRuntimeLog(gameId)); }
 
         /** Launch a game through NGR's own NativeActivity; no per-game Android package is installed. */
-        @JavascriptInterface public void launchGame(String gameId) {
+        @JavascriptInterface public void launchGame(String gameId, String dataPath) {
             runOnUiThread(() -> {
                 if (gameId == null || !gameId.matches("[0-9a-f]{20}")) {
                     Toast.makeText(MainActivity.this, "Invalid game shortcut ID", Toast.LENGTH_LONG).show();
@@ -616,8 +632,14 @@ public class MainActivity extends Activity {
                     }
                     Intent launch = new Intent().setComponent(gameComponent);
                     launch.putExtra("game_id", gameId);
+                    String resolvedDataPath = resolveNgrGameDataPath(dataPath);
+                    if (resolvedDataPath == null) {
+                        throw new IllegalStateException("Game data path is missing or outside NGR storage: " + dataPath);
+                    }
+                    launch.putExtra("game_data_path", resolvedDataPath);
                     appendRuntimeLog(gameId, "Starting explicit component " + launch.getComponent()
-                            + " with game_id=" + launch.getStringExtra("game_id"));
+                            + " with game_id=" + launch.getStringExtra("game_id")
+                            + " game_data_path=" + resolvedDataPath);
                     startActivity(launch);
                     appendRuntimeLog(gameId, "NativeActivity startActivity returned successfully");
                     h.postDelayed(() -> {
