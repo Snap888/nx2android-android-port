@@ -839,6 +839,20 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
             LOGI("[config] NGR default DM_FSLOG=%s (RomFS ReadFile trace)", fslog_path);
         else LOGE("[config] cannot configure DM_FSLOG path: %s", strerror(errno));
     }
+    /* Twelve Minutes stops during Unity preload. Enable file-open diagnostics
+       and content hashes for this title only, so the next run can distinguish
+       a missing/failed read from a stalled job completion without flooding
+       unrelated games with filesystem logs. */
+    if (!strcmp(id, "2f92dce8597c52f2717c")) {
+        if (!getenv("DM_FS")) {
+            setenv("DM_FS", "1", 0);
+            LOGI("[config] Twelve Minutes diagnostic DM_FS=1 (file open/read failures)");
+        }
+        if (!getenv("DM_FSLOG_HASH")) {
+            setenv("DM_FSLOG_HASH", "1", 0);
+            LOGI("[config] Twelve Minutes diagnostic DM_FSLOG_HASH=1 (hash successful RomFS reads)");
+        }
+    }
     /* Snapshot guest thread PCs/backtraces and graphics wait points after a
        one-second no-present stall. Keep the watchdog non-terminating: it is
        diagnostic only and must not close a game that later resumes. */
