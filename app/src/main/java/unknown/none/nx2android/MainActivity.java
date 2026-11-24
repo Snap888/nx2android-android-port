@@ -327,9 +327,14 @@ public class MainActivity extends Activity {
             return;
         }
         File dir = new File(getFilesDir(), "ngr-logs");
+        if (!dir.isDirectory() && !dir.mkdirs()) {
+            Toast.makeText(this, "Cannot access the diagnostic log folder.", Toast.LENGTH_LONG).show();
+            return;
+        }
         File source = new File(dir, "gameplay-" + gameId + ".log");
-        if (!source.isFile() || source.length() == 0) {
-            Toast.makeText(this, "No gameplay log yet. Launch the game first.", Toast.LENGTH_LONG).show();
+        try { if (!source.exists()) source.createNewFile(); }
+        catch (Exception error) {
+            Toast.makeText(this, "Cannot prepare gameplay log export: " + error.getMessage(), Toast.LENGTH_LONG).show();
             return;
         }
         File exported = new File(dir, "gameplay-" + gameId + "-export.log");
@@ -497,9 +502,14 @@ public class MainActivity extends Activity {
             return;
         }
         File dir = new File(getFilesDir(), "ngr-logs");
+        if (!dir.isDirectory() && !dir.mkdirs()) {
+            Toast.makeText(this, "Cannot access the diagnostic log folder.", Toast.LENGTH_LONG).show();
+            return;
+        }
         File source = new File(dir, gameId + ".log");
-        if (!source.isFile() || source.length() == 0) {
-            Toast.makeText(this, "No runtime log yet. Try launching the game first.", Toast.LENGTH_LONG).show();
+        try { if (!source.exists()) source.createNewFile(); }
+        catch (Exception error) {
+            Toast.makeText(this, "Cannot prepare runtime log export: " + error.getMessage(), Toast.LENGTH_LONG).show();
             return;
         }
         File exported = new File(dir, gameId + "-export.log");
