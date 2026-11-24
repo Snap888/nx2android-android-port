@@ -652,7 +652,8 @@ public class MainActivity extends Activity {
                 final boolean logNvn = logOptions.optBoolean("nvn", false);
                 final boolean logWatchdog = logOptions.optBoolean("watchdog", false);
                 final boolean logFs = logOptions.optBoolean("fs", false);
-                if ((logRuntime || logFs) && !resetRuntimeLogForLaunch(gameId)) {
+                final boolean anyLogging = logRuntime || logSlowframe || logNvn || logWatchdog || logFs;
+                if (anyLogging && !resetRuntimeLogForLaunch(gameId)) {
                     Toast.makeText(MainActivity.this, "Could not start a fresh runtime log. Check app storage.", Toast.LENGTH_LONG).show();
                     return;
                 }
