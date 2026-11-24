@@ -348,13 +348,13 @@ def job_env():
 UPD = {'t': 0, 'msg': 'not checked yet'}
 
 
-def check_update():
+def check_update(force=False):
     """Same download-and-verify as the launcher's, so the banner appears without restarting the app."""
     try:
         sys.path.insert(0, os.environ.get('NX2A_DIR', '/nx2a'))
         import launcher
         buf = io.StringIO()
-        with contextlib.redirect_stdout(buf): got = launcher.update()
+        with contextlib.redirect_stdout(buf): got = launcher.update(force=force)
         UPD.update(t=time.time(), msg=(buf.getvalue().strip().splitlines() or ['up to date'])[-1])
         return got
     except Exception as e:
@@ -801,7 +801,7 @@ class H(BaseHTTPRequestHandler):
             if p and p.poll() is None: os.killpg(p.pid, signal.SIGKILL)
             return self.j({'ok': True})
         if u.path == '/api/checkupdate':
-            got = check_update(); return self.j({'ready': got or ver(OTA) > int(VERSION or 0), 'msg': UPD['msg']})
+            got = check_update(force=True); return self.j({'ready': got or ver(OTA) > int(VERSION or 0), 'msg': UPD['msg']})
         if u.path == '/api/expfile':
             t = Path('/sdcard/Switch/nx2android-proot-experiments.txt')
             try: return self.j({'path': str(t), 'age': int(time.time() - t.stat().st_mtime), 'text': t.read_text(errors='replace')})
