@@ -23,7 +23,7 @@ button.b{padding:11px 14px;border-radius:8px;border:0;background:var(--red);colo
 <nav><button class="on" data-t="library">Library</button><button data-t="setup">Setup</button><button data-t="port">Recompiler</button><button data-t="device">Device</button><button data-t="log">Log</button></nav>
 <main>
 <section id="library" class="on">
- <div class="librarytools"><input type="text" id="libsearch" placeholder="Search games…" oninput="renderLibrary()"><button class="b g" style="margin:0;flex:none" onclick="refreshGameCovers()">Covers</button><button class="b" style="margin:0;flex:none" onclick="openRecompiler()">＋</button></div>
+ <div class="librarytools"><input type="text" id="libsearch" placeholder="Search games…" oninput="renderLibrary()"><button class="b g" style="margin:0;flex:none" onclick="refreshGameCovers()">Covers</button><button class="b g" style="margin:0;flex:none" onclick="importPrecompiled()">Import folder</button><button class="b" style="margin:0;flex:none" onclick="openRecompiler()">＋</button></div>
  <div id="librarygrid" class="gamegrid"></div>
  <div id="libraryempty" class="card sm" style="text-align:center;padding:28px 14px">Your library is empty. Tap + to choose a game and open the recompiler.</div>
 </section>
@@ -144,6 +144,7 @@ async function places(id,dir){const r=await api('/api/ls?path=/storage');const v
  const all=[['Internal storage','/sdcard'],...v];$('mplaces').innerHTML=all.map(a=>`<button class="b g" style="flex:none;margin:0 6px 6px 0" data-q="${a[1]}">${a[0]}</button>`).join('');
  $('mplaces').querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>pick(id,dir,b.dataset.q))}
 function nx2aPicked(id,p){
+ if(id==='importFolder'){importSelectedPrecompiled(p);return}
  if(!$(id))return;
  if(id==='gdriver'&&!/\\.so$/i.test(p)){if($('gmsg'))$('gmsg').textContent='Choose a Vulkan driver shared library (.so), not a ZIP or folder.';modal.style.display='none';return}
  $(id).value=p;modal.style.display='none';
@@ -183,6 +184,20 @@ let libraryGames=[], selectedGame='';
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 async function libraryLoad(){try{const r=await api('/api/library');libraryGames=Array.isArray(r.games)?r.games:[];renderLibrary();pollCoverRefresh()}catch(e){$('libraryempty').textContent='Could not load library: '+e}}
 function renderLibrary(){const q=($('libsearch').value||'').trim().toLowerCase();const list=libraryGames.filter(g=>(g.title||'').toLowerCase().includes(q));$('librarygrid').innerHTML=list.map(g=>{const id=esc(g.id),title=esc(g.title||'Untitled game'),cover=g.cover_path?'/api/cover?id='+encodeURIComponent(g.id):'';const art=cover?'<img'+(g.cover_source==='nlib-icon'?' class="auto-cover"':'')+' src="'+cover+'" alt="">':esc((g.title||'NGR').split(/\\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase());return '<div class="gamecard" data-game="'+id+'"><div class="gamecover">'+art+'</div><div class="gamename">'+title+'</div><div class="gamestate">'+(g.runtime_installed?'NGR READY':(g.runtime_ready?'RUNTIME BUILT':(g.status==='ready'?'READY' :'PORTED · RUNTIME NOT BUILT')))+'</div></div>'}).join('');$('libraryempty').style.display=list.length?'none':'block';$('libraryempty').textContent=libraryGames.length?'No games match this search.':'Your library is empty. Tap + to choose a game and open the recompiler.';$('librarygrid').querySelectorAll('[data-game]').forEach(el=>el.onclick=()=>gameDetails(el.dataset.game))}
+function importPrecompiled(){
+ if(!window.NX2A||!NX2A.pick){alert('Android folder picker is unavailable in this build.');return}
+ NX2A.pick('importFolder',true);
+}
+async function importSelectedPrecompiled(path){
+ const empty=$('libraryempty');empty.style.display='block';empty.textContent='Checking and adding precompiled game…';
+ try{
+  const r=await api('/api/library/import',{folder:path});
+  if(!r.ok)throw new Error(r.error||'Import failed');
+  await libraryLoad();
+  empty.style.display='none';
+  alert('Added to library: '+(r.game.title||'Precompiled game')+'. No recompilation was run.');
+ }catch(e){empty.textContent='Import failed: '+String(e&&e.message||e);alert('Could not import game: '+String(e&&e.message||e))}
+}
 function openRecompiler(){tab('port');$('folder').focus()}
 function gameDetails(id){const g=libraryGames.find(x=>x.id===id);if(!g)return;selectedGame=id;$('gtitle').textContent=g.title||'Game';$('gdetails').textContent='Platform: '+(g.platform||'Switch')+' · Runtime: '+(g.runtime_installed?'NGR READY':(g.runtime_ready?'RUNTIME BUILT':'RECOMPILE REQUIRED'))+' · Profile ABI: '+(g.runtime_profile_ready?'JSON v1 captured':'compiled profile only');const s=g.settings||{};$('gres').value=s.resolution||'Auto';$('ggfx').value=s.graphics||'Compatibility';$('gfps').value=String(s.fps||'Auto');$('gcontroller').value=s.controller||'Auto';$('gdriver').value=s.vulkan_driver||'';$('glogruntime').checked=!!s.log_runtime;$('glogslow').checked=!!s.log_slowframe;$('glognvn').checked=!!s.log_nvn;$('glogwatch').checked=!!s.log_watchdog;$('glogfs').checked=!!s.log_fs;$('coverPath').value='';$('gmsg').textContent='';$('gmodal').style.display='block'}
 function closeGame(){$('gmodal').style.display='none';selectedGame=''}
