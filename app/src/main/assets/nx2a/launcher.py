@@ -8,6 +8,7 @@ OTA = Path(os.environ.get('NX2A_OTA', '/root/ota'))
 REPO = Path(os.environ.get('NX2A_REPO', '/root/nx2android'))
 MARK = Path(os.environ.get('NX2A_SETUP_MARK', '/root/.nx2a_setup'))
 STATUS = Path(os.environ.get('NX2A_STATUS', '/root/patch_status.txt'))
+UPDATE_STATE = Path(os.environ.get('NX2A_UPDATE_STATE', '/root/.config/nx2android/update-check.json'))
 BUNDLED = D / 'payload'
 
 
@@ -51,6 +52,11 @@ def sync_porter(P, m):
     if not script.is_file():
         log('porter sync script is missing:', script)
         return
+    check = run([sys.executable, str(script), '--local-check'])
+    if check.returncode == 0:
+        log('porter cache: ' + (check.stdout.strip() or 'ready') + '; no download or network check')
+        return
+    log('porter cache needs repair: ' + (check.stdout.strip() or 'local validation failed'))
     r = run([sys.executable, str(script)])
     detail = (r.stdout + r.stderr).strip()
     try: STATUS.write_text(detail + f'\nexit {r.returncode}\n')
@@ -69,13 +75,29 @@ def fetch(url):
     raise last
 
 
-def update():
+def update(force=False):
+    now = int(time.time())
+    try:
+        state = json.loads(UPDATE_STATE.read_text())
+        age = now - int(state.get('checked_at', 0))
+        if not force and 0 <= age < 6 * 3600 and state.get('result') == 'ok':
+            log('update check: using cached result; last check', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(state['checked_at'])), 'remote version', state.get('remote_version', '?'))
+            return False
+        if not force and 0 <= age < 10 * 60 and state.get('result') == 'error':
+            log('update check: retry deferred after recent network error:', state.get('error', 'unknown'))
+            return False
+    except Exception:
+        pass
     try:
         cfg = json.loads((D / 'update.json').read_text())
         base = os.environ.get('NX2A_UPDATE_BASE') or f"https://raw.githubusercontent.com/{cfg['repo']}/{cfg.get('branch', 'main')}/{cfg['path']}"
         man = json.loads(fetch(base + '/payload.json'))
         cur = max(int(manifest(BUNDLED)['version']), int((manifest(OTA) or {'version': -1})['version']))
-        if int(man['version']) <= cur: return False
+        UPDATE_STATE.parent.mkdir(parents=True, exist_ok=True)
+        if int(man['version']) <= cur:
+            UPDATE_STATE.write_text(json.dumps({'checked_at': now, 'result': 'ok', 'remote_version': int(man['version']), 'installed_version': cur}))
+            log('update check: up to date (installed', cur, ', remote', man['version'] + ')')
+            return False
         new = OTA.with_name(OTA.name + '.new'); shutil.rmtree(new, ignore_errors=True)
         for rel, h in man['files'].items():
             if rel.startswith('/') or '..' in rel.split('/'): raise ValueError('bad path ' + rel)
@@ -84,15 +106,21 @@ def update():
             (new / rel).parent.mkdir(parents=True, exist_ok=True); (new / rel).write_bytes(data)
         (new / 'payload.json').write_text(json.dumps(man))
         shutil.rmtree(OTA, ignore_errors=True); new.rename(OTA)
+        UPDATE_STATE.parent.mkdir(parents=True, exist_ok=True)
+        UPDATE_STATE.write_text(json.dumps({'checked_at': now, 'result': 'ok', 'remote_version': int(man['version']), 'installed_version': int(man['version'])}))
         log('update downloaded: version', man['version']); return True
     except Exception as e:
+        try:
+            UPDATE_STATE.parent.mkdir(parents=True, exist_ok=True)
+            UPDATE_STATE.write_text(json.dumps({'checked_at': now, 'result': 'error', 'error': str(e)[:300]}))
+        except Exception: pass
         log('update check failed:', e); return False
 
 
 def updater():
-    time.sleep(5)
+    time.sleep(20)
     while True:
-        update(); time.sleep(300)
+        update(); time.sleep(6 * 3600)
 
 
 def main():
