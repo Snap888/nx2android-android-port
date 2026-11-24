@@ -817,4 +817,18 @@ except Exception as e:
     print(f'NGR Twelve Minutes profile: FAILED: {e}')
 
 
+# 18. A launcher shortcut may select another Vulkan driver without rebuilding the
+# game data. The Android front end reads env.txt after the NativeActivity host has
+# been entered, so apply the explicit NGR override after env_file() has loaded it.
+patch('NGR per-launch Vulkan driver override', 'nxnative/dm/android/front_android.c', 'NX2A_DM_VK_DRIVER_OVERRIDE', [
+    ("""    snprintf(p, sizeof p, "%s/env.txt", g_root); env_file(p);\n""",
+     """    snprintf(p, sizeof p, "%s/env.txt", g_root); env_file(p);
+    const char *ngr_vk_driver_override = getenv("NGR_DM_VK_DRIVER_OVERRIDE");
+    if (ngr_vk_driver_override && *ngr_vk_driver_override) {
+        setenv("DM_VK_DRIVER", ngr_vk_driver_override, 1);  // NX2A_DM_VK_DRIVER_OVERRIDE
+        LOG("[Vulkan] using per-launch driver override: %s", ngr_vk_driver_override);
+    }
+"""),
+])
+
 sys.exit(1 if failed else 0)
