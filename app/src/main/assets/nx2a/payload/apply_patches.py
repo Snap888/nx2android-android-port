@@ -831,4 +831,46 @@ patch('NGR per-launch Vulkan driver override', 'nxnative/dm/android/front_androi
 """),
 ])
 
+# 19. The Unity synchronization trace was useful during the initial Twelve Minutes
+# investigation, but its per-lock stderr writes must not run in normal gameplay.
+# Reuse the existing watchdog/thread-snapshot opt-in via DM_SYNC_TRACE.
+patch('NGR synchronization trace default-off gate', 'nxnative/dm/host/hle_thread.c', 'NX2A_SYNC_TRACE_GATED', [
+    ("""// NX2A_SYNC_TRACE: handles observed in Twelve Minutes loading snapshots.
+static uint64_t g_ngr_sync_keys[32];""",
+     """// NX2A_SYNC_TRACE_GATED: diagnostics only; never emit per-lock I/O in normal play.
+static int ngr_sync_trace_enabled(void) {
+    static int enabled = -1;
+    if (enabled < 0) { const char *v = getenv("DM_SYNC_TRACE"); enabled = v && v[0] == '1'; }
+    return enabled;
+}
+static uint64_t g_ngr_sync_keys[32];"""),
+    ("""if (ngr_sync_watch(t->handle)) LOG("[NGR_SYNC] lock-wait""",
+     """if (ngr_sync_trace_enabled() && ngr_sync_watch(t->handle)) LOG("[NGR_SYNC] lock-wait"""),
+    ("""if (ngr_sync_watch(t->handle)) LOG("[NGR_SYNC] lock-wake""",
+     """if (ngr_sync_trace_enabled() && ngr_sync_watch(t->handle)) LOG("[NGR_SYNC] lock-wake"""),
+    ("""if (ngr_sync_watch(t->handle)) LOG("[NGR_SYNC] unlock""",
+     """if (ngr_sync_trace_enabled() && ngr_sync_watch(t->handle)) LOG("[NGR_SYNC] unlock"""),
+    ("""if (ngr_sync_watch(t->handle)) {
+            ngr_sync_track_key(key);""",
+     """if (ngr_sync_trace_enabled() && ngr_sync_watch(t->handle)) {
+            ngr_sync_track_key(key);"""),
+    ("""if (ngr_sync_watch(t->handle)) LOG("[NGR_SYNC] cv-wake""",
+     """if (ngr_sync_trace_enabled() && ngr_sync_watch(t->handle)) LOG("[NGR_SYNC] cv-wake"""),
+    ("""int ngr_tracked_signal = ngr_sync_key_watched(key);""",
+     """int ngr_tracked_signal = ngr_sync_trace_enabled() && ngr_sync_key_watched(key);"""),
+    ("""if (t->wkind == 2 && ngr_sync_watch(t->handle))
+        LOG("[NGR_SYNC_WAIT] delivered""",
+     """if (ngr_sync_trace_enabled() && t->wkind == 2 && ngr_sync_watch(t->handle))
+        LOG("[NGR_SYNC_WAIT] delivered"""),
+    ("""if (kind == 2 && ngr_sync_watch(t->handle))
+        LOG("[NGR_SYNC_WAIT] register""",
+     """if (ngr_sync_trace_enabled() && kind == 2 && ngr_sync_watch(t->handle))
+        LOG("[NGR_SYNC_WAIT] register"""),
+    ("""if (ngr_sync_watch(w->handle))
+                LOG("[NGR_SYNC_WAIT] signal-target""",
+     """if (ngr_sync_trace_enabled() && ngr_sync_watch(w->handle))
+                LOG("[NGR_SYNC_WAIT] signal-target"""),
+])
+
+
 sys.exit(1 if failed else 0)
