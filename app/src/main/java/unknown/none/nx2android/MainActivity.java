@@ -707,6 +707,7 @@ public class MainActivity extends Activity {
                 final boolean logNvn = logOptions.optBoolean("nvn", false);
                 final boolean logWatchdog = logOptions.optBoolean("watchdog", false);
                 final boolean logFs = logOptions.optBoolean("fs", false);
+                final String vulkanDriverPath = logOptions.optString("vulkanDriver", "").trim();
                 final boolean anyLogging = logRuntime || logSlowframe || logNvn || logWatchdog || logFs;
                 if (anyLogging && !resetRuntimeLogForLaunch(gameId)) {
                     Toast.makeText(MainActivity.this, "Could not start a fresh runtime log. Check app storage.", Toast.LENGTH_LONG).show();
@@ -735,6 +736,7 @@ public class MainActivity extends Activity {
                     launch.putExtra("ngr_log_nvn", logNvn);
                     launch.putExtra("ngr_log_watchdog", logWatchdog);
                     launch.putExtra("ngr_log_fs", logFs);
+                    launch.putExtra("ngr_vulkan_driver_path", vulkanDriverPath);
                     String resolvedDataPath = resolveNgrGameDataPath(dataPath);
                     if (resolvedDataPath == null) {
                         throw new IllegalStateException("Game data path is missing or outside NGR storage: " + dataPath);
