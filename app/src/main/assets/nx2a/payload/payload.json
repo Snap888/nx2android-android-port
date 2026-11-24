@@ -1,10 +1,10 @@
 {
- "version": 170,
+ "version": 171,
  "setup": 3,
  "porter_sha": "468937822219a56eb81da1aa2e40f05e8c453af2",
  "files": {
   "adb_auto.py": "1bd9b7bc9fba898bc6acbb7eb29a3d4a2ee75427cafb98329ff8fe38ec2232a7",
-  "apply_patches.py": "7417c1ffe41e4b9f622aecc3ee28e734ceef2ff46c7716630903c1cbbbb1aa86",
+  "apply_patches.py": "65c0eaa63861bb6dc5516955f018c7b9be42c0829b126e2983a007cf32c73033",
   "dotnet_probe.py": "866983eb4aa53b567bf69e6574a93b00e315c2a85a2c536e95a123b9ded3e53a",
   "fast_tools.py": "665af40effe497d679cef624e0a0da81874900aa43e9fbfef07d172d7cc32070",
   "inner_setup.sh": "413d6980c1c0c129e90cb1892351dfc7a504b6a3919f78091703e4aba54cdd8c",
@@ -15,7 +15,7 @@
   "profiles/runefactoryguardiansofazuma.android.tsv": "78b445b4164356419ff1c67e4af9c71471b986b36c93964846addb15f65acf22",
   "runtime_install.py": "07961946f7f881667f6708736eed51c9c094329b2f85e151216a0ed481a96beb",
   "server_state.py": "43eb08dbb456841f78cb56efc902a6642412b07431ae36fc61e4abbe78884802",
-  "webgui/index.html": "882929f4f79dbb0054db4a394263e3993e9af49d94049aa03214a2649c5a1391",
+  "webgui/index.html": "6a47c3cbbad98f9bcdbfc3e3801fbec9043428dd0fdb45d82257aa7a91729c6c",
   "webgui/server.py": "a6cf8e360a20c120b6fad87352e800d33527895db21ef91b2dc69e374664d937"
  },
  "porter_good": "e9bd2b764608facf841e39292d868ee657eaf634",
