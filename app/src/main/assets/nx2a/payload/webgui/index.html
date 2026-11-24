@@ -245,7 +245,7 @@ async function saveGameCover(path){
 }
 async function refreshGameCovers(){
  const b=document.querySelector('.librarytools button[onclick="refreshGameCovers()"]');if(b){b.disabled=true;b.textContent='Loading…'}
- try{const r=await api('/api/library/covers/refresh',{});if(r.started){$('libraryempty').textContent='Looking up Nintendo Switch game artwork in the background…';pollCoverRefresh()}else if(b){b.textContent='Covers';b.disabled=false}}
+ try{const r=await api('/api/library/covers/refresh',{force:true});if(r.started){$('libraryempty').textContent='Looking up Nintendo Switch game artwork in the background…';pollCoverRefresh()}else if(b){b.textContent='Covers';b.disabled=false}}
  catch(e){if(b){b.textContent='Covers';b.disabled=false}alert('Cover lookup failed: '+String(e&&e.message||e))}
 }
 let coverPollActive=false;
