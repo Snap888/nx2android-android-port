@@ -246,24 +246,26 @@ static int mkdirs(const char *path) {
     return 0;
 }
 
-static int runtime_log_init(const char *internal_root, const char *game_id) {
-    const char *diag = getenv("NGR_DIAGNOSTICS");
-    g_runtime_diagnostics = diag && (!strcmp(diag, "1") || !strcmp(diag, "true") || !strcmp(diag, "yes"));
-    if (!g_runtime_diagnostics) {
-        g_runtime_log_path[0] = 0;
-        g_runtime_log_dir[0] = 0;
-        g_gameplay_log_path[0] = 0;
-        return 0; /* No log files, stdout/stderr redirection or unbuffered writes. */
-    }
+static int runtime_log_init(const char *internal_root, const char *game_id,
+                            int enable_runtime_log, int enable_fs_log) {
+    g_runtime_diagnostics = enable_runtime_log ? 1 : 0;
+    g_runtime_log_path[0] = 0;
+    g_runtime_log_dir[0] = 0;
+    g_gameplay_log_path[0] = 0;
+    if (!enable_runtime_log && !enable_fs_log) return 0;
     if (!internal_root || !*internal_root || !game_id || !*game_id) return -1;
     int a = snprintf(g_runtime_log_dir, sizeof(g_runtime_log_dir), "%s/ngr-logs", internal_root);
+    if (a < 0 || (size_t)a >= sizeof(g_runtime_log_dir)) return -1;
+    if (mkdirs(g_runtime_log_dir)) return -1;
+    if (!enable_runtime_log) return 0;
     int b = snprintf(g_runtime_log_path, sizeof(g_runtime_log_path), "%s/%s.log", g_runtime_log_dir, game_id);
     int c = snprintf(g_gameplay_log_path, sizeof(g_gameplay_log_path), "%s/gameplay-%s.log", g_runtime_log_dir, game_id);
-    if (a < 0 || (size_t)a >= sizeof(g_runtime_log_dir) || b < 0 || (size_t)b >= sizeof(g_runtime_log_path) ||
+    if (b < 0 || (size_t)b >= sizeof(g_runtime_log_path) ||
         c < 0 || (size_t)c >= sizeof(g_gameplay_log_path)) {
-        g_runtime_log_path[0] = 0; g_gameplay_log_path[0] = 0; return -1;
+        g_runtime_log_path[0] = 0;
+        g_gameplay_log_path[0] = 0;
+        return -1;
     }
-    if (mkdirs(g_runtime_log_dir)) { g_runtime_log_path[0] = 0; g_gameplay_log_path[0] = 0; return -1; }
     char pid_path[1500];
     int n = snprintf(pid_path, sizeof(pid_path), "%s/%s.pid", g_runtime_log_dir, game_id);
     if (n > 0 && (size_t)n < sizeof(pid_path)) {
@@ -280,8 +282,6 @@ static int runtime_log_init(const char *internal_root, const char *game_id) {
     fd = open(g_gameplay_log_path, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC | O_NOFOLLOW, 0600);
     if (fd < 0) { g_gameplay_log_path[0] = 0; return -1; }
     close(fd);
-    /* Keep raw game stdout/stderr in a separate file; structured NGR events
-       are mirrored there with timestamps for a single chronological trace. */
     fd = open(g_gameplay_log_path, O_WRONLY | O_APPEND | O_CLOEXEC | O_NOFOLLOW);
     if (fd >= 0) {
         (void)dup2(fd, STDOUT_FILENO);
@@ -292,7 +292,6 @@ static int runtime_log_init(const char *internal_root, const char *game_id) {
     }
     return 0;
 }
-
 static int copy_file(const char *src, const char *dst) {
     int in = open(src, O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
     if (in < 0) return -1;
@@ -732,8 +731,7 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     const int log_watchdog = intent_boolean_extra(activity, "ngr_log_watchdog");
     const int log_fs = intent_boolean_extra(activity, "ngr_log_fs");
     const int any_logging = log_runtime || log_slowframe || log_nvn || log_watchdog || log_fs;
-    setenv("NGR_DIAGNOSTICS", any_logging ? "1" : "0", 1);
-    if (runtime_log_init(internal, id)) {
+    if (runtime_log_init(internal, id, log_runtime, log_fs)) {
         __android_log_print(ANDROID_LOG_ERROR, TAG, "cannot initialize persistent runtime log under %s: %s", internal ? internal : "(null)", strerror(errno));
     }
     LOGI("============================================================");
