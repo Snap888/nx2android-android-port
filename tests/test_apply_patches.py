@@ -105,8 +105,8 @@ class ApplyPatchesTests(unittest.TestCase):
             pipeline = Path(tmp) / "porter/pipeline.py"
             pipeline.parent.mkdir(parents=True)
             pipeline.write_text(
-                "from pathlib import Path\\n"
-                "from porter.paths import DM, NXNATIVE\\n",
+                "from pathlib import Path\n"
+                "from porter.paths import DM, NXNATIVE\n",
                 encoding="utf-8",
             )
             env = dict(os.environ, NX2A_PATCH_ONLY="NGR UI font assets")
@@ -132,11 +132,11 @@ class ApplyPatchesTests(unittest.TestCase):
             pipeline = Path(tmp) / "porter/pipeline.py"
             pipeline.parent.mkdir(parents=True)
             original = (
-                "from pathlib import Path\\n"
-                "from porter.paths import DM, NXNATIVE\\n"
-                "UI_FONT = DM / 'font.nxpf'\\n"
-                "def ui_font_assets():\\n"
-                "    return {'font/ui.bin': UI_FONT}\\n"
+                "from pathlib import Path\n"
+                "from porter.paths import DM, NXNATIVE\n"
+                "UI_FONT = DM / 'font.nxpf'\n"
+                "def ui_font_assets():\n"
+                "    return {'font/ui.bin': UI_FONT}\n"
             )
             pipeline.write_text(original, encoding="utf-8")
             env = dict(os.environ, NX2A_PATCH_ONLY="NGR UI font assets")
