@@ -17,7 +17,7 @@ class RuntimeInstallTests(unittest.TestCase):
             (source / "nx2a-data.json").write_text(
                 '{"schema":1,"game_id":"' + game_id + '"}', encoding="utf-8")
         if library:
-            (source / "libdmhost.so").write_bytes(b"ELF-runtime-test".ljust(128, b"\\0"))
+            (source / "libdmhost.so").write_bytes(b"ELF-runtime-test".ljust(128, b"\0"))
         (source / "RomFS").mkdir()
         (source / "RomFS" / "game.bin").write_text("game-data", encoding="utf-8")
         return source
