@@ -146,3 +146,34 @@
 - Audio underruns are confirmed, but the exact producer-side cause is not isolated. No runtime audio patch has been made.
 - APK for manifest refresh is pending CI.
 
+
+
+## 2026-11-25 — Runtime log PID correction and Vulkan log attribution
+
+### Дополнительные результаты проверки загруженных логов
+- `Logs/ngr-gameplay-9383b4fd4e8540ed5d6e.log.txt` в текущем обновлении пустой (0 bytes); файл с суффиксом `(1)` содержит старую сессию с прежним `DM_FSLOG` abort, поэтому по нему нельзя оценивать новый запуск и аудио.
+- В `ngr-runtime-9383... (1).txt` PID в заголовке был `1461\\n` как буквальная последовательность `\\n`. Причина найдена в `ngrhost.c`: PID-файл записывался форматом `"%ld\\\\n"`, а при отключённых всех чекбоксах `runtime_log_init()` вообще не обновлял PID-файл. Из-за этого экспорт мог фильтровать Logcat по PID предыдущей сессии.
+- Исправлено в `5851dc23b4f37f5103aabcc8f3455a2f3b28b648`: PID теперь записывается с настоящим переводом строки; PID marker обновляется при каждом запуске, даже если все диагностические переключатели выключены. Само подробное логирование при этом остаётся выключенным.
+- Строки `AdrenoVK-0` в этом экспорте имеют `Application Name: android framework` или `Chromium`; сообщения `Shader compilation failed` / `Pipeline create failed` относятся к Vulkan-контексту Android/WebView, а не доказывают ошибку Vulkan-рендера Metro. Их нельзя использовать как основание для изменения игрового shader pipeline.
+
+### Актуальное состояние Vulkan picker / override
+- UI ярлыка получил кнопку Browse; путь `.so` сохраняется в `settings.vulkan_driver` и передаётся в NativeActivity.
+- `ngrhost.c` проверяет ARM64 ELF, копирует выбранный DSO в private game runtime directory, проверяет наличие `libadrenotools.so` и hook DSOs и передаёт basename через `NGR_DM_VK_DRIVER_OVERRIDE`.
+- `apply_patches.py` добавляет в `front_android.c` применение override после чтения `env.txt`, чтобы конфигурация игры не затирала выбор из ярлыка.
+- При отсутствии AdrenoTools helper libraries выбранный драйвер отклоняется с понятной ошибкой; игра не должна молча делать вид, что переключение применилось. Для старого runtime потребуется пересборка игры с custom-driver support, если helper DSOs в её data pack отсутствуют.
+- Проверка реального применения требует свежего игрового runtime log со строками `[Vulkan] using per-launch driver override` и `Vulkan driver <name> through adrenotools`; Logcat AdrenoVK/Chromium для этого не подходит.
+
+### Аудио / производительность
+- По исходникам pinned porter подтверждены два разных пути: AudioOut (AAudio 5 ms callbacks / SPSC queue) и AudioRenderer (отдельный render thread, 5 ms frame budget). Пока нет достоверного свежего gameplay export, нельзя установить, какой путь использует проблемный участок Metro и какой producer thread не успевает.
+- Аудиокод пока не менялся: увеличение буфера или приоритета без подтверждения пути может добавить задержку и замаскировать первопричину.
+
+### Следующие шаги
+1. Дождаться CI для HEAD `b223e35` и забрать APK только после успешной сборки.
+2. Установить APK; проверить Metro с FS trace выключенным и без выбранного custom driver — это контрольный запуск.
+3. Для следующего диагностического запуска включить только `Main runtime + game stdout/stderr`; FS trace оставить выключенным. Новый PID marker должен совпадать с PID текущей NgrGameActivity, а gameplay log должен быть непустым.
+4. По игровому stderr определить AudioOut или AudioRenderer; затем связать underrun с render-time/catch-up/producer scheduling и только после этого менять audio runtime.
+5. Для проверки picker выбрать ARM64 `.so`, сохранить ярлык и проверить, что лог содержит per-launch override и успешную загрузку через AdrenoTools. Затем очистить поле и проверить возврат к `env.txt`.
+
+### Статус
+- UI, intent/native staging, runtime override patch и PID marker correction внесены в ветку.
+- APK и реальная проверка на устройстве ещё не подтверждены.
