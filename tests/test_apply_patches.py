@@ -86,7 +86,10 @@ class ApplyPatchesTests(unittest.TestCase):
             self.assertIn("app_pool\t0xCD500000", game)
             self.assertIn("shader_groups\t/Data/=data", game)
             self.assertIn("depth_mode\tzero", game)
-            self.assertIn("status\texperimental", (profile / "android.tsv").read_text(encoding="utf-8"))
+            android = (profile / "android.tsv").read_text(encoding="utf-8")
+            self.assertIn("status\texperimental", android)
+            self.assertIn("package\tunknown.none.nx2android", android)
+            self.assertIn("orientation\tlandscape", android)
 
             second = subprocess.run(
                 [sys.executable, str(PATCHER), tmp],
