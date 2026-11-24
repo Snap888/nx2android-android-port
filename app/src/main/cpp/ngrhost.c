@@ -267,7 +267,7 @@ static int runtime_log_init(const char *internal_root, const char *game_id,
         int pid_fd = open(pid_path, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC | O_NOFOLLOW, 0600);
         if (pid_fd >= 0) {
             char pid[48];
-            int plen = snprintf(pid, sizeof(pid), "%ld\\n", (long)getpid());
+            int plen = snprintf(pid, sizeof(pid), "%ld\n", (long)getpid());
             if (plen > 0) (void)write(pid_fd, pid, (size_t)plen);
             close(pid_fd);
         }
@@ -624,6 +624,93 @@ static int stage_native_libs(const char *external_game_dir, const char *private_
     return copied > 0 ? 0 : -1;
 }
 
+/* A shortcut may override the driver's path after the game was ported. Stage the
+ * selected ARM64 DSO beside libdmhost.so: AdrenoTools resolves its isolated
+ * driver and hook libraries relative to the runtime library's directory. */
+static int stage_selected_vulkan_driver(ANativeActivity *activity, const char *private_game_dir) {
+    jstring jpath = intent_string_extra(activity, "ngr_vulkan_driver_path");
+    const char *requested = jpath
+        ? (*activity->env)->GetStringUTFChars(activity->env, jpath, NULL) : NULL;
+    if (!requested || !requested[0]) {
+        unsetenv("NGR_DM_VK_DRIVER_OVERRIDE");
+        if (requested) (*activity->env)->ReleaseStringUTFChars(activity->env, jpath, requested);
+        if (jpath) (*activity->env)->DeleteLocalRef(activity->env, jpath);
+        return 0;
+    }
+
+    char resolved[4096];
+    if (!realpath(requested, resolved)) {
+        LOGE("[Vulkan] selected driver path cannot be resolved: %s (%s)", requested, strerror(errno));
+        goto fail;
+    }
+    const char *base = strrchr(resolved, '/');
+    base = base ? base + 1 : resolved;
+    const char *ext = strrchr(base, '.');
+    if (!*base || !ext || strcmp(ext, ".so") || !strcmp(base, ".so") ||
+        strlen(base) > 240 || strchr(base, '\\')) {
+        LOGE("[Vulkan] selected driver must be a .so shared library: %s", base);
+        goto fail;
+    }
+
+    /* Custom loading needs the AdrenoTools namespace and all of its hook DSOs.
+       These are bundled into the game's data pack when it was built with a
+       custom Vulkan driver. Never silently pretend an unsupported switch worked. */
+    static const char *const required[] = {
+        "libadrenotools.so", "libhook_impl.so", "libmain_hook.so",
+        "libfile_redirect_hook.so", "libgsl_alloc_hook.so"
+    };
+    for (size_t i = 0; i < sizeof(required) / sizeof(required[0]); ++i) {
+        char dependency[1400];
+        int n = snprintf(dependency, sizeof(dependency), "%s/%s", private_game_dir, required[i]);
+        if (n < 0 || (size_t)n >= sizeof(dependency) || access(dependency, R_OK) != 0) {
+            LOGE("[Vulkan] custom driver support is missing %s; recompile this game once with --vulkan-driver", required[i]);
+            goto fail;
+        }
+    }
+
+    struct stat st;
+    if (stat(resolved, &st) || !S_ISREG(st.st_mode) || st.st_size <= 0 ||
+        (uint64_t)st.st_size > 256u * 1024u * 1024u) {
+        LOGE("[Vulkan] selected driver is not a regular file or exceeds 256 MiB: %s", resolved);
+        goto fail;
+    }
+
+    char driver_name[256];
+    int nn = snprintf(driver_name, sizeof(driver_name), "%s%s",
+                      !strncmp(base, "lib", 3) ? "" : "lib", base);
+    if (nn <= 0 || (size_t)nn >= sizeof(driver_name)) {
+        LOGE("[Vulkan] selected driver filename is too long");
+        goto fail;
+    }
+    char destination[1400];
+    int dn = snprintf(destination, sizeof(destination), "%s/%s", private_game_dir, driver_name);
+    if (dn <= 0 || (size_t)dn >= sizeof(destination)) {
+        LOGE("[Vulkan] selected driver destination path is too long");
+        goto fail;
+    }
+    if (copy_file(resolved, destination) != 0 || !valid_aarch64_elf(destination)) {
+        int saved = errno;
+        unlink(destination);
+        LOGE("[Vulkan] selected driver is not a valid ARM64 ELF library: %s (%s)",
+             resolved, strerror(saved ? saved : ENOEXEC));
+        goto fail;
+    }
+    if (setenv("NGR_DM_VK_DRIVER_OVERRIDE", driver_name, 1) != 0) {
+        unlink(destination);
+        LOGE("[Vulkan] cannot set per-game driver override: %s", strerror(errno));
+        goto fail;
+    }
+    LOGI("[Vulkan] per-game driver selected: %s (staged as %s)", resolved, driver_name);
+    (*activity->env)->ReleaseStringUTFChars(activity->env, jpath, requested);
+    (*activity->env)->DeleteLocalRef(activity->env, jpath);
+    return 1;
+
+fail:
+    if (requested) (*activity->env)->ReleaseStringUTFChars(activity->env, jpath, requested);
+    if (jpath) (*activity->env)->DeleteLocalRef(activity->env, jpath);
+    return -1;
+}
+
 static int preload_game_dependencies(const char *private_game_dir) {
     int total_loaded = 0;
     /* APK ZIP order is not a dependency order. Retry failed libraries so a
@@ -737,7 +824,9 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     const int log_watchdog = intent_boolean_extra(activity, "ngr_log_watchdog");
     const int log_fs = intent_boolean_extra(activity, "ngr_log_fs");
     const int any_logging = log_runtime || log_slowframe || log_nvn || log_watchdog || log_fs;
-    if (runtime_log_init(internal, id, log_runtime, log_fs, any_logging)) {
+    /* Always refresh the PID marker, even with all diagnostics disabled. Runtime export
+       uses it to filter Logcat to this launch instead of a stale previous process. */
+    if (runtime_log_init(internal, id, log_runtime, log_fs, 1)) {
         __android_log_print(ANDROID_LOG_ERROR, TAG, "cannot initialize persistent runtime log under %s: %s", internal ? internal : "(null)", strerror(errno));
     }
     LOGI("============================================================");
@@ -845,6 +934,12 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
 
     if (stage_native_libs(game_dir, private_dir)) {
         toast(activity, "Cannot copy game runtime to private storage. Check free space.");
+        (*activity->env)->ReleaseStringUTFChars(activity->env, jid, id);
+        ANativeActivity_finish(activity);
+        return;
+    }
+    if (stage_selected_vulkan_driver(activity, private_dir) < 0) {
+        toast(activity, "Selected Vulkan driver is invalid or this game lacks AdrenoTools support. See runtime log.");
         (*activity->env)->ReleaseStringUTFChars(activity->env, jid, id);
         ANativeActivity_finish(activity);
         return;
