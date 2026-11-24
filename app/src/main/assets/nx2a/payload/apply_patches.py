@@ -1,18 +1,23 @@
 #!/usr/bin/env python3
 """Patches a nx2android checkout for an aarch64 phone. Idempotent; each patch reports ok / already / FAILED (upstream text changed)."""
-import sys
+import os, sys
 from pathlib import Path
 
+PATCH_ONLY = {x for x in os.environ.get('NX2A_PATCH_ONLY', '').split(';') if x}
 repo = Path(sys.argv[1] if len(sys.argv) > 1 else '.').resolve()
 failed = 0
 
 
 def patch(name, rel, marker, edits):
     global failed
+    if PATCH_ONLY and name not in PATCH_ONLY: return
     f = repo / rel
     try: s = f.read_text()
     except OSError as e: print(f'{name}: FAILED (cannot read {rel}: {e})'); failed += 1; return
     if marker in s: print(f'{name}: already'); return
+    # Older NGR patches sometimes forgot to include their marker in the replacement.
+    # Verify every replacement before treating a marker-less patched tree as a conflict.
+    if edits and all(new in s for _, new in edits): print(f'{name}: already (replacement verified)'); return
     for old, new in edits:
         if s.count(old) != 1: print(f'{name}: FAILED (upstream changed: {old[:50]!r})'); failed += 1; return
         s = s.replace(old, new)
@@ -696,7 +701,7 @@ patch('NGR condition-variable wait/wake trace', 'nxnative/dm/host/hle_thread.c',
  """static void wake(thr_t *t, int64_t res) {
     if (t->wkind == 2 && ngr_sync_watch(t->handle))
         LOG("[NGR_SYNC_WAIT] delivered h=%#x key=%#llx lock=%#llx result=%lld",
-            t->handle, (unsigned long long)t->wkey, (unsigned long long)t->waddr, (long long)res);
+            t->handle, (unsigned long long)t->wkey, (unsigned long long)t->waddr, (long long)res); /* NX2A_SYNC_WAIT_TRACE */
     wait_unlink(t);"""),
 ("""static int64_t block(thr_t *t, int kind, int64_t ns) {
     t->wkind = kind;""",
