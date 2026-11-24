@@ -632,6 +632,69 @@ def ver(d):
     except Exception: return -1
 
 
+def import_precompiled_game(folder):
+    """Register an already-built NGR data pack without invoking the porter."""
+    raw = str(folder or '').strip()
+    if not raw:
+        raise ValueError('Choose the folder containing nx2a-data.json.')
+    data = Path(raw).expanduser().resolve(strict=True)
+    if not data.is_dir():
+        raise ValueError('The selected path is not a folder.')
+    manifest_path = data / 'nx2a-data.json'
+    runtime_path = data / 'libdmhost.so'
+    if not manifest_path.is_file():
+        raise ValueError('nx2a-data.json is missing. Choose the completed *-data folder, not its parent.')
+    if not runtime_path.is_file() or runtime_path.stat().st_size < 64:
+        raise ValueError('libdmhost.so is missing or empty. This folder is not a complete NGR precompiled game.')
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+    except (OSError, ValueError) as error:
+        raise ValueError(f'Invalid nx2a-data.json: {error}')
+    if not isinstance(manifest, dict):
+        raise ValueError('nx2a-data.json must contain a JSON object.')
+    packed_id = str(manifest.get('game_id') or '').lower()
+    if packed_id and not re.fullmatch(r'[0-9a-f]{20}', packed_id):
+        raise ValueError('The data pack contains an invalid game_id.')
+    game_id = packed_id or hashlib.sha256(('ngr-import:' + str(data)).encode('utf-8')).hexdigest()[:20]
+    title_id = str(manifest.get('title_id') or '').upper()
+    if not re.fullmatch(r'[0-9A-F]{16}', title_id):
+        title_id = ''
+    title = str(manifest.get('name') or manifest.get('app_name') or data.name.removesuffix('-data')).strip()
+    if not title:
+        title = 'Imported NGR game'
+    libs = sorted(p.name for p in data.glob('*.so') if p.is_file() and not p.is_symlink())
+    if 'libdmhost.so' not in libs:
+        raise ValueError('The NGR native runtime library is not available in the selected folder.')
+    catalog = library_read()
+    existing = next((g for g in catalog['games'] if g.get('id') == game_id), None)
+    # A path already registered under another shortcut is updated rather than duplicated.
+    if existing is None:
+        existing = next((g for g in catalog['games'] if
+                         str(Path(g.get('data_path') or '').resolve()) == str(data)), None)
+    item = {
+        'id': game_id, 'title': title, 'platform': 'switch', 'title_id': title_id,
+        'package': str(manifest.get('package') or 'unknown.none.nx2android'),
+        'apk_path': '', 'data_path': str(data),
+        'runtime_so_path': str(runtime_path), 'runtime_libs': libs,
+        'runtime_ready': True, 'runtime_installed': False,
+        'profile_path': str(data / 'profile.json') if (data / 'profile.json').is_file() else '',
+        'runtime_profile_ready': (data / 'profile.json').is_file(),
+        'runtime_profile_error': '',
+        'source_folder': '', 'imported_precompiled': True,
+        'status': 'runtime_ready', 'runtime_error': '',
+        'settings': (existing or {}).get('settings', {}),
+        'cover_path': (existing or {}).get('cover_path', ''),
+        'created_at': (existing or {}).get('created_at', int(time.time())),
+        'updated_at': int(time.time())
+    }
+    if existing:
+        catalog['games'] = [item if g is existing else g for g in catalog['games']]
+    else:
+        catalog['games'].append(item)
+    library_write(catalog)
+    return item
+
+
 class H(BaseHTTPRequestHandler):
     def log_message(self, *a): pass
 
@@ -719,6 +782,12 @@ class H(BaseHTTPRequestHandler):
         if u.path == '/api/config':
             if o.get('key') not in ('keys', 'out'): return self.j({'ok': False, 'msg': 'unknown setting'})
             out, err, c = porter('config', o['key'], o['value']); return self.j({'ok': c == 0, 'msg': (err or out)[-300:]})
+        if u.path == '/api/library/import':
+            try:
+                game = import_precompiled_game(o.get('folder'))
+                return self.j({'ok': True, 'game': game})
+            except (OSError, ValueError) as error:
+                return self.j({'ok': False, 'error': str(error)}, 400)
         if u.path == '/api/library/settings':
             settings = o.get('settings')
             if not isinstance(settings, dict): return self.j({'ok': False, 'error': 'settings must be an object'}, 400)
