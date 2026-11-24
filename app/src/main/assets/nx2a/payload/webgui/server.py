@@ -282,9 +282,11 @@ def need_dotnet():
 
 
 def need_porter():
-    try:
-        if not porter_sync.complete(): porter_sync.sync()
-    except Exception as e: print('porter sync failed:', e, flush=True)
+    # Always verify the selected upstream checkout and every NGR patch before a
+    # build. A complete directory is not proof that it contains our patches.
+    ok, message = porter_sync.sync()
+    if not ok: raise RuntimeError('NGR porter is unavailable: ' + message)
+    porter_sync.patch()
 
 
 def porter(*args, timeout=120):
