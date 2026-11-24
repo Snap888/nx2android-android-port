@@ -137,7 +137,7 @@ def sync(force=False, log=print):
                 # the moving upstream branch, try the pinned known-good source.
                 if sha == target and track and pinned != target:
                     continue
-                try: STATUS.write_text(' ; '.join(msgs) + '\\n')
+                try: STATUS.write_text(' ; '.join(msgs) + '\n')
                 except OSError: pass
                 return False, ' ; '.join(msgs)
 
@@ -159,7 +159,7 @@ def sync(force=False, log=print):
                     m = f'current porter patch validation also failed: {previous_error}'
                     log(m); msgs.append(m)
 
-    try: STATUS.write_text(' ; '.join(msgs) + '\\n')
+    try: STATUS.write_text(' ; '.join(msgs) + '\n')
     except OSError: pass
     return False, ' ; '.join(msgs) or 'porter unavailable or patch validation failed'
 
