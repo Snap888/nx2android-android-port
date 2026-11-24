@@ -224,3 +224,9 @@
 2. Metro: `Main runtime + game stdout/stderr` ON; `Hang watchdog / thread snapshots + synchronization trace` OFF; `Filesystem / RomFS read trace` OFF; остальные категории OFF.
 3. Проверить, что `[NGR_SYNC]`/`[NGR_SYNC_WAIT]` отсутствуют, сравнить AudioOut underrun окна и frame work/GPU stats.
 4. Если starvation остаётся, подготовить адресный backoff для `sdk+0xd688c0` и A/B тестировать только на Metro.
+
+
+### Важное условие применения runtime patch
+- Изменения `hle_thread.c` (default-off `NGR_SYNC`) и `front_android.c` (per-launch Vulkan override) входят в исходники Porter. Установка нового NGR APK сама по себе не переписывает уже скомпилированный `libdmhost.so` в data pack игры.
+- После установки APK нужно один раз выполнить `Recompile / update` для Metro, чтобы пересобрать его runtime из обновлённого Porter checkout. Импортировать/копировать заново 6.7 GB game data не требуется, если recompile использует уже установленный data pack и кэш.
+- PID marker correction и UI/native file picker находятся в самом NGR APK и применяются сразу после установки.
