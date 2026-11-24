@@ -5,290 +5,186 @@ Game ID: 9383b4fd4e8540ed5d6e
 
 
 ===== Persistent Android process/activity lifecycle =====
-1795558567455 [ANDROID] pid=26999 process=unknown.none.nx2android NgrGameActivity.onCreate ENTER extras=android.util.MapCollections$KeySet@2d912358 pid=26999
-1795558567576 [ANDROID] pid=26999 process=unknown.none.nx2android NgrGameActivity.onCreate EXIT super completed
-1795558567577 [ANDROID] pid=26999 process=unknown.none.nx2android NgrGameActivity.onStart
-1795558567578 [ANDROID] pid=26999 process=unknown.none.nx2android NgrGameActivity.onResume
-1795558645712 [ANDROID] pid=26999 process=unknown.none.nx2android NgrGameActivity.onStart
-1795558645712 [ANDROID] pid=26999 process=unknown.none.nx2android NgrGameActivity.onResume
-1795558649615 [ANDROID] pid=26999 process=unknown.none.nx2android NgrGameActivity.finishFromNative requested
-1795558650286 [ANDROID] pid=26999 process=unknown.none.nx2android NgrGameActivity.onDestroy
-1795558652429 [ANDROID] pid=32423 process=unknown.none.nx2android Application.onCreate pid=32423 process=unknown.none.nx2android package=unknown.none.nx2android
+1795559019436 [ANDROID] pid=1461 process=unknown.none.nx2android NgrGameActivity.onCreate ENTER extras=android.util.MapCollections$KeySet@2d912358 pid=1461
+1795559019555 [ANDROID] pid=1461 process=unknown.none.nx2android NgrGameActivity.onCreate EXIT super completed
+1795559019557 [ANDROID] pid=1461 process=unknown.none.nx2android NgrGameActivity.onStart
+1795559019558 [ANDROID] pid=1461 process=unknown.none.nx2android NgrGameActivity.onResume
+1795559225465 [ANDROID] pid=11606 process=unknown.none.nx2android Application.onCreate pid=11606 process=unknown.none.nx2android package=unknown.none.nx2android
+1795559236520 [ANDROID] pid=11606 process=unknown.none.nx2android NgrGameActivity.onCreate ENTER extras=android.util.MapCollections$KeySet@2d912358 pid=11606
+1795559236612 [ANDROID] pid=11606 process=unknown.none.nx2android NgrGameActivity.onCreate EXIT super completed
+1795559236614 [ANDROID] pid=11606 process=unknown.none.nx2android NgrGameActivity.onStart
+1795559236615 [ANDROID] pid=11606 process=unknown.none.nx2android NgrGameActivity.onResume
+1795559407038 [ANDROID] pid=11606 process=unknown.none.nx2android NgrGameActivity.finishFromNative requested
+1795559407761 [ANDROID] pid=11606 process=unknown.none.nx2android NgrGameActivity.onDestroy
+1795559413822 [ANDROID] pid=14425 process=unknown.none.nx2android Application.onCreate pid=14425 process=unknown.none.nx2android package=unknown.none.nx2android
 
 
-===== Android Logcat (recent system + NGR process events; game pid=26999\n) =====
-11-25 01:02:08.654 15007 15007 W Looper  : Slow delivery took 2769ms main h=android.os.Handler c=unknown.none.nx2android.MainActivity$1@e275fb5 m=0
-11-25 01:02:40.468 15007 15007 W Looper  : Slow delivery took 15803ms main h=android.os.Handler c=unknown.none.nx2android.MainActivity$1@e275fb5 m=0
-11-25 01:05:29.757 19838 19838 D ADPFLog : getCurrentThermalStatus(), caller:11273,[unknown.none.nx2android]
-11-25 01:05:29.759 19838 19870 D ADPFLog : addThermalStatusListener(listener), caller:11273,[unknown.none.nx2android]
-11-25 01:05:29.759 19838 19870 D ADPFLog : addThermalStatusListener(executor, listener), caller:11273,[unknown.none.nx2android]
-11-25 01:09:30.898 24393 24393 D ADPFLog : getCurrentThermalStatus(), caller:11273,[unknown.none.nx2android]
-11-25 01:09:30.900 24393 24426 D ADPFLog : addThermalStatusListener(listener), caller:11273,[unknown.none.nx2android]
-11-25 01:09:30.900 24393 24426 D ADPFLog : addThermalStatusListener(executor, listener), caller:11273,[unknown.none.nx2android]
-11-25 01:09:50.857 24770 24770 D ADPFLog : getCurrentThermalStatus(), caller:11273,[unknown.none.nx2android]
-11-25 01:09:50.858 24770 24803 D ADPFLog : addThermalStatusListener(listener), caller:11273,[unknown.none.nx2android]
-11-25 01:09:50.858 24770 24803 D ADPFLog : addThermalStatusListener(executor, listener), caller:11273,[unknown.none.nx2android]
-11-25 01:10:15.757 25207 25207 D ADPFLog : getCurrentThermalStatus(), caller:11273,[unknown.none.nx2android]
-11-25 01:10:15.758 25207 25243 D ADPFLog : addThermalStatusListener(listener), caller:11273,[unknown.none.nx2android]
-11-25 01:10:15.758 25207 25243 D ADPFLog : addThermalStatusListener(executor, listener), caller:11273,[unknown.none.nx2android]
-11-25 01:10:36.102 25631 25631 D ADPFLog : getCurrentThermalStatus(), caller:11273,[unknown.none.nx2android]
-11-25 01:10:36.103 25631 25665 D ADPFLog : addThermalStatusListener(listener), caller:11273,[unknown.none.nx2android]
-11-25 01:10:36.103 25631 25665 D ADPFLog : addThermalStatusListener(executor, listener), caller:11273,[unknown.none.nx2android]
-11-25 01:10:55.068 26083 26083 D ADPFLog : getCurrentThermalStatus(), caller:11273,[unknown.none.nx2android]
-11-25 01:10:55.070 26083 26126 D ADPFLog : addThermalStatusListener(listener), caller:11273,[unknown.none.nx2android]
-11-25 01:10:55.070 26083 26126 D ADPFLog : addThermalStatusListener(executor, listener), caller:11273,[unknown.none.nx2android]
-11-25 01:11:04.241 26367 26367 D ADPFLog : getCurrentThermalStatus(), caller:11273,[unknown.none.nx2android]
-11-25 01:11:04.242 26367 26400 D ADPFLog : addThermalStatusListener(listener), caller:11273,[unknown.none.nx2android]
-11-25 01:11:04.242 26367 26400 D ADPFLog : addThermalStatusListener(executor, listener), caller:11273,[unknown.none.nx2android]
-11-25 01:11:37.730 26999 26999 D ADPFLog : getCurrentThermalStatus(), caller:11273,[unknown.none.nx2android]
-11-25 01:11:37.732 26999 27032 D ADPFLog : addThermalStatusListener(listener), caller:11273,[unknown.none.nx2android]
-11-25 01:11:37.732 26999 27032 D ADPFLog : addThermalStatusListener(executor, listener), caller:11273,[unknown.none.nx2android]
-11-25 01:17:07.486 26999 26999 W Looper  : Slow delivery took 14014ms main h=android.os.Handler c=unknown.none.nx2android.MainActivity$1@4895a56 m=0
-11-25 01:17:25.462 26999 27022 I libc    : Requested dump for pid 26999 (none.nx2android)
-11-25 01:17:25.530 32305 32305 E crash_dump64: failed to get the guest state header for thread 26999: Bad address
-11-25 01:17:25.531 32305 32305 E crash_dump64: failed to get the guest state header for thread 27001: Bad address
-11-25 01:17:25.531 32305 32305 E crash_dump64: failed to get the guest state header for thread 27002: Bad address
-11-25 01:17:25.531 32305 32305 E crash_dump64: failed to get the guest state header for thread 27003: Bad address
-11-25 01:17:25.531 32305 32305 E crash_dump64: failed to get the guest state header for thread 27004: Bad address
-11-25 01:17:25.531 32305 32305 E crash_dump64: failed to get the guest state header for thread 27005: Bad address
-11-25 01:17:25.531 32305 32305 E crash_dump64: failed to get the guest state header for thread 27006: Bad address
-11-25 01:17:25.531 32305 32305 E crash_dump64: failed to get the guest state header for thread 27007: Bad address
-11-25 01:17:25.531 32305 32305 E crash_dump64: failed to get the guest state header for thread 27008: Bad address
-11-25 01:17:25.531 32305 32305 E crash_dump64: failed to get the guest state header for thread 27009: Bad address
-11-25 01:17:25.531 32305 32305 E crash_dump64: failed to get the guest state header for thread 27012: Bad address
-11-25 01:17:25.531 32305 32305 E crash_dump64: failed to get the guest state header for thread 27014: Bad address
-11-25 01:17:25.532 32305 32305 E crash_dump64: failed to get the guest state header for thread 27017: Bad address
-11-25 01:17:25.532 32305 32305 E crash_dump64: failed to get the guest state header for thread 27022: Bad address
-11-25 01:17:25.532 32305 32305 E crash_dump64: failed to get the guest state header for thread 27027: Bad address
-11-25 01:17:25.532 32305 32305 E crash_dump64: failed to get the guest state header for thread 27028: Bad address
-11-25 01:17:25.532 32305 32305 E crash_dump64: failed to get the guest state header for thread 27030: Bad address
-11-25 01:17:25.532 32305 32305 E crash_dump64: failed to get the guest state header for thread 27031: Bad address
-11-25 01:17:25.532 32305 32305 E crash_dump64: failed to get the guest state header for thread 27032: Bad address
-11-25 01:17:25.532 32305 32305 E crash_dump64: failed to get the guest state header for thread 27033: Bad address
-11-25 01:17:25.532 32305 32305 E crash_dump64: failed to get the guest state header for thread 27034: Bad address
-11-25 01:17:25.532 32305 32305 E crash_dump64: failed to get the guest state header for thread 27035: Bad address
-11-25 01:17:25.532 32305 32305 E crash_dump64: failed to get the guest state header for thread 27036: Bad address
-11-25 01:17:25.532 32305 32305 E crash_dump64: failed to get the guest state header for thread 27037: Bad address
-11-25 01:17:25.532 32305 32305 E crash_dump64: failed to get the guest state header for thread 27038: Bad address
-11-25 01:17:25.533 32305 32305 E crash_dump64: failed to get the guest state header for thread 27041: Bad address
-11-25 01:17:25.533 32305 32305 E crash_dump64: failed to get the guest state header for thread 27042: Bad address
-11-25 01:17:25.533 32305 32305 E crash_dump64: failed to get the guest state header for thread 27043: Bad address
-11-25 01:17:25.533 32305 32305 E crash_dump64: failed to get the guest state header for thread 27044: Bad address
-11-25 01:17:25.533 32305 32305 E crash_dump64: failed to get the guest state header for thread 27045: Bad address
-11-25 01:17:25.533 32305 32305 E crash_dump64: failed to get the guest state header for thread 27050: Bad address
-11-25 01:17:25.533 32305 32305 E crash_dump64: failed to get the guest state header for thread 27052: Bad address
-11-25 01:17:25.533 32305 32305 E crash_dump64: failed to get the guest state header for thread 27053: Bad address
-11-25 01:17:25.533 32305 32305 E crash_dump64: failed to get the guest state header for thread 27054: Bad address
-11-25 01:17:25.533 32305 32305 E crash_dump64: failed to get the guest state header for thread 27055: Bad address
-11-25 01:17:25.533 32305 32305 E crash_dump64: failed to get the guest state header for thread 27058: Bad address
-11-25 01:17:25.533 32305 32305 E crash_dump64: failed to get the guest state header for thread 27059: Bad address
-11-25 01:17:25.533 32305 32305 E crash_dump64: failed to get the guest state header for thread 27062: Bad address
-11-25 01:17:25.533 32305 32305 E crash_dump64: failed to get the guest state header for thread 27063: Bad address
-11-25 01:17:25.533 32305 32305 E crash_dump64: failed to get the guest state header for thread 27068: Bad address
-11-25 01:17:25.534 32305 32305 E crash_dump64: failed to get the guest state header for thread 27069: Bad address
-11-25 01:17:25.534 32305 32305 E crash_dump64: failed to get the guest state header for thread 27072: Bad address
-11-25 01:17:25.534 32305 32305 E crash_dump64: failed to get the guest state header for thread 27074: Bad address
-11-25 01:17:25.534 32305 32305 E crash_dump64: failed to get the guest state header for thread 27075: Bad address
-11-25 01:17:25.534 32305 32305 E crash_dump64: failed to get the guest state header for thread 27076: Bad address
-11-25 01:17:25.534 32305 32305 E crash_dump64: failed to get the guest state header for thread 27079: Bad address
-11-25 01:17:25.534 32305 32305 E crash_dump64: failed to get the guest state header for thread 27100: Bad address
-11-25 01:17:25.534 32305 32305 E crash_dump64: failed to get the guest state header for thread 27101: Bad address
-11-25 01:17:25.534 32305 32305 E crash_dump64: failed to get the guest state header for thread 27102: Bad address
-11-25 01:17:25.534 32305 32305 E crash_dump64: failed to get the guest state header for thread 27111: Bad address
-11-25 01:17:25.534 32305 32305 E crash_dump64: failed to get the guest state header for thread 27112: Bad address
-11-25 01:17:25.534 32305 32305 E crash_dump64: failed to get the guest state header for thread 27113: Bad address
-11-25 01:17:25.534 32305 32305 E crash_dump64: failed to get the guest state header for thread 27114: Bad address
-11-25 01:17:25.534 32305 32305 E crash_dump64: failed to get the guest state header for thread 27115: Bad address
-11-25 01:17:25.535 32305 32305 E crash_dump64: failed to get the guest state header for thread 27129: Bad address
-11-25 01:17:25.535 32305 32305 E crash_dump64: failed to get the guest state header for thread 31239: Bad address
-11-25 01:17:25.535 32305 32305 E crash_dump64: failed to get the guest state header for thread 31240: Bad address
-11-25 01:17:25.535 32305 32305 E crash_dump64: failed to get the guest state header for thread 31241: Bad address
-11-25 01:17:25.535 32305 32305 E crash_dump64: failed to get the guest state header for thread 31242: Bad address
-11-25 01:17:25.535 32305 32305 E crash_dump64: failed to get the guest state header for thread 31243: Bad address
-11-25 01:17:25.535 32305 32305 E crash_dump64: failed to get the guest state header for thread 31244: Bad address
-11-25 01:17:25.535 32305 32305 E crash_dump64: failed to get the guest state header for thread 31245: Bad address
-11-25 01:17:25.535 32305 32305 E crash_dump64: failed to get the guest state header for thread 31251: Bad address
-11-25 01:17:25.535 32305 32305 E crash_dump64: failed to get the guest state header for thread 31259: Bad address
-11-25 01:17:25.535 32305 32305 E crash_dump64: failed to get the guest state header for thread 31260: Bad address
-11-25 01:17:25.535 32305 32305 E crash_dump64: failed to get the guest state header for thread 31261: Bad address
-11-25 01:17:25.535 32305 32305 E crash_dump64: failed to get the guest state header for thread 31262: Bad address
-11-25 01:17:25.536 32305 32305 E crash_dump64: failed to get the guest state header for thread 31263: Bad address
-11-25 01:17:25.536 32305 32305 E crash_dump64: failed to get the guest state header for thread 31264: Bad address
-11-25 01:17:25.536 32305 32305 E crash_dump64: failed to get the guest state header for thread 31265: Bad address
-11-25 01:17:25.536 32305 32305 E crash_dump64: failed to get the guest state header for thread 31266: Bad address
-11-25 01:17:25.536 32305 32305 E crash_dump64: failed to get the guest state header for thread 31268: Bad address
-11-25 01:17:25.536 32305 32305 E crash_dump64: failed to get the guest state header for thread 31269: Bad address
-11-25 01:17:25.536 32305 32305 E crash_dump64: failed to get the guest state header for thread 31274: Bad address
-11-25 01:17:25.536 32305 32305 E crash_dump64: failed to get the guest state header for thread 31288: Bad address
-11-25 01:17:25.536 32305 32305 E crash_dump64: failed to get the guest state header for thread 31289: Bad address
-11-25 01:17:25.536 32305 32305 E crash_dump64: failed to get the guest state header for thread 31290: Bad address
-11-25 01:17:25.536 32305 32305 E crash_dump64: failed to get the guest state header for thread 31302: Bad address
-11-25 01:17:25.536 32305 32305 E crash_dump64: failed to get the guest state header for thread 31303: Bad address
-11-25 01:17:25.536 32305 32305 E crash_dump64: failed to get the guest state header for thread 31304: Bad address
-11-25 01:17:25.536 32305 32305 E crash_dump64: failed to get the guest state header for thread 32095: Bad address
-11-25 01:17:25.537 32305 32305 E crash_dump64: failed to get the guest state header for thread 32203: Bad address
-11-25 01:17:25.537 32305 32305 E crash_dump64: failed to get the guest state header for thread 32210: Bad address
-11-25 01:17:25.537 32305 32305 E crash_dump64: failed to get the guest state header for thread 32303: Bad address
-11-25 01:17:25.601 32305 32305 I crash_dump64: obtaining output fd from tombstoned, type: kDebuggerdNativeBacktrace
-11-25 01:17:25.602 32305 32305 I crash_dump64: performing dump of process 26999 (target tid = 26999)
-11-25 01:17:25.660 26999 26999 W Looper  : Slow delivery took 16573ms main h=android.os.Handler c=unknown.none.nx2android.MainActivity$1@4895a56 m=0
-11-25 01:17:25.705 26999 26999 D VRI[NgrGameActivity]: visibilityChanged oldVisibility=true newVisibility=false
-11-25 01:17:25.734 26999 26999 D VRI[NgrGameActivity]: visibilityChanged oldVisibility=false newVisibility=true
-11-25 01:17:25.759 26999 26999 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
-11-25 01:17:25.759 26999 26999 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
-11-25 01:17:29.647 26999 26999 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
-11-25 01:17:29.647 26999 26999 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
-11-25 01:17:29.728 26999 27017 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:29.728 26999 27017 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:29.728 26999 27017 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:29.728 26999 27017 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:29.728 26999 27017 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:29.728 26999 27017 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:29.729 26999 27017 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:29.729 26999 27017 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:30.042 26999 26999 D VRI[NgrGameActivity]: visibilityChanged oldVisibility=true newVisibility=false
-11-25 01:17:32.368 32423 32423 I libc    : SetHeapTaggingLevel: tag level set to 0
-11-25 01:17:32.391 32423 32423 D nativeloader: Configuring clns-7 for other apk /data/app/~~J3ReX_N48F_Fc00T9HF50w==/unknown.none.nx2android-GnOl9bubjOuaiBt0lQcTdQ==/base.apk. target_sdk_version=28, uses_libraries=, library_path=/data/app/~~J3ReX_N48F_Fc00T9HF50w==/unknown.none.nx2android-GnOl9bubjOuaiBt0lQcTdQ==/lib/arm64:/data/app/~~J3ReX_N48F_Fc00T9HF50w==/unknown.none.nx2android-GnOl9bubjOuaiBt0lQcTdQ==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/unknown.none.nx2android
-11-25 01:17:32.399 32423 32423 V Monotype: SetAppTypeFace- try to flip, app = unknown.none.nx2android
-11-25 01:17:32.430 32423 32423 I NGRRuntime: Application.onCreate process=unknown.none.nx2android
-11-25 01:17:32.437 32423 32445 D vulkan  : searching for layers in '/data/app/~~J3ReX_N48F_Fc00T9HF50w==/unknown.none.nx2android-GnOl9bubjOuaiBt0lQcTdQ==/lib/arm64'
-11-25 01:17:32.437 32423 32445 D vulkan  : searching for layers in '/data/app/~~J3ReX_N48F_Fc00T9HF50w==/unknown.none.nx2android-GnOl9bubjOuaiBt0lQcTdQ==/base.apk!/lib/arm64-v8a'
-11-25 01:17:32.440 32423 32423 V Monotype: SetAppTypeFace- try to flip, app = unknown.none.nx2android
-11-25 01:17:32.454 32423 32445 I AdrenoVK-0: ===== BEGIN DUMP OF OVERRIDDEN SETTINGS =====
-11-25 01:17:32.454 32423 32445 I AdrenoVK-0: ===== END DUMP OF OVERRIDDEN SETTINGS =====
-11-25 01:17:32.456 32423 32445 I AdrenoVK-0: QUALCOMM build          : ac42ce8aee, I8e937e587a
-11-25 01:17:32.456 32423 32445 I AdrenoVK-0: Build Date              : 11/15/24
-11-25 01:17:32.456 32423 32445 I AdrenoVK-0: Shader Compiler Version : E031.41.03.57
-11-25 01:17:32.456 32423 32445 I AdrenoVK-0: Local Branch            : 
-11-25 01:17:32.456 32423 32445 I AdrenoVK-0: Remote Branch           : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.13.2.0.11.00.00.855.856
-11-25 01:17:32.456 32423 32445 I AdrenoVK-0: Remote Branch           : NONE
-11-25 01:17:32.456 32423 32445 I AdrenoVK-0: Reconstruct Branch      : NOTHING
-11-25 01:17:32.456 32423 32445 I AdrenoVK-0: Build Config            : S P 14.1.4 AArch64
-11-25 01:17:32.462 32423 32445 I AdrenoVK-0: Driver Path             : /vendor/lib64/hw/vulkan.adreno.so
-11-25 01:17:32.462 32423 32445 I AdrenoVK-0: Driver Version          : 0676.66
-11-25 01:17:32.462 32423 32445 I AdrenoVK-0: PFP                     : 0x01740158
-11-25 01:17:32.462 32423 32445 I AdrenoVK-0: ME                      : 0x00000000
-11-25 01:17:32.462 32423 32445 I AdrenoVK-0: Application Name    : android framework
-11-25 01:17:32.462 32423 32445 I AdrenoVK-0: Application Version : 0x00000000
-11-25 01:17:32.462 32423 32445 I AdrenoVK-0: Engine Name         : android framework
-11-25 01:17:32.462 32423 32445 I AdrenoVK-0: Engine Version      : 0x00000000
-11-25 01:17:32.462 32423 32445 I AdrenoVK-0: Api Version         : 0x00401000
-11-25 01:17:32.462 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.462 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.462 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.462 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.463 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.463 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.463 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.463 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.463 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.463 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.463 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.463 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.463 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.463 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.463 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.463 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.463 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.463 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.463 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.463 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.463 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.463 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.463 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.463 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:32.492 32423 32423 D ADPFLog : getCurrentThermalStatus(), caller:11273,[unknown.none.nx2android]
-11-25 01:17:32.493 32423 32462 D ADPFLog : addThermalStatusListener(listener), caller:11273,[unknown.none.nx2android]
-11-25 01:17:32.493 32423 32462 D ADPFLog : addThermalStatusListener(executor, listener), caller:11273,[unknown.none.nx2android]
-11-25 01:17:32.674 32423 32423 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
-11-25 01:17:32.674 32423 32423 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
-11-25 01:17:32.731 32423 32445 I AdrenoUtils: <ReadGpuID:407>: Reading chip ID through GSL
-11-25 01:17:34.290 32423 32546 I AdrenoGLES-0: QUALCOMM build                   : ac42ce8aee, I8e937e587a
-11-25 01:17:34.290 32423 32546 I AdrenoGLES-0: Build Date                       : 11/15/24
-11-25 01:17:34.290 32423 32546 I AdrenoGLES-0: OpenGL ES Shader Compiler Version: E031.41.03.57
-11-25 01:17:34.290 32423 32546 I AdrenoGLES-0: Local Branch                     : 
-11-25 01:17:34.290 32423 32546 I AdrenoGLES-0: Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.13.2.0.11.00.00.855.856
-11-25 01:17:34.290 32423 32546 I AdrenoGLES-0: Remote Branch                    : NONE
-11-25 01:17:34.290 32423 32546 I AdrenoGLES-0: Reconstruct Branch               : NOTHING
-11-25 01:17:34.290 32423 32546 I AdrenoGLES-0: Build Config                     : S P 14.1.4 AArch64
-11-25 01:17:34.290 32423 32546 I AdrenoGLES-0: Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
-11-25 01:17:34.290 32423 32546 I AdrenoGLES-0: Driver Version                   : 0676.66
-11-25 01:17:34.292 32423 32546 I AdrenoGLES-0: PFP: 0x01740158, ME: 0x00000000
-11-25 01:17:34.306 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.306 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.306 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.306 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.306 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.306 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.306 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.306 32423 32445 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: QUALCOMM build          : ac42ce8aee, I8e937e587a
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Build Date              : 11/15/24
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Shader Compiler Version : E031.41.03.57
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Local Branch            : 
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Remote Branch           : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.13.2.0.11.00.00.855.856
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Remote Branch           : NONE
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Reconstruct Branch      : NOTHING
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Build Config            : S P 14.1.4 AArch64
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Driver Path             : /vendor/lib64/hw/vulkan.adreno.so
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Driver Version          : 0676.66
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: PFP                     : 0x01740158
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: ME                      : 0x00000000
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Application Name    : Chromium
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Application Version : 0x00000000
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Engine Name         : (null)
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Engine Version      : 0x00000000
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Api Version         : 0x00401000
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.307 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.308 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.308 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.308 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.308 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.308 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.308 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.308 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.308 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.326 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.326 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.326 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.326 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.326 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.326 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.326 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.326 32423 32546 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-25 01:17:34.353 32423 32546 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-25 01:17:34.353 32423 32546 I AdrenoVK-0: Pipeline create failed
-11-25 01:17:34.363 32423 32546 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-25 01:17:34.363 32423 32546 I AdrenoVK-0: Pipeline create failed
-11-25 01:17:34.369 32423 32546 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-25 01:17:34.369 32423 32546 I AdrenoVK-0: Pipeline create failed
-11-25 01:17:34.374 32423 32546 I AdrenoVK-0: Shader compilation failed for shaderType: 4
-11-25 01:17:34.374 32423 32546 I AdrenoVK-0: Pipeline create failed
-11-25 01:17:34.412 32423 32546 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-25 01:17:34.412 32423 32546 I AdrenoVK-0: Pipeline create failed
-11-25 01:17:34.424 32423 32546 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-25 01:17:34.424 32423 32546 I AdrenoVK-0: Pipeline create failed
-11-25 01:17:34.434 32423 32546 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-25 01:17:34.434 32423 32546 I AdrenoVK-0: Pipeline create failed
-11-25 01:17:34.440 32423 32546 I AdrenoVK-0: Shader compilation failed for shaderType: 4
-11-25 01:17:34.440 32423 32546 I AdrenoVK-0: Pipeline create failed
-11-25 01:17:34.448 32423 32546 I AdrenoVK-0: Shader compilation failed for shaderType: 4
-11-25 01:17:34.448 32423 32546 I AdrenoVK-0: Pipeline create failed
-11-25 01:17:35.302 32423 32546 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-25 01:17:35.302 32423 32546 I AdrenoVK-0: Pipeline create failed
-11-25 01:17:35.312 32423 32546 I AdrenoVK-0: Shader compilation failed for shaderType: 4
-11-25 01:17:35.312 32423 32546 I AdrenoVK-0: Pipeline create failed
-11-25 01:17:35.317 32423 32546 I AdrenoVK-0: Failed to link shaders.
-11-25 01:17:35.317 32423 32546 I AdrenoVK-0: Pipeline create failed
-11-25 01:17:35.321 32423 32546 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-25 01:17:35.321 32423 32546 I AdrenoVK-0: Pipeline create failed
-11-25 01:17:36.661 32423 32423 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
-11-25 01:17:36.661 32423 32423 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
-11-25 01:17:37.487 32423   316 D ProfileInstaller: Installing profile for unknown.none.nx2android
+===== Android Logcat (recent system + NGR process events; game pid=1461\n) =====
+11-25 01:24:32.323  1461  1461 W Looper  : Slow delivery took 8850ms main h=android.os.Handler c=unknown.none.nx2android.MainActivity$1@6747a14 m=0
+11-25 01:24:47.331  1461  1461 W Looper  : Slow delivery took 6199ms main h=android.os.Handler c=unknown.none.nx2android.MainActivity$1@6747a14 m=0
+11-25 01:27:05.527 11606 11606 D ADPFLog : getCurrentThermalStatus(), caller:11273,[unknown.none.nx2android]
+11-25 01:27:05.528 11606 11644 D ADPFLog : addThermalStatusListener(listener), caller:11273,[unknown.none.nx2android]
+11-25 01:27:05.528 11606 11644 D ADPFLog : addThermalStatusListener(executor, listener), caller:11273,[unknown.none.nx2android]
+11-25 01:28:02.151 11606 11606 W Looper  : Slow delivery took 2013ms main h=android.os.Handler c=unknown.none.nx2android.MainActivity$1@7684633 m=0
+11-25 01:28:26.382 11606 11606 W Looper  : Slow delivery took 9819ms main h=android.os.Handler c=unknown.none.nx2android.MainActivity$1@7684633 m=0
+11-25 01:28:39.428 11606 11606 W Looper  : Slow delivery took 6637ms main h=android.os.Handler c=unknown.none.nx2android.MainActivity$1@7684633 m=0
+11-25 01:29:59.415 11606 13862 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
+11-25 01:29:59.415 11606 13862 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
+11-25 01:29:59.416 11606 13862 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
+11-25 01:29:59.416 11606 13862 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
+11-25 01:30:07.085 11606 11606 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-25 01:30:07.085 11606 11606 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
+11-25 01:30:07.166 11606 11628 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:07.166 11606 11628 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:07.166 11606 11628 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:07.166 11606 11628 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:07.166 11606 11628 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:07.166 11606 11628 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:07.166 11606 11628 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:07.166 11606 11628 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:07.484 11606 11606 D VRI[NgrGameActivity]: visibilityChanged oldVisibility=true newVisibility=false
+11-25 01:30:13.750 14425 14425 I libc    : SetHeapTaggingLevel: tag level set to 0
+11-25 01:30:13.781 14425 14425 D nativeloader: Configuring clns-7 for other apk /data/app/~~g_Yiddqefy_pcfKc-dWsfA==/unknown.none.nx2android-Osl5ly3yLXGx0CqpePd2GQ==/base.apk. target_sdk_version=28, uses_libraries=, library_path=/data/app/~~g_Yiddqefy_pcfKc-dWsfA==/unknown.none.nx2android-Osl5ly3yLXGx0CqpePd2GQ==/lib/arm64:/data/app/~~g_Yiddqefy_pcfKc-dWsfA==/unknown.none.nx2android-Osl5ly3yLXGx0CqpePd2GQ==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/unknown.none.nx2android
+11-25 01:30:13.792 14425 14425 V Monotype: SetAppTypeFace- try to flip, app = unknown.none.nx2android
+11-25 01:30:13.823 14425 14425 I NGRRuntime: Application.onCreate process=unknown.none.nx2android
+11-25 01:30:13.829 14425 14443 D vulkan  : searching for layers in '/data/app/~~g_Yiddqefy_pcfKc-dWsfA==/unknown.none.nx2android-Osl5ly3yLXGx0CqpePd2GQ==/lib/arm64'
+11-25 01:30:13.830 14425 14443 D vulkan  : searching for layers in '/data/app/~~g_Yiddqefy_pcfKc-dWsfA==/unknown.none.nx2android-Osl5ly3yLXGx0CqpePd2GQ==/base.apk!/lib/arm64-v8a'
+11-25 01:30:13.832 14425 14425 V Monotype: SetAppTypeFace- try to flip, app = unknown.none.nx2android
+11-25 01:30:13.856 14425 14443 I AdrenoVK-0: ===== BEGIN DUMP OF OVERRIDDEN SETTINGS =====
+11-25 01:30:13.856 14425 14443 I AdrenoVK-0: ===== END DUMP OF OVERRIDDEN SETTINGS =====
+11-25 01:30:13.857 14425 14443 I AdrenoVK-0: QUALCOMM build          : ac42ce8aee, I8e937e587a
+11-25 01:30:13.857 14425 14443 I AdrenoVK-0: Build Date              : 11/15/24
+11-25 01:30:13.857 14425 14443 I AdrenoVK-0: Shader Compiler Version : E031.41.03.57
+11-25 01:30:13.857 14425 14443 I AdrenoVK-0: Local Branch            : 
+11-25 01:30:13.857 14425 14443 I AdrenoVK-0: Remote Branch           : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.13.2.0.11.00.00.855.856
+11-25 01:30:13.857 14425 14443 I AdrenoVK-0: Remote Branch           : NONE
+11-25 01:30:13.857 14425 14443 I AdrenoVK-0: Reconstruct Branch      : NOTHING
+11-25 01:30:13.857 14425 14443 I AdrenoVK-0: Build Config            : S P 14.1.4 AArch64
+11-25 01:30:13.857 14425 14443 I AdrenoVK-0: Driver Path             : /vendor/lib64/hw/vulkan.adreno.so
+11-25 01:30:13.857 14425 14443 I AdrenoVK-0: Driver Version          : 0676.66
+11-25 01:30:13.857 14425 14443 I AdrenoVK-0: PFP                     : 0x01740158
+11-25 01:30:13.857 14425 14443 I AdrenoVK-0: ME                      : 0x00000000
+11-25 01:30:13.857 14425 14443 I AdrenoVK-0: Application Name    : android framework
+11-25 01:30:13.857 14425 14443 I AdrenoVK-0: Application Version : 0x00000000
+11-25 01:30:13.857 14425 14443 I AdrenoVK-0: Engine Name         : android framework
+11-25 01:30:13.857 14425 14443 I AdrenoVK-0: Engine Version      : 0x00000000
+11-25 01:30:13.857 14425 14443 I AdrenoVK-0: Api Version         : 0x00401000
+11-25 01:30:13.857 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.857 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.857 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.857 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.858 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.858 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.858 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.858 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.858 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.858 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.858 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.858 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.858 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.858 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.858 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.858 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.858 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.858 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.858 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.858 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.858 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.858 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.858 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.858 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:13.901 14425 14425 D ADPFLog : getCurrentThermalStatus(), caller:11273,[unknown.none.nx2android]
+11-25 01:30:13.902 14425 14459 D ADPFLog : addThermalStatusListener(listener), caller:11273,[unknown.none.nx2android]
+11-25 01:30:13.902 14425 14459 D ADPFLog : addThermalStatusListener(executor, listener), caller:11273,[unknown.none.nx2android]
+11-25 01:30:14.111 14425 14425 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-25 01:30:14.111 14425 14425 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
+11-25 01:30:14.177 14425 14443 I AdrenoUtils: <ReadGpuID:407>: Reading chip ID through GSL
+11-25 01:30:15.749 14425 14538 I AdrenoGLES-0: QUALCOMM build                   : ac42ce8aee, I8e937e587a
+11-25 01:30:15.749 14425 14538 I AdrenoGLES-0: Build Date                       : 11/15/24
+11-25 01:30:15.749 14425 14538 I AdrenoGLES-0: OpenGL ES Shader Compiler Version: E031.41.03.57
+11-25 01:30:15.749 14425 14538 I AdrenoGLES-0: Local Branch                     : 
+11-25 01:30:15.749 14425 14538 I AdrenoGLES-0: Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.13.2.0.11.00.00.855.856
+11-25 01:30:15.749 14425 14538 I AdrenoGLES-0: Remote Branch                    : NONE
+11-25 01:30:15.749 14425 14538 I AdrenoGLES-0: Reconstruct Branch               : NOTHING
+11-25 01:30:15.749 14425 14538 I AdrenoGLES-0: Build Config                     : S P 14.1.4 AArch64
+11-25 01:30:15.749 14425 14538 I AdrenoGLES-0: Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
+11-25 01:30:15.749 14425 14538 I AdrenoGLES-0: Driver Version                   : 0676.66
+11-25 01:30:15.750 14425 14538 I AdrenoGLES-0: PFP: 0x01740158, ME: 0x00000000
+11-25 01:30:15.765 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.765 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.765 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.765 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.765 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.765 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.765 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.765 14425 14443 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.765 14425 14538 I AdrenoVK-0: QUALCOMM build          : ac42ce8aee, I8e937e587a
+11-25 01:30:15.765 14425 14538 I AdrenoVK-0: Build Date              : 11/15/24
+11-25 01:30:15.765 14425 14538 I AdrenoVK-0: Shader Compiler Version : E031.41.03.57
+11-25 01:30:15.765 14425 14538 I AdrenoVK-0: Local Branch            : 
+11-25 01:30:15.765 14425 14538 I AdrenoVK-0: Remote Branch           : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.13.2.0.11.00.00.855.856
+11-25 01:30:15.765 14425 14538 I AdrenoVK-0: Remote Branch           : NONE
+11-25 01:30:15.765 14425 14538 I AdrenoVK-0: Reconstruct Branch      : NOTHING
+11-25 01:30:15.765 14425 14538 I AdrenoVK-0: Build Config            : S P 14.1.4 AArch64
+11-25 01:30:15.765 14425 14538 I AdrenoVK-0: Driver Path             : /vendor/lib64/hw/vulkan.adreno.so
+11-25 01:30:15.765 14425 14538 I AdrenoVK-0: Driver Version          : 0676.66
+11-25 01:30:15.765 14425 14538 I AdrenoVK-0: PFP                     : 0x01740158
+11-25 01:30:15.765 14425 14538 I AdrenoVK-0: ME                      : 0x00000000
+11-25 01:30:15.765 14425 14538 I AdrenoVK-0: Application Name    : Chromium
+11-25 01:30:15.765 14425 14538 I AdrenoVK-0: Application Version : 0x00000000
+11-25 01:30:15.765 14425 14538 I AdrenoVK-0: Engine Name         : (null)
+11-25 01:30:15.765 14425 14538 I AdrenoVK-0: Engine Version      : 0x00000000
+11-25 01:30:15.765 14425 14538 I AdrenoVK-0: Api Version         : 0x00401000
+11-25 01:30:15.766 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.766 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.766 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.766 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.766 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.766 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.766 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.766 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.767 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.767 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.767 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.767 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.767 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.767 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.767 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.767 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.782 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.782 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.782 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.782 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.782 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.782 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.782 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.782 14425 14538 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-25 01:30:15.822 14425 14538 I AdrenoVK-0: Shader compilation failed for shaderType: 0
+11-25 01:30:15.822 14425 14538 I AdrenoVK-0: Pipeline create failed
+11-25 01:30:15.834 14425 14538 I AdrenoVK-0: Shader compilation failed for shaderType: 0
+11-25 01:30:15.834 14425 14538 I AdrenoVK-0: Pipeline create failed
+11-25 01:30:15.840 14425 14538 I AdrenoVK-0: Shader compilation failed for shaderType: 0
+11-25 01:30:15.840 14425 14538 I AdrenoVK-0: Pipeline create failed
+11-25 01:30:15.845 14425 14538 I AdrenoVK-0: Shader compilation failed for shaderType: 4
+11-25 01:30:15.845 14425 14538 I AdrenoVK-0: Pipeline create failed
+11-25 01:30:15.880 14425 14538 I AdrenoVK-0: Shader compilation failed for shaderType: 0
+11-25 01:30:15.880 14425 14538 I AdrenoVK-0: Pipeline create failed
+11-25 01:30:15.889 14425 14538 I AdrenoVK-0: Shader compilation failed for shaderType: 0
+11-25 01:30:15.889 14425 14538 I AdrenoVK-0: Pipeline create failed
+11-25 01:30:15.899 14425 14538 I AdrenoVK-0: Shader compilation failed for shaderType: 0
+11-25 01:30:15.899 14425 14538 I AdrenoVK-0: Pipeline create failed
+11-25 01:30:15.904 14425 14538 I AdrenoVK-0: Shader compilation failed for shaderType: 4
+11-25 01:30:15.904 14425 14538 I AdrenoVK-0: Pipeline create failed
+11-25 01:30:15.912 14425 14538 I AdrenoVK-0: Shader compilation failed for shaderType: 4
+11-25 01:30:15.912 14425 14538 I AdrenoVK-0: Pipeline create failed
+11-25 01:30:16.712 14425 14538 I AdrenoVK-0: Shader compilation failed for shaderType: 0
+11-25 01:30:16.712 14425 14538 I AdrenoVK-0: Pipeline create failed
+11-25 01:30:16.723 14425 14538 I AdrenoVK-0: Shader compilation failed for shaderType: 4
+11-25 01:30:16.723 14425 14538 I AdrenoVK-0: Pipeline create failed
+11-25 01:30:16.727 14425 14538 I AdrenoVK-0: Shader compilation failed for shaderType: 0
+11-25 01:30:16.727 14425 14538 I AdrenoVK-0: Pipeline create failed
+11-25 01:30:16.735 14425 14538 I AdrenoVK-0: Failed to link shaders.
+11-25 01:30:16.735 14425 14538 I AdrenoVK-0: Pipeline create failed
+11-25 01:30:19.449 14425 14609 D ProfileInstaller: Installing profile for unknown.none.nx2android
+11-25 01:30:20.733 14425 14425 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-25 01:30:20.733 14425 14425 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
