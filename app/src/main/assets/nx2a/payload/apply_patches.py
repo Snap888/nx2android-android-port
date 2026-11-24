@@ -702,9 +702,8 @@ patch('NGR condition-variable wait/wake trace', 'nxnative/dm/host/hle_thread.c',
     t->wkind = kind;""",
  """static int64_t block(thr_t *t, int kind, int64_t ns) {
     if (kind == 2 && ngr_sync_watch(t->handle))
-        LOG("[NGR_SYNC_WAIT] register h=%#x key=%#llx lock=%#llx timeout_ns=%lld lockword=%#x keyword=%#x",
-            t->handle, (unsigned long long)t->wkey, (unsigned long long)t->waddr,
-            (long long)ns, ld32(t->waddr), ld32(t->wkey));
+        LOG("[NGR_SYNC_WAIT] register h=%#x key=%#llx lock=%#llx timeout_ns=%lld",
+            t->handle, (unsigned long long)t->wkey, (unsigned long long)t->waddr, (long long)ns);
     t->wkind = kind;"""),
 ]);
 
