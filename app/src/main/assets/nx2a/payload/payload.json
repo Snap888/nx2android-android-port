@@ -15,8 +15,8 @@
   "profiles/runefactoryguardiansofazuma.android.tsv": "78b445b4164356419ff1c67e4af9c71471b986b36c93964846addb15f65acf22",
   "runtime_install.py": "07961946f7f881667f6708736eed51c9c094329b2f85e151216a0ed481a96beb",
   "server_state.py": "43eb08dbb456841f78cb56efc902a6642412b07431ae36fc61e4abbe78884802",
-  "webgui/index.html": "9eb89734827e47005cd051ce8a8cabe4c33517492896a24e9b0be28f60657823",
-  "webgui/server.py": "ed73f0f20cbcb69699f4e383a64cc7fed03a9829688da95d120d951d011efb81"
+  "webgui/index.html": "ffc608ad16d2b51ab7c0709bc33de78ed77559317bc5f75be8db8826e35336b4",
+  "webgui/server.py": "d262fc96901b7e7f2a9e100d348a3b6865090d6a117ee39aeeb9d4369a97d6fc"
  },
  "porter_good": "e9bd2b764608facf841e39292d868ee657eaf634",
  "porter_track": "main"
