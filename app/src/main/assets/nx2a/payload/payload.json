@@ -1,5 +1,5 @@
 {
- "version": 154,
+ "version": 155,
  "setup": 3,
  "porter_sha": "468937822219a56eb81da1aa2e40f05e8c453af2",
  "files": {
@@ -8,7 +8,7 @@
   "dotnet_probe.py": "866983eb4aa53b567bf69e6574a93b00e315c2a85a2c536e95a123b9ded3e53a",
   "fast_tools.py": "665af40effe497d679cef624e0a0da81874900aa43e9fbfef07d172d7cc32070",
   "inner_setup.sh": "413d6980c1c0c129e90cb1892351dfc7a504b6a3919f78091703e4aba54cdd8c",
-  "porter_sync.py": "d9429324f2264a789a6d5238e1e7017e78d42452aba08f3e77d9171dddb5ad9f",
+  "porter_sync.py": "7a918561c0c970a4bbea5f9526ab25a9fccb208723241254a5153d8cc8797d29",
   "prebuilt.py": "b12ea35546333547930dac17203f57b9d7f33f7c031c2a8c839033ceb5ff3129",
   "prebuilt_key.py": "7b15021b38f7fcecf4a7d6e016a4a0aaa21c77d8b33dc375338b53fb423999e5",
   "profile_export.py": "16acd498d3c53c8c1d1ec4ac29e2623215472d726b8c77668ec74d9d6336eb32",
