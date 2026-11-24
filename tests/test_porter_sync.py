@@ -68,7 +68,7 @@ class PorterSyncTests(unittest.TestCase):
 
             ok, message = module.sync(log=lambda _: None)
             self.assertFalse(ok)
-            self.assertIn("patch validation failed", message)
+            self.assertIn("NGR patches are invalid", message)
 
 
 if __name__ == "__main__":
