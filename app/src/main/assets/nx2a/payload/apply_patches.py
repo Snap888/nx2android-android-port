@@ -720,8 +720,8 @@ patch('NGR condition-variable wait/wake trace', 'nxnative/dm/host/hle_thread.c',
 ]);
 
 
-// Twelve Minutes (0100CD701434C000): its local UserPresence object must accept
-// offline initialization/updates. The network-facing friends service stays cut.
+# Twelve Minutes (0100CD701434C000): its local UserPresence object must accept
+# offline initialization/updates. The network-facing friends service stays cut.
 patch('NGR offline UserPresence', 'nxnative/dm/host/hle_friends.c', 'NX2A_FRIENDS_OFFLINE_PRESENCE', [
 ("""// Presence
 HLE_FORCE("_ZN2nn7friends12UserPresence10InitializeERKNS_7account3UidE", "presence unavailable (cut)", Result, h_fr_UpInit, void *self, const void *uid) { (void)self; (void)uid; return RES_FAIL; }
