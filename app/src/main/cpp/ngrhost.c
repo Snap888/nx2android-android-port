@@ -247,17 +247,33 @@ static int mkdirs(const char *path) {
 }
 
 static int runtime_log_init(const char *internal_root, const char *game_id,
-                            int enable_runtime_log, int enable_fs_log) {
+                            int enable_runtime_log, int enable_fs_log,
+                            int enable_session_tracking) {
     g_runtime_diagnostics = enable_runtime_log ? 1 : 0;
     g_runtime_log_path[0] = 0;
     g_runtime_log_dir[0] = 0;
     g_gameplay_log_path[0] = 0;
-    if (!enable_runtime_log && !enable_fs_log) return 0;
+    if (!enable_session_tracking) return 0;
     if (!internal_root || !*internal_root || !game_id || !*game_id) return -1;
     int a = snprintf(g_runtime_log_dir, sizeof(g_runtime_log_dir), "%s/ngr-logs", internal_root);
     if (a < 0 || (size_t)a >= sizeof(g_runtime_log_dir)) return -1;
     if (mkdirs(g_runtime_log_dir)) return -1;
+
+    /* Keep the NativeActivity PID for category-only sessions too. This lets
+       the export filter slow-frame/NVN/watchdog Logcat to this game process. */
+    char pid_path[1500];
+    int n = snprintf(pid_path, sizeof(pid_path), "%s/%s.pid", g_runtime_log_dir, game_id);
+    if (n > 0 && (size_t)n < sizeof(pid_path)) {
+        int pid_fd = open(pid_path, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC | O_NOFOLLOW, 0600);
+        if (pid_fd >= 0) {
+            char pid[48];
+            int plen = snprintf(pid, sizeof(pid), "%ld\\n", (long)getpid());
+            if (plen > 0) (void)write(pid_fd, pid, (size_t)plen);
+            close(pid_fd);
+        }
+    }
     if (!enable_runtime_log) return 0;
+
     int b = snprintf(g_runtime_log_path, sizeof(g_runtime_log_path), "%s/%s.log", g_runtime_log_dir, game_id);
     int c = snprintf(g_gameplay_log_path, sizeof(g_gameplay_log_path), "%s/gameplay-%s.log", g_runtime_log_dir, game_id);
     if (b < 0 || (size_t)b >= sizeof(g_runtime_log_path) ||
@@ -265,16 +281,6 @@ static int runtime_log_init(const char *internal_root, const char *game_id,
         g_runtime_log_path[0] = 0;
         g_gameplay_log_path[0] = 0;
         return -1;
-    }
-    char pid_path[1500];
-    int n = snprintf(pid_path, sizeof(pid_path), "%s/%s.pid", g_runtime_log_dir, game_id);
-    if (n > 0 && (size_t)n < sizeof(pid_path)) {
-        int fd = open(pid_path, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC | O_NOFOLLOW, 0600);
-        if (fd >= 0) {
-            char pid[48]; int plen = snprintf(pid, sizeof(pid), "%ld\n", (long)getpid());
-            if (plen > 0) (void)write(fd, pid, (size_t)plen);
-            close(fd);
-        }
     }
     int fd = open(g_runtime_log_path, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC | O_NOFOLLOW, 0600);
     if (fd < 0) { g_runtime_log_path[0] = 0; return -1; }
@@ -730,7 +736,8 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     const int log_nvn = intent_boolean_extra(activity, "ngr_log_nvn");
     const int log_watchdog = intent_boolean_extra(activity, "ngr_log_watchdog");
     const int log_fs = intent_boolean_extra(activity, "ngr_log_fs");
-    if (runtime_log_init(internal, id, log_runtime, log_fs)) {
+    const int any_logging = log_runtime || log_slowframe || log_nvn || log_watchdog || log_fs;
+    if (runtime_log_init(internal, id, log_runtime, log_fs, any_logging)) {
         __android_log_print(ANDROID_LOG_ERROR, TAG, "cannot initialize persistent runtime log under %s: %s", internal ? internal : "(null)", strerror(errno));
     }
     LOGI("============================================================");
