@@ -579,14 +579,31 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** Map the proot-visible /root path back to this app's real private filesystem. */
+    /** Resolve a proot path to its host path without copying the game data pack. */
     private String resolveNgrGameDataPath(String path) {
-        if (path == null || !path.startsWith("/root/")) return null;
+        if (path == null || path.isEmpty()) return null;
         try {
-            File root = new File(new File(getFilesDir(), "ubuntu"), "root").getCanonicalFile();
-            File game = new File(root, path.substring("/root/".length())).getCanonicalFile();
-            String prefix = root.getPath() + File.separator;
-            if (!game.getPath().startsWith(prefix) || !new File(game, "nx2a-data.json").isFile()
+            File game;
+            if (path.startsWith("/root/")) {
+                File root = new File(new File(getFilesDir(), "ubuntu"), "root").getCanonicalFile();
+                game = new File(root, path.substring("/root/".length())).getCanonicalFile();
+                String prefix = root.getPath() + File.separator;
+                if (!game.getPath().startsWith(prefix)) return null;
+            } else if (path.startsWith("/sdcard/") || path.startsWith("/storage/emulated/0/")) {
+                if (Build.VERSION.SDK_INT >= 23 &&
+                        checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(this, "Allow storage access, then launch the game again.", Toast.LENGTH_LONG).show();
+                    requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                    return null;
+                }
+                File root = Environment.getExternalStorageDirectory().getCanonicalFile();
+                game = new File(path).getCanonicalFile();
+                String prefix = root.getPath() + File.separator;
+                if (!game.getPath().startsWith(prefix)) return null;
+            } else {
+                return null;
+            }
+            if (!game.isDirectory() || !new File(game, "nx2a-data.json").isFile()
                     || !new File(game, "libdmhost.so").isFile()) return null;
             return game.getAbsolutePath();
         } catch (Exception error) {
