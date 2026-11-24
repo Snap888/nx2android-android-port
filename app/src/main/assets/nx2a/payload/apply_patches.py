@@ -620,4 +620,70 @@ static unsigned g_watch_load_dumps, g_watch_load_interval = 10;  // NX2A_LOAD_SN
 """),
 ]);
 
+
+# 16. Trace only Unity loading/synchronization threads; observational, no scheduling changes.
+patch('NGR targeted synchronization trace', 'nxnative/dm/host/hle_thread.c', 'NX2A_SYNC_TRACE', [
+("""static thr_t *g_wait;          // All waiting threads (lock / condition / address / synchronization)
+""", """static thr_t *g_wait;          // All waiting threads (lock / condition / address / synchronization)
+// NX2A_SYNC_TRACE: handles observed in Twelve Minutes loading snapshots.
+static uint64_t g_ngr_sync_keys[32]; static unsigned g_ngr_sync_key_n, g_ngr_sync_signal_logs;
+static int ngr_sync_watch(uint32_t h) {
+    return h == 0x1001 || h == 0x1005 || h == 0x1017 || h == 0x101d ||
+           h == 0x101f || h == 0x1020 || h == 0x1025 || h == 0x1027;
+}
+static void ngr_sync_track_key(uint64_t key) {
+    for (unsigned i = 0; i < g_ngr_sync_key_n; i++) if (g_ngr_sync_keys[i] == key) return;
+    if (g_ngr_sync_key_n < 32) g_ngr_sync_keys[g_ngr_sync_key_n++] = key;
+}
+static int ngr_sync_key_watched(uint64_t key) {
+    for (unsigned i = 0; i < g_ngr_sync_key_n; i++) if (g_ngr_sync_keys[i] == key) return 1;
+    return 0;
+}
+"""),
+("""        if (ld32(addr) == ((uint32_t)regs[0] | WAITERS_BIT)) { t->waddr = addr; t->wtag = (uint32_t)regs[2];
+""", """        if (ld32(addr) == ((uint32_t)regs[0] | WAITERS_BIT)) {
+            if (ngr_sync_watch(t->handle)) LOG("[NGR_SYNC] lock-wait h=%#x owner=%#x addr=%#llx tag=%#x word=%#x", t->handle, (uint32_t)regs[0], (unsigned long long)addr, (uint32_t)regs[2], ld32(addr));
+            t->waddr = addr; t->wtag = (uint32_t)regs[2];
+"""),
+("""            r = block(t, 1, -1);
+            if (ov) pthread_override_qos_class_end_np(ov); }
+""", """            r = block(t, 1, -1);
+            if (ngr_sync_watch(t->handle)) LOG("[NGR_SYNC] lock-wake h=%#x addr=%#llx result=%lld word=%#x", t->handle, (unsigned long long)addr, (long long)r, ld32(addr));
+            if (ov) pthread_override_qos_class_end_np(ov); }
+"""),
+("""    case 0x1B: pthread_mutex_lock(&G); lock_handoff(regs[0]); pthread_mutex_unlock(&G); regs[0] = 0; return 1;
+""", """    case 0x1B: { thr_t *t = cur(); if (ngr_sync_watch(t->handle)) LOG("[NGR_SYNC] unlock h=%#x addr=%#llx word=%#x", t->handle, (unsigned long long)regs[0], ld32(regs[0])); pthread_mutex_lock(&G); lock_handoff(regs[0]); pthread_mutex_unlock(&G); regs[0] = 0; return 1; }
+"""),
+("""        pthread_mutex_lock(&G);
+        // The order matters: first set the condition key = 1, then release the mutex. The SDK's InternalConditionVariable::Signal first reads the condition key in user mode, and does not issue svc 0x1D if it is 0;
+""", """        pthread_mutex_lock(&G);
+        if (ngr_sync_watch(t->handle)) {
+            ngr_sync_track_key(key);
+            LOG("[NGR_SYNC] cv-wait h=%#x lock=%#llx key=%#llx tag=%#x timeout_ns=%lld lockword=%#x keyword=%#x",
+                t->handle, (unsigned long long)addr, (unsigned long long)key, (uint32_t)regs[2],
+                (long long)regs[3], ld32(addr), ld32(key));
+        }
+        // The order matters: first set the condition key = 1, then release the mutex. The SDK's InternalConditionVariable::Signal first reads the condition key in user mode, and does not issue svc 0x1D if it is 0;
+"""),
+("""        int64_t r = block(t, 2, (int64_t)regs[3]);   // Timeout: the lock is not re-acquired (user mode takes it itself)
+        pthread_mutex_unlock(&G);
+""", """        int64_t r = block(t, 2, (int64_t)regs[3]);   // Timeout: the lock is not re-acquired (user mode takes it itself)
+        if (ngr_sync_watch(t->handle)) LOG("[NGR_SYNC] cv-wake h=%#x lock=%#llx key=%#llx result=%lld lockword=%#x keyword=%#x",
+            t->handle, (unsigned long long)addr, (unsigned long long)key, (long long)r, ld32(addr), ld32(key));
+        pthread_mutex_unlock(&G);
+"""),
+("""        uint64_t key = regs[0]; int cnt = (int)regs[1], n = 0;
+        pthread_mutex_lock(&G);
+        for (thr_t *w; (cnt <= 0 || n < cnt) && (w = pick(2, key)); n++) lock_acquire_for(w, w->waddr, w->wtag);   // In kernel order; once turned into a lock wait or woken it is no longer kind 2
+""", """        uint64_t key = regs[0]; int cnt = (int)regs[1], n = 0;
+        pthread_mutex_lock(&G);
+        int ngr_tracked_signal = ngr_sync_key_watched(key);
+        if (ngr_tracked_signal && g_ngr_sync_signal_logs < 256)
+            LOG("[NGR_SYNC] cv-signal key=%#llx count=%d", (unsigned long long)key, cnt);
+        for (thr_t *w; (cnt <= 0 || n < cnt) && (w = pick(2, key)); n++) lock_acquire_for(w, w->waddr, w->wtag);   // In kernel order; once turned into a lock wait or woken it is no longer kind 2
+        if (ngr_tracked_signal && g_ngr_sync_signal_logs++ < 256)
+            LOG("[NGR_SYNC] cv-signalled key=%#llx woken=%d", (unsigned long long)key, n);
+""")
+]);
+
 sys.exit(1 if failed else 0)
