@@ -37,7 +37,7 @@ class RuntimeInstallTests(unittest.TestCase):
             root = Path(tmp)
             source = self.make_payload(root)
             result1 = RUNTIME.validate_payload(source, "0123456789abcdefabcd")
-            (source / "RomFS/game.bin").write_text("updated", encoding="utf-8")
+            (source / "RomFS/game.bin").write_text("updated-game-data-payload", encoding="utf-8")
             result2 = RUNTIME.validate_payload(source, "0123456789abcdefabcd")
             self.assertEqual(result1["path"], result2["path"])
             self.assertGreater(result2["bytes"], result1["bytes"])
