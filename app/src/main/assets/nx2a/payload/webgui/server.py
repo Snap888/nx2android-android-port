@@ -719,7 +719,11 @@ class H(BaseHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    need_porter()
+    # Do not make GUI availability depend on a network download or porter patch
+    # validation. The launcher has already attempted the pinned checkout; the
+    # GUI must come up even when that checkout needs repair. Port operations
+    # call need_porter() and report a precise error in the job log.
+    print('NGR GUI boot: deferring porter validation until a port operation', flush=True)
     threading.Thread(target=auto_update, daemon=True).start()
     threading.Thread(target=auto_porter, daemon=True).start()
     threading.Thread(target=adb_auto.loop, args=(ENV, lambda: not JOB['done']), daemon=True).start()
