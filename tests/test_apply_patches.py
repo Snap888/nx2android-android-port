@@ -99,5 +99,54 @@ class ApplyPatchesTests(unittest.TestCase):
             self.assertIn("NGR Twelve Minutes profile: already", second.stdout)
 
 
+
+    def test_legacy_porter_ui_font_helper_is_added_and_idempotent(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            pipeline = Path(tmp) / "porter/pipeline.py"
+            pipeline.parent.mkdir(parents=True)
+            pipeline.write_text(
+                "from pathlib import Path\\n"
+                "from porter.paths import DM, NXNATIVE\\n",
+                encoding="utf-8",
+            )
+            env = dict(os.environ, NX2A_PATCH_ONLY="NGR UI font assets")
+            first = subprocess.run(
+                [sys.executable, str(PATCHER), tmp],
+                capture_output=True, text=True, env=env, check=False,
+            )
+            self.assertEqual(first.returncode, 0, first.stdout + first.stderr)
+            patched = pipeline.read_text(encoding="utf-8")
+            self.assertIn("NX2A_UI_FONT_ASSETS", patched)
+            self.assertIn("def ui_font_assets():", patched)
+            compile(patched, str(pipeline), "exec")
+
+            second = subprocess.run(
+                [sys.executable, str(PATCHER), tmp],
+                capture_output=True, text=True, env=env, check=False,
+            )
+            self.assertEqual(second.returncode, 0, second.stdout + second.stderr)
+            self.assertIn("already", second.stdout)
+
+    def test_newer_upstream_ui_font_helper_is_preserved(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            pipeline = Path(tmp) / "porter/pipeline.py"
+            pipeline.parent.mkdir(parents=True)
+            original = (
+                "from pathlib import Path\\n"
+                "from porter.paths import DM, NXNATIVE\\n"
+                "UI_FONT = DM / 'font.nxpf'\\n"
+                "def ui_font_assets():\\n"
+                "    return {'font/ui.bin': UI_FONT}\\n"
+            )
+            pipeline.write_text(original, encoding="utf-8")
+            env = dict(os.environ, NX2A_PATCH_ONLY="NGR UI font assets")
+            result = subprocess.run(
+                [sys.executable, str(PATCHER), tmp],
+                capture_output=True, text=True, env=env, check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertEqual(pipeline.read_text(encoding="utf-8"), original)
+
+
 if __name__ == "__main__":
     unittest.main()
