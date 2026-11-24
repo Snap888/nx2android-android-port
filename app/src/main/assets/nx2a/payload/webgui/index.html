@@ -16,14 +16,14 @@ button.b{padding:11px 14px;border-radius:8px;border:0;background:var(--red);colo
 .ck{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}.ck:last-child{border:0}.dot{width:10px;height:10px;border-radius:50%;margin-top:5px;flex:none}.ok{background:var(--ok)}.no{background:var(--red)}.opt{background:#777}
 .sm{color:var(--mut);font-size:12px;word-break:break-all}pre{background:#08080a;border:1px solid var(--line);border-radius:8px;padding:10px;max-height:46vh;overflow:auto;font-size:12px;white-space:pre-wrap;word-break:break-all}
 .bar{height:8px;background:#101014;border-radius:6px;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:var(--red);width:0}
-#dlg{position:fixed;inset:0;background:#000d;display:none;padding:14px;overflow:auto;z-index:9;align-items:center}#dlg .card{max-width:560px;margin:auto;width:100%}#fmodal{position:fixed;inset:0;background:#000c;display:none;padding:14px;overflow:auto;z-index:5}#fmodal .card{max-width:720px;margin:auto}#fmodal .li{display:flex;gap:8px;align-items:center}#fmodal .li .nm{flex:1;word-break:break-all}#fmodal .sz{color:var(--mut,#999);font-size:12px;white-space:nowrap}#modal{position:fixed;inset:0;background:#000c;display:none;padding:14px;overflow:auto}#modal .card{max-width:720px;margin:auto}.li{padding:10px;border-bottom:1px solid var(--line)}
+#dlg{position:fixed;inset:0;background:#000d;display:none;padding:14px;overflow:auto;z-index:20;align-items:center}#dlg .card{max-width:560px;margin:auto;width:100%}#fmodal{position:fixed;inset:0;background:#000c;display:none;padding:14px;overflow:auto;z-index:13}#fmodal .card{max-width:720px;margin:auto}#fmodal .li{display:flex;gap:8px;align-items:center}#fmodal .li .nm{flex:1;word-break:break-all}#fmodal .sz{color:var(--mut,#999);font-size:12px;white-space:nowrap}#modal{position:fixed;inset:0;background:#000c;display:none;padding:14px;overflow:auto;z-index:14}#modal .card{max-width:720px;margin:auto}.li{padding:10px;border-bottom:1px solid var(--line)}
 </style></head><body>
 <header><b class="t"><i>nx2</i>android</b><span id="ver"></span><button onclick="checkUpdate()">Update</button><button id="quit" onclick="quit()" style="display:none">Quit</button></header>
 <div id="ban">An update is ready. <button onclick="restart()">Restart to apply</button></div>
 <nav><button class="on" data-t="library">Library</button><button data-t="setup">Setup</button><button data-t="port">Recompiler</button><button data-t="device">Device</button><button data-t="log">Log</button></nav>
 <main>
 <section id="library" class="on">
- <div class="librarytools"><input type="text" id="libsearch" placeholder="Search games…" oninput="renderLibrary()"><button class="b" style="margin:0;flex:none" onclick="openRecompiler()">＋</button></div>
+ <div class="librarytools"><input type="text" id="libsearch" placeholder="Search games…" oninput="renderLibrary()"><button class="b g" style="margin:0;flex:none" onclick="refreshGameCovers()">Covers</button><button class="b" style="margin:0;flex:none" onclick="openRecompiler()">＋</button></div>
  <div id="librarygrid" class="gamegrid"></div>
  <div id="libraryempty" class="card sm" style="text-align:center;padding:28px 14px">Your library is empty. Tap + to choose a game and open the recompiler.</div>
 </section>
@@ -70,7 +70,7 @@ button.b{padding:11px 14px;border-radius:8px;border:0;background:var(--red);colo
 </main>
 <div id="dlg"><div class="card"><div id="dlgmsg" style="white-space:pre-wrap"></div><div class="row" style="margin-top:12px"><button class="b" id="dlgok">OK</button><button class="b g" id="dlgno">Cancel</button></div></div></div>
 <div id="fmodal"><div class="card"><div id="fplaces" class="row" style="flex-wrap:wrap"></div><div id="fpath" class="sm"></div><div id="flist"></div><div class="row"><button class="b g" onclick="fmAll()">Select all</button><button class="b" onclick="fmDel()">Delete selected</button><button class="b g" onclick="fmodal.style.display='none'">Close</button></div><div id="fmsg" class="sm"></div></div></div>
-<div id="gmodal" class="gmodal"><div class="card"><div class="row"><b id="gtitle" style="flex:1"></b><button class="b g" style="margin:0" onclick="closeGame()">Close</button></div><div id="gdetails" class="sm"></div><div class="runtimewarn">This game runs inside NGR. The existing game data is validated and launched in place; only native executable libraries are staged privately. No game-data copy or separate game APK is created.</div><div class="row"><button class="b" style="flex:1" onclick="launchGame()">▶ Launch game</button><button class="b g" style="flex:1" onclick="installGameRuntime()">Prepare runtime</button></div><div class="row"><button class="b g" style="flex:1" onclick="exportRuntimeLog()">Export runtime log</button><button class="b g" style="flex:1" onclick="exportGameplayLog()">Export gameplay log</button><button class="b g" style="flex:1" onclick="clearRuntimeLog()">Clear logs</button></div><div class="card" style="margin-top:12px"><b>Diagnostic logging</b><div class="sm">Off by default. Select only what you need; settings apply to this game on its next launch.</div><label class="chk"><input type="checkbox" id="glogruntime"> Main runtime + game stdout/stderr</label><label class="chk"><input type="checkbox" id="glogslow"> Slow frames (per dropped-frame details)</label><label class="chk"><input type="checkbox" id="glognvn"> NVN / Vulkan lifecycle</label><label class="chk"><input type="checkbox" id="glogwatch"> Hang watchdog / thread snapshots</label><label class="chk"><input type="checkbox" id="glogfs"> Filesystem / RomFS read trace</label></div><label>Resolution</label><select id="gres"><option>Auto</option><option>1280×720</option><option>1920×1080</option></select><label>Graphics preset</label><select id="ggfx"><option>Compatibility</option><option>Balanced</option><option>Quality</option></select><label>FPS limit</label><select id="gfps"><option>Auto</option><option>30</option><option>60</option></select><label>Controller</label><select id="gcontroller"><option>Auto</option><option>Touch</option><option>Gamepad</option></select><label>Vulkan driver path (optional)</label><input id="gdriver" type="text" placeholder="/sdcard/Switch/Drivers/libvulkan_freedreno.so"><input id="coverPath" type="text" style="display:none"><div class="row"><button class="b g" onclick="pick('coverPath',false)">Choose cover</button><button class="b g" onclick="saveGameSettings()">Save settings</button></div><div class="row"><button class="b g" onclick="removeGame()">Remove shortcut</button><button class="b" onclick="recompileGame()">Recompile / update</button></div><div id="gmsg" class="sm"></div></div></div>
+<div id="gmodal" class="gmodal"><div class="card"><div class="row"><b id="gtitle" style="flex:1"></b><button class="b g" style="margin:0" onclick="closeGame()">Close</button></div><div id="gdetails" class="sm"></div><div class="runtimewarn">This game runs inside NGR. The existing game data is validated and launched in place; only native executable libraries are staged privately. No game-data copy or separate game APK is created.</div><div class="row"><button class="b" style="flex:1" onclick="launchGame()">▶ Launch game</button><button class="b g" style="flex:1" onclick="installGameRuntime()">Prepare runtime</button></div><div class="row"><button class="b g" style="flex:1" onclick="exportRuntimeLog()">Export runtime log</button><button class="b g" style="flex:1" onclick="exportGameplayLog()">Export gameplay log</button><button class="b g" style="flex:1" onclick="clearRuntimeLog()">Clear logs</button></div><div class="card" style="margin-top:12px"><b>Diagnostic logging</b><div class="sm">Off by default. Select only what you need; settings apply to this game on its next launch.</div><label class="chk"><input type="checkbox" id="glogruntime"> Main runtime + game stdout/stderr</label><label class="chk"><input type="checkbox" id="glogslow"> Slow frames (per dropped-frame details)</label><label class="chk"><input type="checkbox" id="glognvn"> NVN / Vulkan lifecycle</label><label class="chk"><input type="checkbox" id="glogwatch"> Hang watchdog / thread snapshots</label><label class="chk"><input type="checkbox" id="glogfs"> Filesystem / RomFS read trace</label></div><label>Resolution</label><select id="gres"><option>Auto</option><option>1280×720</option><option>1920×1080</option></select><label>Graphics preset</label><select id="ggfx"><option>Compatibility</option><option>Balanced</option><option>Quality</option></select><label>FPS limit</label><select id="gfps"><option>Auto</option><option>30</option><option>60</option></select><label>Controller</label><select id="gcontroller"><option>Auto</option><option>Touch</option><option>Gamepad</option></select><label>Vulkan driver path (optional)</label><input id="gdriver" type="text" placeholder="/sdcard/Switch/Drivers/libvulkan_freedreno.so"><input id="coverPath" type="text" style="display:none"><div class="row"><button class="b g" onclick="chooseGameCover()">Choose cover</button><button class="b g" onclick="saveGameSettings()">Save settings</button></div><div class="row"><button class="b g" onclick="removeGame()">Remove shortcut</button><button class="b" onclick="recompileGame()">Recompile / update</button></div><div id="gmsg" class="sm"></div></div></div>
 <div id="modal"><div class="card"><div class="row" id="mnative" style="display:none"><button class="b" id="mnb" style="width:100%">Use Android file picker (SD card, USB…)</button></div><div id="mplaces" class="row" style="flex-wrap:wrap"></div><div id="mpath" class="sm"></div><div id="mlist"></div><div class="row"><button class="b" id="msel">Use this folder</button><button class="b g" onclick="modal.style.display='none'">Close</button></div></div></div>
 <script>
 const $=id=>document.getElementById(id),modal=$('modal'),fmodal=$('fmodal');let since=0,timer=null,raw=[];
@@ -143,12 +143,39 @@ function copyLog(){const t=raw.join('\n');(navigator.clipboard?navigator.clipboa
 async function places(id,dir){const r=await api('/api/ls?path=/storage');const v=(r.items||[]).filter(i=>i.d&&i.n!='emulated'&&i.n!='self').map(i=>['SD card '+i.n,'/storage/'+i.n]);
  const all=[['Internal storage','/sdcard'],...v];$('mplaces').innerHTML=all.map(a=>`<button class="b g" style="flex:none;margin:0 6px 6px 0" data-q="${a[1]}">${a[0]}</button>`).join('');
  $('mplaces').querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>pick(id,dir,b.dataset.q))}
-function nx2aPicked(id,p){$(id).value=p;modal.style.display='none';if(id=='folder')drvLoad();if(id=='coverPath')saveGameCover(p)}
-async function pick(id,dir,path){places(id,dir);if(window.NX2A&&NX2A.pick){$('mnative').style.display='flex';$('mnb').onclick=()=>{modal.style.display='none';NX2A.pick(id,!!dir)}}else $('mnative').style.display='none';path=path||($(id).value&&dir?$(id).value:'/sdcard');const r=await api('/api/ls?path='+encodeURIComponent(path));
- $('mpath').textContent=r.path+(r.error?' — '+r.error:'');$('mlist').innerHTML=`<div class="li" data-up="${r.parent}">⬆ ..</div>`+r.items.map(i=>`<div class="li" data-p="${r.path.replace(/\/$/,'')}/${i.n}" data-d="${i.d}">${i.d?'📁':'📄'} ${i.n}</div>`).join('');
- $('mlist').querySelector('[data-up]').onclick=e=>pick(id,dir,e.target.dataset.up);
- $('mlist').querySelectorAll('[data-p]').forEach(e=>e.onclick=()=>{if(e.dataset.d=='true')pick(id,dir,e.dataset.p);else if(!dir){$(id).value=e.dataset.p;modal.style.display='none'}});
- $('msel').style.display=dir?'':'none';$('msel').onclick=()=>{$(id).value=r.path;modal.style.display='none';if(id=='folder')drvLoad()};modal.style.display='block'}
+function nx2aPicked(id,p){
+ if(!$(id))return;$(id).value=p;modal.style.display='none';
+ if(id==='folder')drvLoad();
+ if(id==='coverPath')saveGameCover(p);
+}
+function chooseGameCover(){
+ if(!selectedGame)return;
+ if(window.NX2A&&NX2A.pickCover){modal.style.display='none';NX2A.pickCover(selectedGame);return}
+ pick('coverPath',false);
+}
+async function pick(id,dir,path){
+ try{
+  if(window.NX2A&&NX2A.pick&&id!=='coverPath'){
+   $('mnative').style.display='flex';$('mnb').onclick=()=>{modal.style.display='none';NX2A.pick(id,!!dir)};
+  }else $('mnative').style.display='none';
+  path=path||(($(id).value&&dir)?$(id).value:'/sdcard');
+  const r=await api('/api/ls?path='+encodeURIComponent(path));
+  await places(id,dir);
+  $('mpath').textContent=(r.path||path)+(r.error?' — '+r.error:'');
+  const parent=document.createElement('div');parent.className='li';parent.textContent='⬆ ..';parent.onclick=()=>pick(id,dir,r.parent||'/');
+  $('mlist').replaceChildren(parent);
+  (r.items||[]).forEach(i=>{
+   const full=(r.path||path).replace(/\/$/,'')+'/'+i.n;
+   const row=document.createElement('div');row.className='li';row.textContent=(i.d?'📁 ':'📄 ')+i.n;
+   row.onclick=()=>{if(i.d){pick(id,dir,full);return}if(dir)return;if(id==='coverPath'&&!/\.(png|jpe?g|webp)$/i.test(i.n)){$('mpath').textContent='Choose a PNG, JPG or WebP image.';return}nx2aPicked(id,full)};
+   $('mlist').appendChild(row);
+  });
+  $('msel').style.display=dir?'':'none';
+  $('msel').onclick=()=>{if(!dir)return;$(id).value=r.path;modal.style.display='none';if(id==='folder')drvLoad()};
+  modal.style.display='block';
+ }catch(e){$('mpath').textContent='Cannot open this folder: '+String(e&&e.message||e);modal.style.display='block'}
+}
+
 let libraryGames=[], selectedGame='';
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 async function libraryLoad(){try{const r=await api('/api/library');libraryGames=Array.isArray(r.games)?r.games:[];renderLibrary()}catch(e){$('libraryempty').textContent='Could not load library: '+e}}
@@ -209,8 +236,30 @@ async function installGameRuntime(){
 }
 function recompileGame(){const g=libraryGames.find(x=>x.id===selectedGame);if(!g)return;const s=g.settings||{};$('folder').value=g.source_folder||'';$('app_name').value=g.title||'';$('package').value=g.package||'';$('vkdriver').value=s.vulkan_driver||'';$('touch').checked=!!s.touch;$('fps60').checked=!!s.fps60||String(s.fps)==='60';drvSave();closeGame();tab('port');if(!$('folder').value)$('folder').focus()}
 async function saveGameSettings(){if(!selectedGame)return;const settings={resolution:$('gres').value,graphics:$('ggfx').value,fps:$('gfps').value,controller:$('gcontroller').value,touch:$('gcontroller').value==='Touch',fps60:$('gfps').value==='60',vulkan_driver:$('gdriver').value.trim(),log_runtime:$('glogruntime').checked,log_slowframe:$('glogslow').checked,log_nvn:$('glognvn').checked,log_watchdog:$('glogwatch').checked,log_fs:$('glogfs').checked};const r=await api('/api/library/settings',{id:selectedGame,settings});$('gmsg').textContent=r.ok?'Settings saved. Logging options apply to this game on its next launch.':(r.error||'Save failed');if(r.ok)await libraryLoad()}
-async function saveGameCover(path){if(!selectedGame||!path)return;const r=await api('/api/library/cover',{id:selectedGame,path});$('gmsg').textContent=r.ok?'Cover saved.':(r.error||'Could not save cover');if(r.ok){await libraryLoad();gameDetails(selectedGame)}}
+async function saveGameCover(path){
+ if(!selectedGame||!path)return;const gameId=selectedGame;
+ try{$('gmsg').textContent='Saving cover…';const r=await api('/api/library/cover',{id:gameId,path});
+  $('gmsg').textContent=r.ok?'Cover saved.':(r.error||'Could not save cover');
+  if(r.ok){await libraryLoad();if(selectedGame===gameId)gameDetails(gameId)}
+ }catch(e){$('gmsg').textContent='Could not save cover: '+String(e&&e.message||e)}
+}
+async function refreshGameCovers(){
+ const b=document.querySelector('.librarytools button[onclick="refreshGameCovers()"]');if(b){b.disabled=true;b.textContent='Loading…'}
+ try{const r=await api('/api/library/covers/refresh',{});if(r.started){$('libraryempty').textContent='Looking up Nintendo Switch game artwork in the background…';pollCoverRefresh()}else if(b){b.textContent='Covers';b.disabled=false}}
+ catch(e){if(b){b.textContent='Covers';b.disabled=false}alert('Cover lookup failed: '+String(e&&e.message||e))}
+}
+async function pollCoverRefresh(){
+ const b=document.querySelector('.librarytools button[onclick="refreshGameCovers()"]');
+ for(let i=0;i<120;i++){await new Promise(r=>setTimeout(r,1000));try{const state=await api('/api/library/covers/status');if(state.done){await libraryLoad();if(b){b.textContent='Covers';b.disabled=false}return}}catch(e){break}}
+ if(b){b.textContent='Covers';b.disabled=false}
+}
+
 async function removeGame(){if(!selectedGame)return;if(!await ask('Remove this shortcut from the library? Game files and existing APK/data will not be deleted.','Remove'))return;const r=await api('/api/library/remove',{id:selectedGame});if(r.ok){closeGame();await libraryLoad()}else $('gmsg').textContent='Could not remove shortcut'}
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if($('dlg').style.display==='flex')return;if($('gmodal').style.display==='block'){closeGame();return}if(modal.style.display==='block'){modal.style.display='none';return}if(fmodal.style.display==='block')fmodal.style.display='none'});
+modal.addEventListener('click',e=>{if(e.target===modal)modal.style.display='none'});
+fmodal.addEventListener('click',e=>{if(e.target===fmodal)fmodal.style.display='none'});
+$('gmodal').addEventListener('click',e=>{if(e.target===$('gmodal'))closeGame()});
+
 libraryLoad();doctor();loadCfg();status();setInterval(status,60000);
 $('folder').addEventListener('change',drvLoad);$('folder').addEventListener('input',drvLoad);
 </script></body></html>
