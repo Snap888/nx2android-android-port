@@ -277,3 +277,9 @@
 ### Статус
 - Реализация внесена в `feature/ngr-universal-library`.
 - CI, APK artifact и тест на устройстве пока не подтверждены.
+
+
+### CI manifest correction
+- Первый CI для manifest выявил расхождение SHA-256 (Python syntax, Porter patch validation и WebView JS syntax до этого прошли).
+- Взяты контрольные SHA-256 непосредственно из diff шага `tools/make_manifest.py`; manifest исправлен коммитом `d7fc6b2d`.
+- Новый CI должен подтвердить актуальный manifest и собрать APK; предыдущий run `45507296557` завершился failure только на manifest freshness check, APK не создавался.
