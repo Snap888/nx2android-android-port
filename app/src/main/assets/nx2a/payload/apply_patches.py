@@ -586,8 +586,8 @@ static int g_watch_dump_all, g_watch_no_exit;  // NX2A_WATCH_DUMP_ALL
 # generic watchdog only observes frame progress, so take a small bounded series
 # of independent snapshots from its host thread during startup/loading.
 patch('NGR timed loading thread snapshots', 'nxnative/dm/host/crash.c', 'NX2A_LOAD_SNAPSHOTS', [
-("""static unsigned g_watch_stall;
-""", """static unsigned g_watch_stall;
+("""static int g_watch_dump_all, g_watch_no_exit;  // NX2A_WATCH_DUMP_ALL
+""", """static int g_watch_dump_all, g_watch_no_exit;  // NX2A_WATCH_DUMP_ALL
 static unsigned g_watch_load_dumps, g_watch_load_interval = 10;  // NX2A_LOAD_SNAPSHOTS
 """),
 ("""static void *watchdog_main(void *arg) {
@@ -600,17 +600,20 @@ static unsigned g_watch_load_dumps, g_watch_load_interval = 10;  // NX2A_LOAD_SN
     unsigned load_dumps = 0;
     for (;;) {
         usleep(250000);
-        // At most three snapshots at 10-second intervals; this runs on the
-        // watchdog host thread and does not require a stalled present/tick.
+        // Bounded snapshots at 10/20/30 seconds, independent of frame progress.
         if (g_watch_load_dumps && load_dumps < g_watch_load_dumps &&
             watch_now_ns() - watch_started >= (uint64_t)(load_dumps + 1) * g_watch_load_interval * 1000000000ull) {
             load_dumps++;
             crash_dump_now("NGR timed loading snapshot");
         }
 """),
-("""    const char *watch = getenv("DM_WATCH"), *stall = getenv("DM_WATCH_STALL");
-""", """    const char *watch = getenv("DM_WATCH"), *stall = getenv("DM_WATCH_STALL");
+("""    const char *dump_all = getenv("DM_WATCH_DUMP_ALL"), *no_exit = getenv("DM_WATCH_NO_EXIT");
+    g_watch_dump_all = dump_all && atoi(dump_all) != 0;
+    g_watch_no_exit = no_exit && atoi(no_exit) != 0;
+""", """    const char *dump_all = getenv("DM_WATCH_DUMP_ALL"), *no_exit = getenv("DM_WATCH_NO_EXIT");
     const char *load_dumps = getenv("DM_WATCH_LOAD_DUMPS"), *load_interval = getenv("DM_WATCH_LOAD_INTERVAL");
+    g_watch_dump_all = dump_all && atoi(dump_all) != 0;
+    g_watch_no_exit = no_exit && atoi(no_exit) != 0;
     g_watch_load_dumps = load_dumps ? (unsigned)atoi(load_dumps) : 0;
     if (g_watch_load_dumps > 3) g_watch_load_dumps = 3;
     if (load_interval) { unsigned v = (unsigned)atoi(load_interval); if (v >= 5 && v <= 60) g_watch_load_interval = v; }
