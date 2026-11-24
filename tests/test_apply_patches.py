@@ -50,5 +50,51 @@ class ApplyPatchesTests(unittest.TestCase):
             self.assertIn("already", second.stdout)
 
 
+    def test_twelve_minutes_offline_presence_patch_and_profile(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "nxnative/dm/host/hle_friends.c"
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "// Presence\n"
+                "HLE_FORCE(\"_ZN2nn7friends12UserPresence10InitializeERKNS_7account3UidE\", \"presence unavailable (cut)\", Result, h_fr_UpInit, void *self, const void *uid) { (void)self; (void)uid; return RES_FAIL; }\n"
+                "HLE_FORCE(\"_ZN2nn7friends12UserPresence14SetDescriptionEPKc\", \"presence unavailable (cut)\", Result, h_fr_UpDesc, void *self, const char *s) { (void)self; (void)s; return RES_FAIL; }\n"
+                "HLE_FORCE(\"_ZN2nn7friends12UserPresence6CommitEv\", \"presence unavailable (cut)\", Result, h_fr_UpCommit, void *self) { (void)self; return RES_FAIL; }\n",
+                encoding="utf-8",
+            )
+            env = dict(
+                os.environ,
+                NX2A_PATCH_ONLY="NGR offline UserPresence;NGR Twelve Minutes profile",
+            )
+            first = subprocess.run(
+                [sys.executable, str(PATCHER), tmp],
+                capture_output=True, text=True, env=env, check=False,
+            )
+            self.assertEqual(first.returncode, 0, first.stdout + first.stderr)
+
+            patched = source.read_text(encoding="utf-8")
+            self.assertIn("NX2A_FRIENDS_OFFLINE_PRESENCE", patched)
+            self.assertIn("UserPresence10InitializeEv", patched)
+            self.assertEqual(patched.count("return RES_OK;"), 4)
+            self.assertNotIn("presence unavailable (cut)", patched)
+
+            profile = Path(tmp) / "nxnative/dm/games/0100CD701434C000"
+            game = (profile / "game.tsv").read_text(encoding="utf-8")
+            self.assertIn("main=e93717eabaa393489060fcbf8f086ca3", game)
+            self.assertIn("sdk=56ec24747ec9e7f19b3efb062483a19d", game)
+            self.assertIn("mem_reserve\t0x160000000", game)
+            self.assertIn("mem_alias\t0x138000000", game)
+            self.assertIn("app_pool\t0xCD500000", game)
+            self.assertIn("shader_groups\t/Data/=data", game)
+            self.assertIn("depth_mode\tzero", game)
+            self.assertIn("status\texperimental", (profile / "android.tsv").read_text(encoding="utf-8"))
+
+            second = subprocess.run(
+                [sys.executable, str(PATCHER), tmp],
+                capture_output=True, text=True, env=env, check=False,
+            )
+            self.assertEqual(second.returncode, 0, second.stdout + second.stderr)
+            self.assertIn("NGR Twelve Minutes profile: already", second.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()
