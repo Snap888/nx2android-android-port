@@ -345,8 +345,15 @@ public class MainActivity extends Activity {
                 // front_android.c redirects the game's native stderr to <game_dir>/log.txt.
                 // It is separate from NGR's dispatcher stream; omitting it hid NVN,
                 // Vulkan, ROMFS and host-thread initialization from previous exports.
-                File externalFiles = getExternalFilesDir(null);
-                File gameDir = externalFiles == null ? null : new File(new File(externalFiles, "games"), gameId);
+                String savedGamePath = getSharedPreferences("nx2a", MODE_PRIVATE)
+                        .getString("game_data_path_" + gameId, "");
+                File gameDir;
+                if (!savedGamePath.isEmpty()) {
+                    gameDir = new File(savedGamePath);
+                } else {
+                    File externalFiles = getExternalFilesDir(null);
+                    gameDir = externalFiles == null ? null : new File(new File(externalFiles, "games"), gameId);
+                }
                 appendGameDiagnosticFile(out, gameDir == null ? null : new File(gameDir, "log.txt"),
                         "Native host stderr / game log", 4L * 1024 * 1024);
                 appendGameDiagnosticFile(out, new File(dir, "fs-" + gameId + ".tsv"),
@@ -583,7 +590,7 @@ public class MainActivity extends Activity {
                     || !new File(game, "libdmhost.so").isFile()) return null;
             return game.getAbsolutePath();
         } catch (Exception error) {
-            appendRuntimeLog("00000000000000000000", "Could not resolve game payload path: " + error);
+            android.util.Log.e("NGRRuntime", "Could not resolve in-place game payload path", error);
             return null;
         }
     }
@@ -637,6 +644,8 @@ public class MainActivity extends Activity {
                         throw new IllegalStateException("Game data path is missing or outside NGR storage: " + dataPath);
                     }
                     launch.putExtra("game_data_path", resolvedDataPath);
+                    getSharedPreferences("nx2a", MODE_PRIVATE).edit()
+                            .putString("game_data_path_" + gameId, resolvedDataPath).apply();
                     appendRuntimeLog(gameId, "Starting explicit component " + launch.getComponent()
                             + " with game_id=" + launch.getStringExtra("game_id")
                             + " game_data_path=" + resolvedDataPath);
