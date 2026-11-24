@@ -349,6 +349,8 @@ public class MainActivity extends Activity {
                 File gameDir = externalFiles == null ? null : new File(new File(externalFiles, "games"), gameId);
                 appendGameDiagnosticFile(out, gameDir == null ? null : new File(gameDir, "log.txt"),
                         "Native host stderr / game log", 4L * 1024 * 1024);
+                appendGameDiagnosticFile(out, new File(dir, "fs-" + gameId + ".tsv"),
+                        "RomFS ReadFile trace (DM_FSLOG)", 8L * 1024 * 1024);
                 appendGameDiagnosticFile(out, gameDir == null ? null : new File(gameDir, "env.txt"),
                         "Per-game environment overrides", 64L * 1024);
                 appendGameDiagnosticFile(out, gameDir == null ? null : new File(gameDir, "nx2a-data.json"),
@@ -411,7 +413,8 @@ public class MainActivity extends Activity {
                     int failed = 0;
                     File runtime = new File(dir, gameId + ".log");
                     File gameplay = new File(dir, "gameplay-" + gameId + ".log");
-                    for (File logFile : new File[]{runtime, gameplay}) {
+                    File fsTrace = new File(dir, "fs-" + gameId + ".tsv");
+                    for (File logFile : new File[]{runtime, gameplay, fsTrace}) {
                         if (logFile.exists()) {
                             if (logFile.isFile()) {
                                 try (java.io.FileOutputStream out = new java.io.FileOutputStream(logFile, false)) {
@@ -458,7 +461,8 @@ public class MainActivity extends Activity {
                 new File(dir, "gameplay-" + gameId + ".log"),
                 new File(dir, gameId + "-export.log"),
                 new File(dir, gameId + ".pid"),
-                new File(dir, "android-lifecycle.log")
+                new File(dir, "android-lifecycle.log"),
+                new File(dir, "fs-" + gameId + ".tsv")
         };
         try {
             for (int i = 0; i < files.length; i++) {
