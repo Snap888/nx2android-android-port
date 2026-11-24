@@ -661,15 +661,15 @@ public class MainActivity extends Activity {
                         + " sdk=" + Build.VERSION.SDK_INT);
                 try {
                     File nativeHost = new File(getApplicationInfo().nativeLibraryDir, "libngrhost.so");
-                    if (anyLogging) appendRuntimeLog(gameId, "Native host library: " + nativeHost.getAbsolutePath()
+                    if (logRuntime) appendRuntimeLog(gameId, "Native host library: " + nativeHost.getAbsolutePath()
                             + " exists=" + nativeHost.isFile() + " readable=" + nativeHost.canRead());
                     android.content.ComponentName gameComponent = new android.content.ComponentName(MainActivity.this, NgrGameActivity.class);
                     try {
                         android.content.pm.ActivityInfo info = getPackageManager().getActivityInfo(gameComponent, 0);
-                        if (anyLogging) appendRuntimeLog(gameId, "Resolved NGR activity: name=" + info.name + " process="
+                        if (logRuntime) appendRuntimeLog(gameId, "Resolved NGR activity: name=" + info.name + " process="
                                 + info.processName + " enabled=" + info.enabled + " exported=" + info.exported);
                     } catch (Exception resolveError) {
-                        if (anyLogging) appendRuntimeLog(gameId, "NGR activity resolution failed: " + resolveError);
+                        if (logRuntime) appendRuntimeLog(gameId, "NGR activity resolution failed: " + resolveError);
                         throw resolveError;
                     }
                     Intent launch = new Intent().setComponent(gameComponent);
@@ -686,11 +686,11 @@ public class MainActivity extends Activity {
                     launch.putExtra("game_data_path", resolvedDataPath);
                     getSharedPreferences("nx2a", MODE_PRIVATE).edit()
                             .putString("game_data_path_" + gameId, resolvedDataPath).apply();
-                    if (anyLogging) appendRuntimeLog(gameId, "Starting explicit component " + launch.getComponent()
+                    if (logRuntime) appendRuntimeLog(gameId, "Starting explicit component " + launch.getComponent()
                             + " with game_id=" + launch.getStringExtra("game_id")
                             + " game_data_path=" + resolvedDataPath);
                     startActivity(launch);
-                    if (anyLogging) appendRuntimeLog(gameId, "NativeActivity startActivity returned successfully");
+                    if (logRuntime) appendRuntimeLog(gameId, "NativeActivity startActivity returned successfully");
                     h.postDelayed(() -> {
                         try {
                             ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
@@ -698,19 +698,19 @@ public class MainActivity extends Activity {
                             if (am != null && am.getRunningAppProcesses() != null) {
                                 for (ActivityManager.RunningAppProcessInfo p : am.getRunningAppProcesses()) {
                                     if (p.processName.startsWith(getPackageName())) {
-                                        if (anyLogging) appendRuntimeLog(gameId, "Observed process after launch: name=" + p.processName
+                                        if (logRuntime) appendRuntimeLog(gameId, "Observed process after launch: name=" + p.processName
                                                 + " pid=" + p.pid + " importance=" + p.importance);
                                         found = true;
                                     }
                                 }
                             }
-                            if (!found && anyLogging) appendRuntimeLog(gameId, "No NGR app process visible 1500ms after startActivity");
+                            if (!found && logRuntime) appendRuntimeLog(gameId, "No NGR app process visible 1500ms after startActivity");
                         } catch (Exception e) {
-                            if (anyLogging) appendRuntimeLog(gameId, "Process snapshot failed: " + e);
+                            if (logRuntime) appendRuntimeLog(gameId, "Process snapshot failed: " + e);
                         }
                     }, 1500);
                 } catch (Exception e) {
-                    if (anyLogging) appendRuntimeLog(gameId, "NativeActivity startActivity failed: " + e);
+                    if (logRuntime) appendRuntimeLog(gameId, "NativeActivity startActivity failed: " + e);
                     Toast.makeText(MainActivity.this, "Could not start NGR runtime: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 }
             });
