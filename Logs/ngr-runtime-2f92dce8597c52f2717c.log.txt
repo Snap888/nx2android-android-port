@@ -2,386 +2,117 @@ NGR runtime diagnostic export
 Game ID: 2f92dce8597c52f2717c
 
 ===== Native dispatcher + game stdout/stderr =====
-2026-11-24 14:17:46.687 [I] pid=20059 ============================================================
-2026-11-24 14:17:46.687 [I] pid=20059 NGR launch session started: game_id=2f92dce8597c52f2717c sdk=35 abi=arm64-v8a
-2026-11-24 14:17:46.687 [I] pid=20059 NativeActivity paths: internal=/data/user/0/unknown.none.nx2android/files external=/storage/emulated/0/Android/data/unknown.none.nx2android/files
-2026-11-24 14:17:46.687 [I] pid=20059 [config] env.txt contains no explicit Vulkan/NVN/GPU overrides
-2026-11-24 14:17:46.688 [I] pid=20059 [NGR profile] no profile.json; using the compiled game profile (legacy payload)
-2026-11-24 14:17:46.860 [I] pid=20059 staged 1 native libraries in private app storage
-2026-11-24 14:17:46.860 [I] pid=20059 [config] NGR default DM_SLOWFRAME=1 (per-dropped-frame breakdown)
-2026-11-24 14:17:46.860 [I] pid=20059 [config] NGR default DM_NVN_LOG=1 (NVN device/pool/queue/window lifecycle)
-2026-11-24 14:17:46.860 [I] pid=20059 [config] NGR default DM_WATCH_LOAD_DUMPS=3 (loading snapshots at 10/20/30s)
-2026-11-24 14:17:46.860 [I] pid=20059 [config] NGR default DM_WATCH_LOAD_INTERVAL=10 seconds
-2026-11-24 14:17:46.860 [I] pid=20059 [config] NGR default DM_FSLOG=/data/user/0/unknown.none.nx2android/files/ngr-logs/fs-2f92dce8597c52f2717c.tsv (RomFS ReadFile trace)
-2026-11-24 14:17:46.860 [I] pid=20059 [config] NGR default DM_WATCH_STALL=15 (capture state after 1s; rate limited)
-2026-11-24 14:17:46.860 [I] pid=20059 [config] NGR default DM_WATCH_DUMP_ALL=1 (include ordinary gameplay stalls)
-2026-11-24 14:17:46.860 [I] pid=20059 [config] NGR default DM_WATCH_NO_EXIT=1 (diagnostics never terminate the game)
-2026-11-24 14:17:46.860 [I] pid=20059 [stage 1/8] payload validated; game_dir=/storage/emulated/0/Android/data/unknown.none.nx2android/files/games/2f92dce8597c52f2717c private_dir=/data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c
-2026-11-24 14:17:46.860 [I] pid=20059 [stage 2/8] native libraries staged; runtime=/data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c/libdmhost.so
-2026-11-24 14:17:46.860 [I] pid=20059 [stage 3/8] preloading companion dependencies
-2026-11-24 14:17:46.860 [I] pid=20059 preloaded 0 companion game libraries
-2026-11-24 14:17:46.860 [I] pid=20059 [stage 3/8] dependency preload finished: 0 companion libraries
-2026-11-24 14:17:46.860 [I] pid=20059 [stage 4/8] inspecting main runtime ELF before dlopen: /data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c/libdmhost.so
-2026-11-24 14:17:46.860 [I] pid=20059 [ELF preflight] type=3 machine=183 entry=0x0 phnum=11
-2026-11-24 14:17:46.860 [I] pid=20059 [ELF preflight] DT_INIT=0x0 INIT_ARRAY=0x1c2ac8 INIT_ARRAYSZ=48
-2026-11-24 14:17:46.860 [I] pid=20059 [ELF preflight] DT_RELA=0x10080 RELASZ=133128 RELAENT=24 DT_RELR=0x0 RELRSZ=0 RELRENT=8
-2026-11-24 14:17:46.860 [I] pid=20059 [ELF preflight] DT_RELA mapped file offset=0x10080 entries=5547
-2026-11-24 14:17:46.860 [I] pid=20059 [ELF preflight] init_array[0] relocation: type=1027 symbol=0 addend=0x1ba4f4
-2026-11-24 14:17:46.860 [I] pid=20059 [ELF preflight] init_array[0] slot=0x1c2ac8 raw=0x0 relocation=present
-2026-11-24 14:17:46.860 [I] pid=20059 [ELF preflight] init_array[1] relocation: type=1027 symbol=0 addend=0x1bab4c
-2026-11-24 14:17:46.860 [I] pid=20059 [ELF preflight] init_array[1] slot=0x1c2ad0 raw=0x0 relocation=present
-2026-11-24 14:17:46.860 [I] pid=20059 [ELF preflight] init_array[2] relocation: type=1027 symbol=0 addend=0xab85c
-2026-11-24 14:17:46.860 [I] pid=20059 [ELF preflight] init_array[2] slot=0x1c2ad8 raw=0x0 relocation=present
-2026-11-24 14:17:46.861 [I] pid=20059 [ELF preflight] init_array[3] relocation: type=1027 symbol=0 addend=0xc3398
-2026-11-24 14:17:46.861 [I] pid=20059 [ELF preflight] init_array[3] slot=0x1c2ae0 raw=0x0 relocation=present
-2026-11-24 14:17:46.861 [I] pid=20059 [ELF preflight] init_array[4] relocation: type=1027 symbol=0 addend=0xf04c4
-2026-11-24 14:17:46.861 [I] pid=20059 [ELF preflight] init_array[4] slot=0x1c2ae8 raw=0x0 relocation=present
-2026-11-24 14:17:46.861 [I] pid=20059 [ELF preflight] init_array[5] relocation: type=1027 symbol=0 addend=0x1445b8
-2026-11-24 14:17:46.861 [I] pid=20059 [ELF preflight] init_array[5] slot=0x1c2af0 raw=0x0 relocation=present
-2026-11-24 14:17:46.861 [I] pid=20059 [stage 4/8] main runtime dlopen begin: /data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c/libdmhost.so (RTLD_LAZY|RTLD_LOCAL)
-2026-11-24 14:17:46.863 [I] pid=20059 [stage 4/8] main runtime dlopen succeeded: handle=0x7abd315e9a3b02bb
-2026-11-24 14:17:46.863 [I] pid=20059 [stage 5/8] resolved ANativeActivity_onCreate at 0x79f6b11160
-2026-11-24 14:17:46.863 [I] pid=20059 [stage 6/8] dispatching NativeActivity_onCreate to libdmhost.so; activity=0x7a8f74ae10 env=0xb400007aef6da410 clazz=0x6a0e assetManager=0x7a3f78c8f0 internal=/data/user/0/unknown.none.nx2android/files external=/storage/emulated/0/Android/data/unknown.none.nx2android/files sdk=35
-2026-11-24 14:17:46.864 [I] pid=20059 [stage 7/8] game NativeActivity_onCreate returned; game runtime initialization continues asynchronously
-2026-11-24 14:17:46.864 [I] pid=20059 [activity] lifecycle and Surface tracing installed
-2026-11-24 14:17:46.864 [I] pid=20059 [stage 8/8] dispatcher handoff complete; window lifecycle events will be captured from this point
-2026-11-24 14:17:46.867 [I] pid=20059 [activity] onStart begin
-2026-11-24 14:17:46.867 [I] pid=20059 [activity] onStart returned
-2026-11-24 14:17:46.867 [I] pid=20059 [activity] onResume begin
-2026-11-24 14:17:46.867 [I] pid=20059 [activity] onResume returned
-2026-11-24 14:17:46.884 [I] pid=20059 [window] created window=0x7a6f71ee80 size=2448x1080
-2026-11-24 14:17:46.884 [I] pid=20059 [window] created callback returned
-2026-11-24 14:17:46.884 [I] pid=20059 [window] resized window=0x7a6f71ee80 size=2448x1080
-2026-11-24 14:17:46.884 [I] pid=20059 [window] resized callback returned
-2026-11-24 14:17:46.884 [I] pid=20059 [activity] onContentRectChanged begin rect=0,0-2344,1080
-2026-11-24 14:17:46.884 [I] pid=20059 [activity] onContentRectChanged returned
-2026-11-24 14:17:46.885 [I] pid=20059 [window] redraw requested window=0x7a6f71ee80
-2026-11-24 14:17:46.885 [I] pid=20059 [window] redraw callback returned
-2026-11-24 14:17:46.899 [I] pid=20059 [window] redraw requested window=0x7a6f71ee80
-2026-11-24 14:17:46.899 [I] pid=20059 [window] redraw callback returned
-2026-11-24 14:17:46.921 [I] pid=20059 [window] focus changed focused=1
-2026-11-24 14:17:46.927 [I] pid=20059 [window] focus callback returned
-2026-11-24 14:17:47.255 [I] pid=20059 [window] redraw requested window=0x7a6f71ee80
-2026-11-24 14:17:47.256 [I] pid=20059 [window] redraw callback returned
-1795519068015 [JAVA] pid=20059 Observed process after launch: name=unknown.none.nx2android pid=20059 importance=100
-2026-11-24 14:19:34.769 [I] pid=20059 [window] focus changed focused=0
-2026-11-24 14:19:34.770 [I] pid=20059 [window] focus callback returned
-2026-11-24 14:19:37.314 [I] pid=20059 [window] focus changed focused=1
-2026-11-24 14:19:37.315 [I] pid=20059 [window] focus callback returned
-2026-11-24 14:19:38.370 [I] pid=20059 [activity] onPause begin
-2026-11-24 14:19:38.382 [I] pid=20059 [activity] onPause returned
-2026-11-24 14:19:38.405 [I] pid=20059 [window] focus changed focused=0
-2026-11-24 14:19:38.405 [I] pid=20059 [window] focus callback returned
-2026-11-24 14:19:38.760 [I] pid=20059 [window] destroyed window=0x7a6f71ee80
-2026-11-24 14:19:38.762 [I] pid=20059 [window] destroyed callback returned
-2026-11-24 14:19:38.878 [I] pid=20059 [activity] onStop begin
-2026-11-24 14:19:38.878 [I] pid=20059 [activity] onStop returned
-2026-11-24 14:19:38.881 [I] pid=20059 [activity] onDestroy begin
+2026-11-24 15:04:08.949 [I] pid=21922 ============================================================
+2026-11-24 15:04:08.949 [I] pid=21922 NGR launch session started: game_id=2f92dce8597c52f2717c sdk=35 abi=arm64-v8a
+2026-11-24 15:04:08.949 [I] pid=21922 NativeActivity paths: internal=/data/user/0/unknown.none.nx2android/files external=/storage/emulated/0/Android/data/unknown.none.nx2android/files
+2026-11-24 15:04:08.949 [I] pid=21922 [NGR storage] using game data in place: /storage/emulated/0/Download/out/TwelveMinutes-data
+2026-11-24 15:04:08.950 [I] pid=21922 [config] env.txt contains no explicit Vulkan/NVN/GPU overrides
+2026-11-24 15:04:08.954 [I] pid=21922 [NGR profile] no profile.json; using the compiled game profile (legacy payload)
+2026-11-24 15:04:08.954 [I] pid=21922 removed 1 stale staged native libraries before refreshing runtime
+2026-11-24 15:04:08.960 [I] pid=21922 staged 1 native libraries in private app storage
+2026-11-24 15:04:08.960 [I] pid=21922 [config] NGR default DM_SLOWFRAME=1 (per-dropped-frame breakdown)
+2026-11-24 15:04:08.960 [I] pid=21922 [config] NGR default DM_NVN_LOG=1 (NVN device/pool/queue/window lifecycle)
+2026-11-24 15:04:08.960 [I] pid=21922 [config] NGR default DM_WATCH_LOAD_DUMPS=3 (loading snapshots at 10/20/30s)
+2026-11-24 15:04:08.960 [I] pid=21922 [config] NGR default DM_WATCH_LOAD_INTERVAL=10 seconds
+2026-11-24 15:04:08.960 [I] pid=21922 [config] NGR default DM_FSLOG=/data/user/0/unknown.none.nx2android/files/ngr-logs/fs-2f92dce8597c52f2717c.tsv (RomFS ReadFile trace)
+2026-11-24 15:04:08.960 [I] pid=21922 [config] Twelve Minutes diagnostic DM_FS=1 (file open/read failures)
+2026-11-24 15:04:08.960 [I] pid=21922 [config] Twelve Minutes diagnostic DM_FSLOG_HASH=1 (hash successful RomFS reads)
+2026-11-24 15:04:08.960 [I] pid=21922 [config] NGR default DM_WATCH_STALL=15 (capture state after 1s; rate limited)
+2026-11-24 15:04:08.960 [I] pid=21922 [config] NGR default DM_WATCH_DUMP_ALL=1 (include ordinary gameplay stalls)
+2026-11-24 15:04:08.960 [I] pid=21922 [config] NGR default DM_WATCH_NO_EXIT=1 (diagnostics never terminate the game)
+2026-11-24 15:04:08.960 [I] pid=21922 [stage 1/8] payload validated; game_dir=/storage/emulated/0/Download/out/TwelveMinutes-data private_dir=/data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c
+2026-11-24 15:04:08.960 [I] pid=21922 [stage 2/8] native libraries staged; runtime=/data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c/libdmhost.so
+2026-11-24 15:04:08.960 [I] pid=21922 [stage 3/8] preloading companion dependencies
+2026-11-24 15:04:08.960 [I] pid=21922 preloaded 0 companion game libraries
+2026-11-24 15:04:08.960 [I] pid=21922 [stage 3/8] dependency preload finished: 0 companion libraries
+2026-11-24 15:04:08.960 [I] pid=21922 [stage 4/8] inspecting main runtime ELF before dlopen: /data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c/libdmhost.so
+2026-11-24 15:04:08.960 [I] pid=21922 [ELF preflight] type=3 machine=183 entry=0x0 phnum=11
+2026-11-24 15:04:08.960 [I] pid=21922 [ELF preflight] DT_INIT=0x0 INIT_ARRAY=0x1c2c78 INIT_ARRAYSZ=48
+2026-11-24 15:04:08.960 [I] pid=21922 [ELF preflight] DT_RELA=0x10080 RELASZ=133128 RELAENT=24 DT_RELR=0x0 RELRSZ=0 RELRENT=8
+2026-11-24 15:04:08.960 [I] pid=21922 [ELF preflight] DT_RELA mapped file offset=0x10080 entries=5547
+2026-11-24 15:04:08.960 [I] pid=21922 [ELF preflight] init_array[0] relocation: type=1027 symbol=0 addend=0x1ba6a4
+2026-11-24 15:04:08.960 [I] pid=21922 [ELF preflight] init_array[0] slot=0x1c2c78 raw=0x0 relocation=present
+2026-11-24 15:04:08.960 [I] pid=21922 [ELF preflight] init_array[1] relocation: type=1027 symbol=0 addend=0x1bacfc
+2026-11-24 15:04:08.960 [I] pid=21922 [ELF preflight] init_array[1] slot=0x1c2c80 raw=0x0 relocation=present
+2026-11-24 15:04:08.960 [I] pid=21922 [ELF preflight] init_array[2] relocation: type=1027 symbol=0 addend=0xab8dc
+2026-11-24 15:04:08.960 [I] pid=21922 [ELF preflight] init_array[2] slot=0x1c2c88 raw=0x0 relocation=present
+2026-11-24 15:04:08.961 [I] pid=21922 [ELF preflight] init_array[3] relocation: type=1027 symbol=0 addend=0xc3418
+2026-11-24 15:04:08.961 [I] pid=21922 [ELF preflight] init_array[3] slot=0x1c2c90 raw=0x0 relocation=present
+2026-11-24 15:04:08.961 [I] pid=21922 [ELF preflight] init_array[4] relocation: type=1027 symbol=0 addend=0xf0678
+2026-11-24 15:04:08.961 [I] pid=21922 [ELF preflight] init_array[4] slot=0x1c2c98 raw=0x0 relocation=present
+2026-11-24 15:04:08.961 [I] pid=21922 [ELF preflight] init_array[5] relocation: type=1027 symbol=0 addend=0x14476c
+2026-11-24 15:04:08.961 [I] pid=21922 [ELF preflight] init_array[5] slot=0x1c2ca0 raw=0x0 relocation=present
+2026-11-24 15:04:08.961 [I] pid=21922 [stage 4/8] main runtime dlopen begin: /data/user/0/unknown.none.nx2android/files/games/2f92dce8597c52f2717c/libdmhost.so (RTLD_LAZY|RTLD_LOCAL)
+2026-11-24 15:04:08.962 [I] pid=21922 [stage 4/8] main runtime dlopen succeeded: handle=0x1a3239aa9b50fdf7
+2026-11-24 15:04:08.962 [I] pid=21922 [stage 5/8] resolved ANativeActivity_onCreate at 0x78ab508314
+2026-11-24 15:04:08.962 [I] pid=21922 [stage 6/8] dispatching NativeActivity_onCreate to libdmhost.so; activity=0x7a8f6df490 env=0xb400007aef6da410 clazz=0x69c2 assetManager=0x7a3f713450 internal=/data/user/0/unknown.none.nx2android/files external=/storage/emulated/0/Android/data/unknown.none.nx2android/files sdk=35
+2026-11-24 15:04:08.969 [I] pid=21922 [stage 7/8] game NativeActivity_onCreate returned; game runtime initialization continues asynchronously
+2026-11-24 15:04:08.969 [I] pid=21922 [activity] lifecycle and Surface tracing installed
+2026-11-24 15:04:08.970 [I] pid=21922 [stage 8/8] dispatcher handoff complete; window lifecycle events will be captured from this point
+2026-11-24 15:04:08.971 [I] pid=21922 [activity] onStart begin
+2026-11-24 15:04:08.971 [I] pid=21922 [activity] onStart returned
+2026-11-24 15:04:08.971 [I] pid=21922 [activity] onResume begin
+2026-11-24 15:04:08.971 [I] pid=21922 [activity] onResume returned
+2026-11-24 15:04:08.981 [I] pid=21922 [window] created window=0x7a6f7497c0 size=2448x1080
+2026-11-24 15:04:08.981 [I] pid=21922 [window] created callback returned
+2026-11-24 15:04:08.981 [I] pid=21922 [window] resized window=0x7a6f7497c0 size=2448x1080
+2026-11-24 15:04:08.981 [I] pid=21922 [window] resized callback returned
+2026-11-24 15:04:08.982 [I] pid=21922 [activity] onContentRectChanged begin rect=0,0-2344,1080
+2026-11-24 15:04:08.982 [I] pid=21922 [activity] onContentRectChanged returned
+2026-11-24 15:04:08.982 [I] pid=21922 [window] redraw requested window=0x7a6f7497c0
+2026-11-24 15:04:08.982 [I] pid=21922 [window] redraw callback returned
+2026-11-24 15:04:09.024 [I] pid=21922 [window] focus changed focused=1
+2026-11-24 15:04:09.024 [I] pid=21922 [window] focus callback returned
+2026-11-24 15:04:09.299 [I] pid=21922 [window] redraw requested window=0x7a6f7497c0
+2026-11-24 15:04:09.299 [I] pid=21922 [window] redraw callback returned
+1795521850432 [JAVA] pid=21922 Observed process after launch: name=unknown.none.nx2android pid=21922 importance=100
+2026-11-24 15:04:20.603 [I] pid=21922 [activity] onPause begin
+2026-11-24 15:04:20.621 [I] pid=21922 [activity] onPause returned
+2026-11-24 15:04:20.636 [I] pid=21922 [window] focus changed focused=0
+2026-11-24 15:04:20.636 [I] pid=21922 [window] focus callback returned
+2026-11-24 15:04:20.967 [I] pid=21922 [window] destroyed window=0x7a6f7497c0
+2026-11-24 15:04:20.968 [I] pid=21922 [window] destroyed callback returned
+2026-11-24 15:04:21.028 [I] pid=21922 [activity] onStop begin
+2026-11-24 15:04:21.028 [I] pid=21922 [activity] onStop returned
+2026-11-24 15:04:21.030 [I] pid=21922 [activity] onDestroy begin
 
 
 ===== Persistent Android process/activity lifecycle =====
-1795519066538 [ANDROID] pid=20059 process=unknown.none.nx2android NgrGameActivity.onCreate ENTER extras=android.util.MapCollections$KeySet@f4574888 pid=20059
-1795519066864 [ANDROID] pid=20059 process=unknown.none.nx2android NgrGameActivity.onCreate EXIT super completed
-1795519066866 [ANDROID] pid=20059 process=unknown.none.nx2android NgrGameActivity.onStart
-1795519066867 [ANDROID] pid=20059 process=unknown.none.nx2android NgrGameActivity.onResume
-1795519178353 [ANDROID] pid=20059 process=unknown.none.nx2android NgrGameActivity.finishFromNative requested
-1795519178878 [ANDROID] pid=20059 process=unknown.none.nx2android NgrGameActivity.onDestroy
-1795519180597 [ANDROID] pid=14096 process=unknown.none.nx2android Application.onCreate pid=14096 process=unknown.none.nx2android package=unknown.none.nx2android
+1795521848945 [ANDROID] pid=21922 process=unknown.none.nx2android NgrGameActivity.onCreate ENTER extras=android.util.MapCollections$KeySet@caad3015 pid=21922
+1795521848970 [ANDROID] pid=21922 process=unknown.none.nx2android NgrGameActivity.onCreate EXIT super completed
+1795521848970 [ANDROID] pid=21922 process=unknown.none.nx2android NgrGameActivity.onStart
+1795521848971 [ANDROID] pid=21922 process=unknown.none.nx2android NgrGameActivity.onResume
+1795521860596 [ANDROID] pid=21922 process=unknown.none.nx2android NgrGameActivity.finishFromNative requested
+1795521861028 [ANDROID] pid=21922 process=unknown.none.nx2android NgrGameActivity.onDestroy
+1795521875221 [ANDROID] pid=22804 process=unknown.none.nx2android Application.onCreate pid=22804 process=unknown.none.nx2android package=unknown.none.nx2android
 
 
-===== Android Logcat (recent system + NGR process events; game pid=20059) =====
-11-24 13:56:07.485 20059 20059 V ResourcesManager: The following library key has been added: ResourcesKey{ mHash=10f30cf4 mResDir=null mSplitDirs=[] mOverlayDirs=[/product/overlay/NavigationBarMode3Button/NavigationBarMode3ButtonOverlay.apk,/product/overlay/TransparentNavigationBar/TransparentNavigationBarOverlay.apk,/data/resource-cache/com.android.systemui-neutral-fqM4.frro,/data/resource-cache/com.android.systemui-accent-dWKL.frro,/data/resource-cache/com.android.systemui-dynamic-YRMm.frro] mLibDirs=[/data/app/~~HJgIBUNQGPqW-_HOfudvxA==/com.google.android.webview-_5PKQ4svYRqiiGBSfCrohQ==/base.apk,/system/framework/android.test.base.jar,/system_ext/framework/androidx.window.extensions.jar] mDisplayId=0 mOverrideConfig=v35 mCompatInfo={420dpi always-compat} mLoaders=[]}
-11-24 13:56:07.520 20059 20059 D ADPFLog : getCurrentThermalStatus(), caller:11270,[unknown.none.nx2android]
-11-24 13:56:07.522 20059 20093 D ADPFLog : addThermalStatusListener(listener), caller:11270,[unknown.none.nx2android]
-11-24 13:56:07.522 20059 20093 D ADPFLog : addThermalStatusListener(executor, listener), caller:11270,[unknown.none.nx2android]
-11-24 14:18:22.622 20059 20059 W Looper  : Slow delivery took 7324ms main h=WV.zf c=null m=1
-11-24 14:18:23.425 20059 20059 W Looper  : Drained
-11-24 14:19:00.423 20059 20059 W Looper  : Slow delivery took 2520ms main h=android.os.Handler c=unknown.none.nx2android.MainActivity$1@f2eaa1 m=0
-11-24 14:19:01.223 20059 20059 W Looper  : Drained
-11-24 14:19:23.282 20059 26286 D TrafficStats: tagSocket(5) with statsTag=0xffffffff, statsUid=-1
-11-24 14:19:25.802 20059 26286 D TrafficStats: tagSocket(5) with statsTag=0xffffffff, statsUid=-1
-11-24 14:19:28.322 20059 26286 D TrafficStats: tagSocket(5) with statsTag=0xffffffff, statsUid=-1
-11-24 14:19:30.844 20059 26286 D TrafficStats: tagSocket(5) with statsTag=0xffffffff, statsUid=-1
-11-24 14:19:31.546 20059 20061 I none.nx2android: Thread[2,tid=20061,WaitingInMainSignalCatcherLoop,Thread*=0x7b7f6dcb20,peer=0x140041d0,"Signal Catcher"]: reacting to signal 3
-11-24 14:19:31.547 20059 20061 I none.nx2android: 
-11-24 14:19:31.562 20059 20059 I libc    : Requested dump for pid 20059 (none.nx2android)
-11-24 14:19:31.654 13908 13908 E crash_dump64: failed to get the guest state header for thread 5912: Bad address
-11-24 14:19:31.654 13908 13908 E crash_dump64: failed to get the guest state header for thread 5920: Bad address
-11-24 14:19:31.654 13908 13908 E crash_dump64: failed to get the guest state header for thread 12189: Bad address
-11-24 14:19:31.654 13908 13908 E crash_dump64: failed to get the guest state header for thread 12190: Bad address
-11-24 14:19:31.654 13908 13908 E crash_dump64: failed to get the guest state header for thread 12191: Bad address
-11-24 14:19:31.654 13908 13908 E crash_dump64: failed to get the guest state header for thread 12192: Bad address
-11-24 14:19:31.654 13908 13908 E crash_dump64: failed to get the guest state header for thread 12193: Bad address
-11-24 14:19:31.654 13908 13908 E crash_dump64: failed to get the guest state header for thread 12195: Bad address
-11-24 14:19:31.655 13908 13908 E crash_dump64: failed to get the guest state header for thread 12219: Bad address
-11-24 14:19:31.655 13908 13908 E crash_dump64: failed to get the guest state header for thread 12232: Bad address
-11-24 14:19:31.655 13908 13908 E crash_dump64: failed to get the guest state header for thread 12233: Bad address
-11-24 14:19:31.655 13908 13908 E crash_dump64: failed to get the guest state header for thread 12235: Bad address
-11-24 14:19:31.655 13908 13908 E crash_dump64: failed to get the guest state header for thread 12236: Bad address
-11-24 14:19:31.655 13908 13908 E crash_dump64: failed to get the guest state header for thread 12237: Bad address
-11-24 14:19:31.655 13908 13908 E crash_dump64: failed to get the guest state header for thread 12238: Bad address
-11-24 14:19:31.655 13908 13908 E crash_dump64: failed to get the guest state header for thread 12239: Bad address
-11-24 14:19:31.655 13908 13908 E crash_dump64: failed to get the guest state header for thread 12240: Bad address
-11-24 14:19:31.655 13908 13908 E crash_dump64: failed to get the guest state header for thread 12241: Bad address
-11-24 14:19:31.655 13908 13908 E crash_dump64: failed to get the guest state header for thread 12242: Bad address
-11-24 14:19:31.655 13908 13908 E crash_dump64: failed to get the guest state header for thread 12244: Bad address
-11-24 14:19:31.656 13908 13908 E crash_dump64: failed to get the guest state header for thread 12245: Bad address
-11-24 14:19:31.656 13908 13908 E crash_dump64: failed to get the guest state header for thread 12246: Bad address
-11-24 14:19:31.656 13908 13908 E crash_dump64: failed to get the guest state header for thread 12247: Bad address
-11-24 14:19:31.656 13908 13908 E crash_dump64: failed to get the guest state header for thread 12248: Bad address
-11-24 14:19:31.656 13908 13908 E crash_dump64: failed to get the guest state header for thread 12249: Bad address
-11-24 14:19:31.656 13908 13908 E crash_dump64: failed to get the guest state header for thread 12250: Bad address
-11-24 14:19:31.656 13908 13908 E crash_dump64: failed to get the guest state header for thread 12251: Bad address
-11-24 14:19:31.656 13908 13908 E crash_dump64: failed to get the guest state header for thread 12252: Bad address
-11-24 14:19:31.656 13908 13908 E crash_dump64: failed to get the guest state header for thread 12256: Bad address
-11-24 14:19:31.656 13908 13908 E crash_dump64: failed to get the guest state header for thread 12259: Bad address
-11-24 14:19:31.657 13908 13908 E crash_dump64: failed to get the guest state header for thread 12260: Bad address
-11-24 14:19:31.657 13908 13908 E crash_dump64: failed to get the guest state header for thread 12262: Bad address
-11-24 14:19:31.657 13908 13908 E crash_dump64: failed to get the guest state header for thread 12263: Bad address
-11-24 14:19:31.658 13908 13908 E crash_dump64: failed to get the guest state header for thread 12264: Bad address
-11-24 14:19:31.658 13908 13908 E crash_dump64: failed to get the guest state header for thread 12279: Bad address
-11-24 14:19:31.658 13908 13908 E crash_dump64: failed to get the guest state header for thread 12284: Bad address
-11-24 14:19:31.658 13908 13908 E crash_dump64: failed to get the guest state header for thread 12297: Bad address
-11-24 14:19:31.658 13908 13908 E crash_dump64: failed to get the guest state header for thread 12307: Bad address
-11-24 14:19:31.659 13908 13908 E crash_dump64: failed to get the guest state header for thread 12312: Bad address
-11-24 14:19:31.659 13908 13908 E crash_dump64: failed to get the guest state header for thread 12313: Bad address
-11-24 14:19:31.659 13908 13908 E crash_dump64: failed to get the guest state header for thread 12314: Bad address
-11-24 14:19:31.659 13908 13908 E crash_dump64: failed to get the guest state header for thread 12318: Bad address
-11-24 14:19:31.659 13908 13908 E crash_dump64: failed to get the guest state header for thread 12320: Bad address
-11-24 14:19:31.659 13908 13908 E crash_dump64: failed to get the guest state header for thread 12323: Bad address
-11-24 14:19:31.659 13908 13908 E crash_dump64: failed to get the guest state header for thread 12331: Bad address
-11-24 14:19:31.659 13908 13908 E crash_dump64: failed to get the guest state header for thread 12332: Bad address
-11-24 14:19:31.659 13908 13908 E crash_dump64: failed to get the guest state header for thread 12333: Bad address
-11-24 14:19:31.660 13908 13908 E crash_dump64: failed to get the guest state header for thread 12336: Bad address
-11-24 14:19:31.660 13908 13908 E crash_dump64: failed to get the guest state header for thread 12337: Bad address
-11-24 14:19:31.660 13908 13908 E crash_dump64: failed to get the guest state header for thread 12339: Bad address
-11-24 14:19:31.660 13908 13908 E crash_dump64: failed to get the guest state header for thread 12343: Bad address
-11-24 14:19:31.660 13908 13908 E crash_dump64: failed to get the guest state header for thread 12345: Bad address
-11-24 14:19:31.660 13908 13908 E crash_dump64: failed to get the guest state header for thread 20059: Bad address
-11-24 14:19:31.660 13908 13908 E crash_dump64: failed to get the guest state header for thread 20061: Bad address
-11-24 14:19:31.660 13908 13908 E crash_dump64: failed to get the guest state header for thread 20062: Bad address
-11-24 14:19:31.661 13908 13908 E crash_dump64: failed to get the guest state header for thread 20064: Bad address
-11-24 14:19:31.661 13908 13908 E crash_dump64: failed to get the guest state header for thread 20065: Bad address
-11-24 14:19:31.661 13908 13908 E crash_dump64: failed to get the guest state header for thread 20066: Bad address
-11-24 14:19:31.661 13908 13908 E crash_dump64: failed to get the guest state header for thread 20067: Bad address
-11-24 14:19:31.661 13908 13908 E crash_dump64: failed to get the guest state header for thread 20068: Bad address
-11-24 14:19:31.661 13908 13908 E crash_dump64: failed to get the guest state header for thread 20069: Bad address
-11-24 14:19:31.662 13908 13908 E crash_dump64: failed to get the guest state header for thread 20070: Bad address
-11-24 14:19:31.662 13908 13908 E crash_dump64: failed to get the guest state header for thread 20073: Bad address
-11-24 14:19:31.662 13908 13908 E crash_dump64: failed to get the guest state header for thread 20076: Bad address
-11-24 14:19:31.662 13908 13908 E crash_dump64: failed to get the guest state header for thread 20077: Bad address
-11-24 14:19:31.662 13908 13908 E crash_dump64: failed to get the guest state header for thread 20082: Bad address
-11-24 14:19:31.662 13908 13908 E crash_dump64: failed to get the guest state header for thread 20087: Bad address
-11-24 14:19:31.662 13908 13908 E crash_dump64: failed to get the guest state header for thread 20089: Bad address
-11-24 14:19:31.662 13908 13908 E crash_dump64: failed to get the guest state header for thread 20091: Bad address
-11-24 14:19:31.662 13908 13908 E crash_dump64: failed to get the guest state header for thread 20092: Bad address
-11-24 14:19:31.662 13908 13908 E crash_dump64: failed to get the guest state header for thread 20093: Bad address
-11-24 14:19:31.663 13908 13908 E crash_dump64: failed to get the guest state header for thread 20094: Bad address
-11-24 14:19:31.663 13908 13908 E crash_dump64: failed to get the guest state header for thread 20095: Bad address
-11-24 14:19:31.663 13908 13908 E crash_dump64: failed to get the guest state header for thread 20097: Bad address
-11-24 14:19:31.663 13908 13908 E crash_dump64: failed to get the guest state header for thread 20098: Bad address
-11-24 14:19:31.663 13908 13908 E crash_dump64: failed to get the guest state header for thread 20099: Bad address
-11-24 14:19:31.663 13908 13908 E crash_dump64: failed to get the guest state header for thread 20100: Bad address
-11-24 14:19:31.664 13908 13908 E crash_dump64: failed to get the guest state header for thread 20115: Bad address
-11-24 14:19:31.664 13908 13908 E crash_dump64: failed to get the guest state header for thread 20119: Bad address
-11-24 14:19:31.664 13908 13908 E crash_dump64: failed to get the guest state header for thread 20120: Bad address
-11-24 14:19:31.664 13908 13908 E crash_dump64: failed to get the guest state header for thread 20121: Bad address
-11-24 14:19:31.664 13908 13908 E crash_dump64: failed to get the guest state header for thread 20122: Bad address
-11-24 14:19:31.664 13908 13908 E crash_dump64: failed to get the guest state header for thread 20123: Bad address
-11-24 14:19:31.664 13908 13908 E crash_dump64: failed to get the guest state header for thread 20124: Bad address
-11-24 14:19:31.664 13908 13908 E crash_dump64: failed to get the guest state header for thread 20125: Bad address
-11-24 14:19:31.664 13908 13908 E crash_dump64: failed to get the guest state header for thread 20126: Bad address
-11-24 14:19:31.664 13908 13908 E crash_dump64: failed to get the guest state header for thread 20129: Bad address
-11-24 14:19:31.665 13908 13908 E crash_dump64: failed to get the guest state header for thread 20148: Bad address
-11-24 14:19:31.665 13908 13908 E crash_dump64: failed to get the guest state header for thread 20150: Bad address
-11-24 14:19:31.665 13908 13908 E crash_dump64: failed to get the guest state header for thread 20151: Bad address
-11-24 14:19:31.665 13908 13908 E crash_dump64: failed to get the guest state header for thread 20152: Bad address
-11-24 14:19:31.665 13908 13908 E crash_dump64: failed to get the guest state header for thread 20159: Bad address
-11-24 14:19:31.665 13908 13908 E crash_dump64: failed to get the guest state header for thread 20161: Bad address
-11-24 14:19:31.665 13908 13908 E crash_dump64: failed to get the guest state header for thread 20162: Bad address
-11-24 14:19:31.665 13908 13908 E crash_dump64: failed to get the guest state header for thread 20163: Bad address
-11-24 14:19:31.665 13908 13908 E crash_dump64: failed to get the guest state header for thread 20171: Bad address
-11-24 14:19:31.665 13908 13908 E crash_dump64: failed to get the guest state header for thread 20211: Bad address
-11-24 14:19:31.666 13908 13908 E crash_dump64: failed to get the guest state header for thread 20278: Bad address
-11-24 14:19:31.666 13908 13908 E crash_dump64: failed to get the guest state header for thread 25716: Bad address
-11-24 14:19:31.666 13908 13908 E crash_dump64: failed to get the guest state header for thread 26286: Bad address
-11-24 14:19:31.666 13908 13908 E crash_dump64: failed to get the guest state header for thread 26287: Bad address
-11-24 14:19:31.666 13908 13908 E crash_dump64: failed to get the guest state header for thread 26289: Bad address
-11-24 14:19:31.666 13908 13908 E crash_dump64: failed to get the guest state header for thread 26290: Bad address
-11-24 14:19:31.666 13908 13908 E crash_dump64: failed to get the guest state header for thread 26291: Bad address
-11-24 14:19:31.666 13908 13908 E crash_dump64: failed to get the guest state header for thread 26292: Bad address
-11-24 14:19:31.666 13908 13908 E crash_dump64: failed to get the guest state header for thread 26293: Bad address
-11-24 14:19:31.667 13908 13908 E crash_dump64: failed to get the guest state header for thread 26294: Bad address
-11-24 14:19:31.667 13908 13908 E crash_dump64: failed to get the guest state header for thread 26316: Bad address
-11-24 14:19:31.667 13908 13908 E crash_dump64: failed to get the guest state header for thread 29445: Bad address
-11-24 14:19:31.729 13908 13908 I crash_dump64: obtaining output fd from tombstoned, type: kDebuggerdNativeBacktrace
-11-24 14:19:31.730 13908 13908 I crash_dump64: performing dump of process 20059 (target tid = 20059)
-11-24 14:19:32.230 20059 20061 I none.nx2android: Wrote stack traces to tombstoned
-11-24 14:19:33.359 20059 26286 D TrafficStats: tagSocket(5) with statsTag=0xffffffff, statsUid=-1
-11-24 14:19:34.769 20059 20059 I NGRRuntime: [window] focus changed focused=0
-11-24 14:19:34.770 20059 20059 I NGRRuntime: [window] focus callback returned
-11-24 14:19:35.867 20059 26286 D TrafficStats: tagSocket(5) with statsTag=0xffffffff, statsUid=-1
-11-24 14:19:37.314 20059 20059 I NGRRuntime: [window] focus changed focused=1
-11-24 14:19:37.315 20059 20059 I NGRRuntime: [window] focus callback returned
-11-24 14:19:38.370 20059 20059 I NGRRuntime: [activity] onPause begin
-11-24 14:19:38.376 20059 26286 D TrafficStats: tagSocket(5) with statsTag=0xffffffff, statsUid=-1
-11-24 14:19:38.382 20059 20059 I NGRRuntime: [activity] onPause returned
-11-24 14:19:38.405 20059 20059 I NGRRuntime: [window] focus changed focused=0
-11-24 14:19:38.405 20059 20059 I NGRRuntime: [window] focus callback returned
-11-24 14:19:38.419 20059 20059 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
-11-24 14:19:38.419 20059 20059 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
-11-24 14:19:38.443 20059 20077 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:38.443 20059 20077 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:38.443 20059 20077 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:38.443 20059 20077 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:38.443 20059 20077 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:38.443 20059 20077 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:38.443 20059 20077 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:38.443 20059 20077 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:38.738 20059 20059 D VRI[NgrGameActivity]: visibilityChanged oldVisibility=true newVisibility=false
-11-24 14:19:38.760 20059 20059 I NGRRuntime: [window] destroyed window=0x7a6f71ee80
-11-24 14:19:38.762 20059 20059 I NGRRuntime: [window] destroyed callback returned
-11-24 14:19:38.878 20059 20059 I NGRRuntime: [activity] onStop begin
-11-24 14:19:38.878 20059 20059 I NGRRuntime: [activity] onStop returned
-11-24 14:19:38.881 20059 20059 I NGRRuntime: [activity] onDestroy begin
-11-24 14:19:40.535 14096 14096 I libc    : SetHeapTaggingLevel: tag level set to 0
-11-24 14:19:40.564 14096 14096 D nativeloader: Configuring clns-7 for other apk /data/app/~~U-OZbOhau03Qq0o8TUQfyw==/unknown.none.nx2android-WaNJJweKdAz2yU4qA-dR9A==/base.apk. target_sdk_version=28, uses_libraries=, library_path=/data/app/~~U-OZbOhau03Qq0o8TUQfyw==/unknown.none.nx2android-WaNJJweKdAz2yU4qA-dR9A==/lib/arm64:/data/app/~~U-OZbOhau03Qq0o8TUQfyw==/unknown.none.nx2android-WaNJJweKdAz2yU4qA-dR9A==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/unknown.none.nx2android
-11-24 14:19:40.572 14096 14096 V Monotype: SetAppTypeFace- try to flip, app = unknown.none.nx2android
-11-24 14:19:40.598 14096 14096 I NGRRuntime: Application.onCreate process=unknown.none.nx2android
-11-24 14:19:40.603 14096 14115 D vulkan  : searching for layers in '/data/app/~~U-OZbOhau03Qq0o8TUQfyw==/unknown.none.nx2android-WaNJJweKdAz2yU4qA-dR9A==/lib/arm64'
-11-24 14:19:40.603 14096 14115 D vulkan  : searching for layers in '/data/app/~~U-OZbOhau03Qq0o8TUQfyw==/unknown.none.nx2android-WaNJJweKdAz2yU4qA-dR9A==/base.apk!/lib/arm64-v8a'
-11-24 14:19:40.605 14096 14096 V Monotype: SetAppTypeFace- try to flip, app = unknown.none.nx2android
-11-24 14:19:40.631 14096 14115 I AdrenoVK-0: ===== BEGIN DUMP OF OVERRIDDEN SETTINGS =====
-11-24 14:19:40.631 14096 14115 I AdrenoVK-0: ===== END DUMP OF OVERRIDDEN SETTINGS =====
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: QUALCOMM build          : ac42ce8aee, I8e937e587a
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Build Date              : 11/15/24
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Shader Compiler Version : E031.41.03.57
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Local Branch            : 
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Remote Branch           : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.13.2.0.11.00.00.855.856
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Remote Branch           : NONE
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Reconstruct Branch      : NOTHING
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Build Config            : S P 14.1.4 AArch64
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Driver Path             : /vendor/lib64/hw/vulkan.adreno.so
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Driver Version          : 0676.66
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: PFP                     : 0x01740158
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: ME                      : 0x00000000
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Application Name    : android framework
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Application Version : 0x00000000
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Engine Name         : android framework
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Engine Version      : 0x00000000
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Api Version         : 0x00401000
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.632 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.633 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.633 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.633 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.633 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.633 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.633 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.633 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.633 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.633 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.633 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.633 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.633 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.633 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.633 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.633 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.633 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:40.675 14096 14096 D ADPFLog : getCurrentThermalStatus(), caller:11270,[unknown.none.nx2android]
-11-24 14:19:40.677 14096 14141 D ADPFLog : addThermalStatusListener(listener), caller:11270,[unknown.none.nx2android]
-11-24 14:19:40.677 14096 14141 D ADPFLog : addThermalStatusListener(executor, listener), caller:11270,[unknown.none.nx2android]
-11-24 14:19:40.763 14096 14096 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
-11-24 14:19:40.764 14096 14096 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
-11-24 14:19:40.769 14096 14115 I AdrenoUtils: <ReadGpuID:407>: Reading chip ID through GSL
-11-24 14:19:42.411 14096 14209 I AdrenoGLES-0: QUALCOMM build                   : ac42ce8aee, I8e937e587a
-11-24 14:19:42.411 14096 14209 I AdrenoGLES-0: Build Date                       : 11/15/24
-11-24 14:19:42.411 14096 14209 I AdrenoGLES-0: OpenGL ES Shader Compiler Version: E031.41.03.57
-11-24 14:19:42.411 14096 14209 I AdrenoGLES-0: Local Branch                     : 
-11-24 14:19:42.411 14096 14209 I AdrenoGLES-0: Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.13.2.0.11.00.00.855.856
-11-24 14:19:42.411 14096 14209 I AdrenoGLES-0: Remote Branch                    : NONE
-11-24 14:19:42.411 14096 14209 I AdrenoGLES-0: Reconstruct Branch               : NOTHING
-11-24 14:19:42.411 14096 14209 I AdrenoGLES-0: Build Config                     : S P 14.1.4 AArch64
-11-24 14:19:42.411 14096 14209 I AdrenoGLES-0: Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
-11-24 14:19:42.411 14096 14209 I AdrenoGLES-0: Driver Version                   : 0676.66
-11-24 14:19:42.413 14096 14209 I AdrenoGLES-0: PFP: 0x01740158, ME: 0x00000000
-11-24 14:19:42.428 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.428 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.428 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.428 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.429 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.429 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.429 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.429 14096 14115 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: QUALCOMM build          : ac42ce8aee, I8e937e587a
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Build Date              : 11/15/24
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Shader Compiler Version : E031.41.03.57
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Local Branch            : 
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Remote Branch           : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.13.2.0.11.00.00.855.856
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Remote Branch           : NONE
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Reconstruct Branch      : NOTHING
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Build Config            : S P 14.1.4 AArch64
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Driver Path             : /vendor/lib64/hw/vulkan.adreno.so
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Driver Version          : 0676.66
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: PFP                     : 0x01740158
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: ME                      : 0x00000000
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Application Name    : Chromium
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Application Version : 0x00000000
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Engine Name         : (null)
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Engine Version      : 0x00000000
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Api Version         : 0x00401000
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.432 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.433 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.433 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.433 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.433 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.433 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.433 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.433 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.433 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.449 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.449 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.449 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.449 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.449 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.449 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.449 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.449 14096 14209 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-24 14:19:42.499 14096 14209 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-24 14:19:42.499 14096 14209 I AdrenoVK-0: Pipeline create failed
-11-24 14:19:42.513 14096 14209 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-24 14:19:42.513 14096 14209 I AdrenoVK-0: Pipeline create failed
-11-24 14:19:42.519 14096 14209 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-24 14:19:42.519 14096 14209 I AdrenoVK-0: Pipeline create failed
-11-24 14:19:42.528 14096 14209 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-24 14:19:42.528 14096 14209 I AdrenoVK-0: Pipeline create failed
-11-24 14:19:42.544 14096 14209 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-24 14:19:42.544 14096 14209 I AdrenoVK-0: Pipeline create failed
-11-24 14:19:42.551 14096 14209 I AdrenoVK-0: Shader compilation failed for shaderType: 4
-11-24 14:19:42.551 14096 14209 I AdrenoVK-0: Pipeline create failed
-11-24 14:19:43.315 14096 14209 I AdrenoVK-0: Shader compilation failed for shaderType: 4
-11-24 14:19:43.315 14096 14209 I AdrenoVK-0: Pipeline create failed
-11-24 14:19:43.325 14096 14209 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-24 14:19:43.325 14096 14209 I AdrenoVK-0: Pipeline create failed
-11-24 14:19:43.335 14096 14209 I AdrenoVK-0: Shader compilation failed for shaderType: 4
-11-24 14:19:43.335 14096 14209 I AdrenoVK-0: Pipeline create failed
-11-24 14:19:43.340 14096 14209 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-24 14:19:43.340 14096 14209 I AdrenoVK-0: Pipeline create failed
-11-24 14:19:43.347 14096 14209 I AdrenoVK-0: Failed to link shaders.
-11-24 14:19:43.347 14096 14209 I AdrenoVK-0: Pipeline create failed
-11-24 14:19:44.376 14096 14096 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
-11-24 14:19:44.376 14096 14096 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
-11-24 14:19:45.963 14096 14354 D ProfileInstaller: Installing profile for unknown.none.nx2android
+===== Android Logcat (recent system + NGR process events; game pid=21922) =====
+11-24 14:54:58.337 13344 13344 D ADPFLog : getCurrentThermalStatus(), caller:11270,[unknown.none.nx2android]
+11-24 14:54:58.338 13344 13378 D ADPFLog : addThermalStatusListener(listener), caller:11270,[unknown.none.nx2android]
+11-24 14:54:58.338 13344 13378 D ADPFLog : addThermalStatusListener(executor, listener), caller:11270,[unknown.none.nx2android]
+11-24 14:55:44.416 14313 14345 D ADPFLog : addThermalStatusListener(listener), caller:11270,[unknown.none.nx2android]
+11-24 14:55:44.416 14313 14345 D ADPFLog : addThermalStatusListener(executor, listener), caller:11270,[unknown.none.nx2android]
+11-24 14:55:44.416 14313 14313 D ADPFLog : getCurrentThermalStatus(), caller:11270,[unknown.none.nx2android]
+11-24 15:03:59.577 21922 21922 V ResourcesManager: The following library key has been added: ResourcesKey{ mHash=10f30cf4 mResDir=null mSplitDirs=[] mOverlayDirs=[/product/overlay/NavigationBarMode3Button/NavigationBarMode3ButtonOverlay.apk,/product/overlay/TransparentNavigationBar/TransparentNavigationBarOverlay.apk,/data/resource-cache/com.android.systemui-neutral-fqM4.frro,/data/resource-cache/com.android.systemui-accent-dWKL.frro,/data/resource-cache/com.android.systemui-dynamic-YRMm.frro] mLibDirs=[/data/app/~~HJgIBUNQGPqW-_HOfudvxA==/com.google.android.webview-_5PKQ4svYRqiiGBSfCrohQ==/base.apk,/system/framework/android.test.base.jar,/system_ext/framework/androidx.window.extensions.jar] mDisplayId=0 mOverrideConfig=v35 mCompatInfo={420dpi always-compat} mLoaders=[]}
+11-24 15:03:59.620 21922 21922 D ADPFLog : getCurrentThermalStatus(), caller:11270,[unknown.none.nx2android]
+11-24 15:03:59.620 21922 21966 D ADPFLog : addThermalStatusListener(listener), caller:11270,[unknown.none.nx2android]
+11-24 15:03:59.620 21922 21966 D ADPFLog : addThermalStatusListener(executor, listener), caller:11270,[unknown.none.nx2android]
+11-24 15:04:35.273 22804 22804 D ADPFLog : getCurrentThermalStatus(), caller:11270,[unknown.none.nx2android]
+11-24 15:04:35.274 22804 22837 D ADPFLog : addThermalStatusListener(listener), caller:11270,[unknown.none.nx2android]
+11-24 15:04:35.274 22804 22837 D ADPFLog : addThermalStatusListener(executor, listener), caller:11270,[unknown.none.nx2android]
+11-24 15:04:40.740 22804 23085 D ProfileInstaller: Installing profile for unknown.none.nx2android
+11-24 15:04:41.528 22804 22804 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-24 15:04:41.529 22804 22804 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
+11-24 15:05:14.726 22804 22804 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-24 15:05:14.726 22804 22804 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
+11-24 15:05:14.729 22804 22822 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-24 15:05:14.729 22804 22822 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-24 15:05:14.729 22804 22822 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-24 15:05:14.729 22804 22822 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-24 15:05:14.729 22804 22822 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-24 15:05:14.729 22804 22822 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-24 15:05:14.729 22804 22822 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-24 15:05:14.729 22804 22822 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-24 15:05:15.696 22804 22804 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-24 15:05:15.696 22804 22804 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
