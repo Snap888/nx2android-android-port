@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Keeps /root/nx2android complete, at the pinned commit and patched. Safe to call often: it only downloads when files are missing or the pinned commit changed.
 The old tree is renamed aside before the new one goes in, so a failed step can never leave a half-deleted porter behind."""
-import io, json, os, shutil, subprocess, sys, tarfile, time, urllib.request
+import hashlib, io, json, os, shutil, subprocess, sys, tarfile, time, urllib.request
 from pathlib import Path
 
 REPO = Path(os.environ.get('NX2A_REPO', Path.home() / 'nx2android'))
@@ -54,6 +54,17 @@ def commit():
     except OSError: return ''
 
 
+def local_ready():
+    """Fast offline validation used on every GUI boot; no GitHub request or patch run."""
+    try:
+        have = (REPO / '.nx2a_sha').read_text().strip()
+        patch_hash = hashlib.sha256((HERE / 'apply_patches.py').read_bytes()).hexdigest()
+        stamp = (REPO / '.nx2a_patched').read_text().strip().splitlines()
+        return complete() and len(have) == 40 and stamp == [have, patch_hash], have
+    except OSError:
+        return False, ''
+
+
 def upstream_head():
     """Newest commit of upstream's main branch (the GitHub 'sha' media type returns just the id)."""
     if os.environ.get('NX2A_UPSTREAM_SHA'): return os.environ['NX2A_UPSTREAM_SHA']
@@ -79,6 +90,11 @@ def patch():
     if r.returncode != 0:
         detail = out.replace(chr(10), ' | ')[:1800] or f'exit {r.returncode}'
         raise RuntimeError('NGR porter patch validation failed: ' + detail)
+    try:
+        have = (REPO / '.nx2a_sha').read_text().strip()
+        patch_hash = hashlib.sha256((HERE / 'apply_patches.py').read_bytes()).hexdigest()
+        (REPO / '.nx2a_patched').write_text(have + '\n' + patch_hash + '\n')
+    except OSError: pass
     return out
 
 
@@ -165,4 +181,8 @@ def sync(force=False, log=print):
 
 
 if __name__ == '__main__':
+    if '--local-check' in sys.argv:
+        ok, have = local_ready()
+        print('cached porter ' + have[:9] + ' is complete and patched' if ok else 'porter cache is incomplete or needs patch validation')
+        sys.exit(0 if ok else 1)
     ok, msg = sync(force='--force' in sys.argv); print(msg); sys.exit(0 if ok else 1)
