@@ -230,3 +230,11 @@
 - Изменения `hle_thread.c` (default-off `NGR_SYNC`) и `front_android.c` (per-launch Vulkan override) входят в исходники Porter. Установка нового NGR APK сама по себе не переписывает уже скомпилированный `libdmhost.so` в data pack игры.
 - После установки APK нужно один раз выполнить `Recompile / update` для Metro, чтобы пересобрать его runtime из обновлённого Porter checkout. Импортировать/копировать заново 6.7 GB game data не требуется, если recompile использует уже установленный data pack и кэш.
 - PID marker correction и UI/native file picker находятся в самом NGR APK и применяются сразу после установки.
+
+
+### CI / APK result — 2026-11-25
+- Successful signed APK build: Actions run `45505253009` (HEAD `3a45b10c52bbd90ee22b979263c4019d64e4db3a`), all APK job steps passed.
+- Artifact: `nx2android-apk`, artifact ID `14973406319`; extracted `app-release.apk` size 36,927,577 bytes.
+- Test APK SHA-256: `99463d28c5c42fbd63c5e4c68e3adce3e0550ad63aacdac6e3ce2742fcb4bfbe`.
+- Later commit `80155c53c4c7b392ca5cdf9f9e84db65d41d8b6d` updates documentation only; no code changed after the successful APK build.
+- Device test and one-time Metro recompile are still pending.
