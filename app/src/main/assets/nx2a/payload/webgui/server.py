@@ -606,7 +606,7 @@ class H(BaseHTTPRequestHandler):
         if u.path == '/api/library/settings':
             settings = o.get('settings')
             if not isinstance(settings, dict): return self.j({'ok': False, 'error': 'settings must be an object'}, 400)
-            allowed = {'resolution', 'graphics', 'fps', 'controller', 'vulkan_driver', 'touch', 'fps60'}
+            allowed = {'resolution', 'graphics', 'fps', 'controller', 'vulkan_driver', 'touch', 'fps60', 'log_runtime', 'log_slowframe', 'log_nvn', 'log_watchdog', 'log_fs'}
             clean = {k: v for k, v in settings.items() if k in allowed and isinstance(v, (str, int, bool))}
             game = library_update(str(o.get('id', '')), lambda g: g.update(settings=clean, updated_at=int(time.time())))
             return self.j({'ok': game is not None, 'game': game})
