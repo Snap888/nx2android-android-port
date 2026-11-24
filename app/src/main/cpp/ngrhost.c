@@ -212,6 +212,25 @@ static jstring intent_string_extra(ANativeActivity *activity, const char *name) 
     return value;
 }
 
+static int intent_boolean_extra(ANativeActivity *activity, const char *name) {
+    JNIEnv *env = activity->env;
+    jclass activity_cls = (*env)->GetObjectClass(env, activity->clazz);
+    if (!activity_cls) return 0;
+    jmethodID get_intent = (*env)->GetMethodID(env, activity_cls, "getIntent", "()Landroid/content/Intent;");
+    if (!get_intent) return 0;
+    jobject intent = (*env)->CallObjectMethod(env, activity->clazz, get_intent);
+    if (!intent || (*env)->ExceptionCheck(env)) { (*env)->ExceptionClear(env); return 0; }
+    jclass intent_cls = (*env)->GetObjectClass(env, intent);
+    jmethodID get_extra = (*env)->GetMethodID(env, intent_cls, "getBooleanExtra", "(Ljava/lang/String;Z)Z");
+    if (!get_extra) return 0;
+    jstring key = (*env)->NewStringUTF(env, name);
+    if (!key) return 0;
+    jboolean value = (*env)->CallBooleanMethod(env, intent, get_extra, key, JNI_FALSE);
+    (*env)->DeleteLocalRef(env, key);
+    if ((*env)->ExceptionCheck(env)) { (*env)->ExceptionClear(env); return 0; }
+    return value == JNI_TRUE;
+}
+
 static jstring game_id_from_intent(ANativeActivity *activity) {
     return intent_string_extra(activity, "game_id");
 }
@@ -707,6 +726,13 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
 
     const char *external = activity->externalDataPath ? activity->externalDataPath : activity->internalDataPath;
     const char *internal = activity->internalDataPath ? activity->internalDataPath : activity->externalDataPath;
+    const int log_runtime = intent_boolean_extra(activity, "ngr_log_runtime");
+    const int log_slowframe = intent_boolean_extra(activity, "ngr_log_slowframe");
+    const int log_nvn = intent_boolean_extra(activity, "ngr_log_nvn");
+    const int log_watchdog = intent_boolean_extra(activity, "ngr_log_watchdog");
+    const int log_fs = intent_boolean_extra(activity, "ngr_log_fs");
+    const int any_logging = log_runtime || log_slowframe || log_nvn || log_watchdog || log_fs;
+    setenv("NGR_DIAGNOSTICS", any_logging ? "1" : "0", 1);
     if (runtime_log_init(internal, id)) {
         __android_log_print(ANDROID_LOG_ERROR, TAG, "cannot initialize persistent runtime log under %s: %s", internal ? internal : "(null)", strerror(errno));
     }
@@ -823,20 +849,24 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     setenv("DM_GAME_DIR", game_dir, 1);
     setenv("NGR_PRIVATE_GAME_DIR", private_dir, 1);
     setenv("NGR_GAME_ID", id, 1);
-    /* Performance-sensitive diagnostics are disabled by default. In particular,
-       do not enable per-frame reports, NVN lifecycle tracing, periodic watchdog
-       snapshots, or per-ReadFile filesystem logging for ordinary games.
-       Advanced diagnosis can be opted into by starting the app with
-       NGR_DIAGNOSTICS=1 and supplying explicit DM_* switches in the game env. */
-    setenv("DM_SLOWFRAME", "0", 1);
-    setenv("DM_NVN_LOG", "0", 1);
-    setenv("DM_WATCH_LOAD_DUMPS", "0", 1);
-    setenv("DM_WATCH_STALL", "0", 1);
-    setenv("DM_WATCH_DUMP_ALL", "0", 1);
-    setenv("DM_FSLOG", "", 1);
-    if (!strcmp(id, "2f92dce8597c52f2717c")) {
-        setenv("DM_FS", "0", 1);
-        setenv("DM_FSLOG_HASH", "0", 1);
+    /* Diagnostics are selected per game in the launcher UI. All options default
+       off; enabling one creates the per-game diagnostic files for this session. */
+    setenv("DM_SLOWFRAME", log_slowframe ? "1" : "0", 1);
+    setenv("DM_NVN_LOG", log_nvn ? "1" : "0", 1);
+    setenv("DM_WATCH_LOAD_DUMPS", log_watchdog ? "3" : "0", 1);
+    setenv("DM_WATCH_LOAD_INTERVAL", log_watchdog ? "10" : "0", 1);
+    setenv("DM_WATCH_STALL", log_watchdog ? "15" : "0", 1);
+    setenv("DM_WATCH_DUMP_ALL", log_watchdog ? "1" : "0", 1);
+    setenv("DM_WATCH_NO_EXIT", "1", 1);
+    setenv("DM_FS", log_fs ? "1" : "0", 1);
+    setenv("DM_FSLOG_HASH", "0", 1);
+    if (log_fs && g_runtime_log_dir[0]) {
+        char fslog_path[1500];
+        int fsn = snprintf(fslog_path, sizeof(fslog_path), "%s/fs-%s.tsv", g_runtime_log_dir, id);
+        if (fsn > 0 && (size_t)fsn < sizeof(fslog_path)) setenv("DM_FSLOG", fslog_path, 1);
+        else setenv("DM_FSLOG", "", 1);
+    } else {
+        setenv("DM_FSLOG", "", 1);
     }
     LOGI("[stage 1/8] payload validated; game_dir=%s private_dir=%s", game_dir, private_dir);
     LOGI("[stage 2/8] native libraries staged; runtime=%s", lib_path);
