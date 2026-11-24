@@ -686,4 +686,26 @@ static int ngr_sync_key_watched(uint64_t key) {
 """)
 ]);
 
+# 17. Trace condition-variable wait registration and actual wake delivery for the
+# Unity loading workers. This is observational only: it does not alter queue or
+# synchronization semantics. The older syscall trace missed some waits because
+# the thread's diagnostic snapshot can be taken after its last SVC.
+patch('NGR condition-variable wait/wake trace', 'nxnative/dm/host/hle_thread.c', 'NX2A_SYNC_WAIT_TRACE', [
+("""static void wake(thr_t *t, int64_t res) {
+    wait_unlink(t);""",
+ """static void wake(thr_t *t, int64_t res) {
+    if (t->wkind == 2 && ngr_sync_watch(t->handle))
+        LOG("[NGR_SYNC_WAIT] delivered h=%#x key=%#llx lock=%#llx result=%lld",
+            t->handle, (unsigned long long)t->wkey, (unsigned long long)t->waddr, (long long)res);
+    wait_unlink(t);"""),
+("""static int64_t block(thr_t *t, int kind, int64_t ns) {
+    t->wkind = kind;""",
+ """static int64_t block(thr_t *t, int kind, int64_t ns) {
+    if (kind == 2 && ngr_sync_watch(t->handle))
+        LOG("[NGR_SYNC_WAIT] register h=%#x key=%#llx lock=%#llx timeout_ns=%lld lockword=%#x keyword=%#x",
+            t->handle, (unsigned long long)t->wkey, (unsigned long long)t->waddr,
+            (long long)ns, ld32(t->waddr), ld32(t->wkey));
+    t->wkind = kind;"""),
+]);
+
 sys.exit(1 if failed else 0)
