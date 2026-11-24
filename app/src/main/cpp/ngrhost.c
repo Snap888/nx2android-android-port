@@ -28,10 +28,16 @@
 static char g_runtime_log_path[1400];
 static char g_runtime_log_dir[1200];
 static char g_gameplay_log_path[1400];
+/* Per-frame and filesystem diagnostics are opt-in. Default-off avoids synchronous
+ * file opens/writes from the guest host while a game is rendering. */
+static int g_runtime_diagnostics;
 
 static void append_log_line(const char *path, const char *line, size_t len);
 
 static void runtime_log_emit(int priority, const char *fmt, ...) {
+    /* Keep fatal/error messages in logcat, but never format or persist routine
+     * runtime chatter unless diagnostics were explicitly enabled. */
+    if (!g_runtime_diagnostics && priority < ANDROID_LOG_ERROR) return;
     char message[4096];
     va_list ap;
     va_start(ap, fmt);
@@ -39,7 +45,7 @@ static void runtime_log_emit(int priority, const char *fmt, ...) {
     va_end(ap);
     __android_log_write(priority, TAG, message);
 
-    if (!g_runtime_log_path[0]) return;
+    if (!g_runtime_diagnostics || !g_runtime_log_path[0]) return;
     struct timespec ts;
     clock_gettime(CLOCK_REALTIME, &ts);
     struct tm tmv;
@@ -222,6 +228,14 @@ static int mkdirs(const char *path) {
 }
 
 static int runtime_log_init(const char *internal_root, const char *game_id) {
+    const char *diag = getenv("NGR_DIAGNOSTICS");
+    g_runtime_diagnostics = diag && (!strcmp(diag, "1") || !strcmp(diag, "true") || !strcmp(diag, "yes"));
+    if (!g_runtime_diagnostics) {
+        g_runtime_log_path[0] = 0;
+        g_runtime_log_dir[0] = 0;
+        g_gameplay_log_path[0] = 0;
+        return 0; /* No log files, stdout/stderr redirection or unbuffered writes. */
+    }
     if (!internal_root || !*internal_root || !game_id || !*game_id) return -1;
     int a = snprintf(g_runtime_log_dir, sizeof(g_runtime_log_dir), "%s/ngr-logs", internal_root);
     int b = snprintf(g_runtime_log_path, sizeof(g_runtime_log_path), "%s/%s.log", g_runtime_log_dir, game_id);
@@ -809,64 +823,20 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     setenv("DM_GAME_DIR", game_dir, 1);
     setenv("NGR_PRIVATE_GAME_DIR", private_dir, 1);
     setenv("NGR_GAME_ID", id, 1);
-    /* Low-overhead upstream diagnostic: one breakdown line per dropped frame.
-       Preserve an explicit process setting; a game's env.txt may override it later. */
-    if (!getenv("DM_SLOWFRAME")) {
-        setenv("DM_SLOWFRAME", "1", 0);
-        LOGI("[config] NGR default DM_SLOWFRAME=1 (per-dropped-frame breakdown)");
-    }
-    /* A game can stall before its first NVN present. DM_SLOWFRAME only reports
-       frames after presentation starts, so enable the low-volume NVN object
-       lifecycle log as well. Preserve a game's explicit env.txt override. */
-    if (!getenv("DM_NVN_LOG")) {
-        setenv("DM_NVN_LOG", "1", 0);
-        LOGI("[config] NGR default DM_NVN_LOG=1 (NVN device/pool/queue/window lifecycle)");
-    }
-    /* The loader may stall while the renderer continues presenting a static
-       frame. Request three timed snapshots from the independent host watchdog. */
-    if (!getenv("DM_WATCH_LOAD_DUMPS")) {
-        setenv("DM_WATCH_LOAD_DUMPS", "3", 0);
-        LOGI("[config] NGR default DM_WATCH_LOAD_DUMPS=3 (loading snapshots at 10/20/30s)");
-    }
-    if (!getenv("DM_WATCH_LOAD_INTERVAL")) {
-        setenv("DM_WATCH_LOAD_INTERVAL", "10", 0);
-        LOGI("[config] NGR default DM_WATCH_LOAD_INTERVAL=10 seconds");
-    }
-    if (!getenv("DM_FSLOG")) {
-        char fslog_path[1500];
-        int fn = snprintf(fslog_path, sizeof(fslog_path), "%s/fs-%s.tsv", g_runtime_log_dir, id);
-        if (fn > 0 && (size_t)fn < sizeof(fslog_path) && setenv("DM_FSLOG", fslog_path, 0) == 0)
-            LOGI("[config] NGR default DM_FSLOG=%s (RomFS ReadFile trace)", fslog_path);
-        else LOGE("[config] cannot configure DM_FSLOG path: %s", strerror(errno));
-    }
-    /* Twelve Minutes stops during Unity preload. Enable file-open diagnostics
-       and content hashes for this title only, so the next run can distinguish
-       a missing/failed read from a stalled job completion without flooding
-       unrelated games with filesystem logs. */
+    /* Performance-sensitive diagnostics are disabled by default. In particular,
+       do not enable per-frame reports, NVN lifecycle tracing, periodic watchdog
+       snapshots, or per-ReadFile filesystem logging for ordinary games.
+       Advanced diagnosis can be opted into by starting the app with
+       NGR_DIAGNOSTICS=1 and supplying explicit DM_* switches in the game env. */
+    setenv("DM_SLOWFRAME", "0", 1);
+    setenv("DM_NVN_LOG", "0", 1);
+    setenv("DM_WATCH_LOAD_DUMPS", "0", 1);
+    setenv("DM_WATCH_STALL", "0", 1);
+    setenv("DM_WATCH_DUMP_ALL", "0", 1);
+    setenv("DM_FSLOG", "", 1);
     if (!strcmp(id, "2f92dce8597c52f2717c")) {
-        if (!getenv("DM_FS")) {
-            setenv("DM_FS", "1", 0);
-            LOGI("[config] Twelve Minutes diagnostic DM_FS=1 (file open/read failures)");
-        }
-        if (!getenv("DM_FSLOG_HASH")) {
-            setenv("DM_FSLOG_HASH", "1", 0);
-            LOGI("[config] Twelve Minutes diagnostic DM_FSLOG_HASH=1 (hash successful RomFS reads)");
-        }
-    }
-    /* Snapshot guest thread PCs/backtraces and graphics wait points after a
-       one-second no-present stall. Keep the watchdog non-terminating: it is
-       diagnostic only and must not close a game that later resumes. */
-    if (!getenv("DM_WATCH_STALL")) {
-        setenv("DM_WATCH_STALL", "15", 0);
-        LOGI("[config] NGR default DM_WATCH_STALL=15 (capture state after 1s; rate limited)");
-    }
-    if (!getenv("DM_WATCH_DUMP_ALL")) {
-        setenv("DM_WATCH_DUMP_ALL", "1", 0);
-        LOGI("[config] NGR default DM_WATCH_DUMP_ALL=1 (include ordinary gameplay stalls)");
-    }
-    if (!getenv("DM_WATCH_NO_EXIT")) {
-        setenv("DM_WATCH_NO_EXIT", "1", 0);
-        LOGI("[config] NGR default DM_WATCH_NO_EXIT=1 (diagnostics never terminate the game)");
+        setenv("DM_FS", "0", 1);
+        setenv("DM_FSLOG_HASH", "0", 1);
     }
     LOGI("[stage 1/8] payload validated; game_dir=%s private_dir=%s", game_dir, private_dir);
     LOGI("[stage 2/8] native libraries staged; runtime=%s", lib_path);
