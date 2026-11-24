@@ -177,3 +177,25 @@
 ### Статус
 - UI, intent/native staging, runtime override patch и PID marker correction внесены в ветку.
 - APK и реальная проверка на устройстве ещё не подтверждены.
+
+
+## 2026-11-25 — Disable synchronization trace during normal gameplay
+
+### Причина лишней нагрузки
+- Подтверждено, что Porter patch `NX2A_SYNC_TRACE` / `NX2A_SYNC_WAIT_TRACE` писал `[NGR_SYNC]` и `[NGR_SYNC_WAIT]` на каждом выбранном lock/unlock/wait/wake без проверки диагностического флага.
+- В ранее загруженном Metro gameplay log было более 21 000 таких событий. Они попадали в stderr/log.txt и создавали лишние форматирование, syscalls и файловый I/O даже при выключенных пользовательских логах.
+
+### Исправление
+- Добавлен patch `NGR synchronization trace default-off gate` в `apply_patches.py`: все per-lock и condition-variable trace calls теперь требуют `DM_SYNC_TRACE=1`; при отсутствии переменной или значении `0` логирующие ветки не выполняются.
+- `ngrhost.c` устанавливает `DM_SYNC_TRACE=1` только при включённом существующем чекбоксе `Hang watchdog / thread snapshots`; без чекбокса трассировка выключена.
+- Уточнена подпись чекбокса: он включает также synchronization trace.
+- Payload manifest обновлён до версии 171; SHA-256 для `apply_patches.py` и `webgui/index.html` обновлены.
+- Синхронизацию, блокировки, приоритеты и поведение condition variables не менял — только отключил диагностические записи в обычном режиме.
+
+### Проверка
+- Требуется CI validation на pinned Porter: patch 16/17 должны примениться, затем patch 19 должен заменить старые trace calls и добавить gate; повторный запуск patch script должен быть idempotent.
+- После установки APK проверить Metro с выключенным watchdog/thread checkbox: в новом gameplay log не должно быть `[NGR_SYNC]` / `[NGR_SYNC_WAIT]`; звук и frame pacing сравнить с предыдущим запуском.
+- При включении checkbox эти строки должны появиться для диагностики.
+
+### Статус
+- Код и manifest обновлены в `feature/ngr-universal-library`; CI и тест на устройстве ожидаются.
