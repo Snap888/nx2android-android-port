@@ -678,10 +678,10 @@ static int ngr_sync_key_watched(uint64_t key) {
         pthread_mutex_unlock(&G);
 """),
 ("""        uint64_t key = regs[0]; int cnt = (int)regs[1], n = 0;
-        pthread_mutex_lock(&G);
+        G_lock();
         for (thr_t *w; (cnt <= 0 || n < cnt) && (w = pick(2, key)); n++) lock_acquire_for(w, w->waddr, w->wtag);   // In kernel order; once turned into a lock wait or woken it is no longer kind 2
 """, """        uint64_t key = regs[0]; int cnt = (int)regs[1], n = 0;
-        pthread_mutex_lock(&G);
+        G_lock();
         int ngr_tracked_signal = ngr_sync_key_watched(key);
         if (ngr_tracked_signal && g_ngr_sync_signal_logs < 256)
             LOG("[NGR_SYNC] cv-signal key=%#llx count=%d", (unsigned long long)key, cnt);
