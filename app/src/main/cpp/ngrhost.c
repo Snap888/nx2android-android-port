@@ -705,19 +705,25 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     const char *requested_data_path = jdata_path ? (*activity->env)->GetStringUTFChars(activity->env, jdata_path, NULL) : NULL;
     int a = -1;
     if (requested_data_path && requested_data_path[0]) {
-        char canonical_root[4096], canonical_game[4096];
-        size_t root_len = 0;
+        char canonical_root[4096], canonical_shared[4096], canonical_game[4096];
         if (!realpath(internal, canonical_root) || !realpath(requested_data_path, canonical_game)) {
             LOGE("cannot resolve in-place game data path '%s': %s", requested_data_path, strerror(errno));
         } else {
-            root_len = strlen(canonical_root);
+            size_t root_len = strlen(canonical_root);
+            int in_private = !strncmp(canonical_game, canonical_root, root_len) &&
+                             canonical_game[root_len] == '/';
+            int in_shared = 0;
+            if (realpath("/storage/emulated/0", canonical_shared)) {
+                size_t shared_len = strlen(canonical_shared);
+                in_shared = !strncmp(canonical_game, canonical_shared, shared_len) &&
+                            canonical_game[shared_len] == '/';
+            }
             struct stat game_st;
-            if (!strncmp(canonical_game, canonical_root, root_len) &&
-                canonical_game[root_len] == '/' &&
+            if ((in_private || in_shared) &&
                 stat(canonical_game, &game_st) == 0 && S_ISDIR(game_st.st_mode)) {
                 a = snprintf(game_dir, sizeof(game_dir), "%s", canonical_game);
             } else {
-                LOGE("refusing game data path outside NGR private storage or not a directory: %s", canonical_game);
+                LOGE("refusing game data path outside NGR private/shared storage or not a directory: %s", canonical_game);
             }
         }
         if (a < 0 || (size_t)a >= sizeof(game_dir)) {
