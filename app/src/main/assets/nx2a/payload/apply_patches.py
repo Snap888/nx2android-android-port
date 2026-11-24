@@ -659,9 +659,9 @@ static int ngr_sync_key_watched(uint64_t key) {
 ("""    case 0x1B: G_lock(); lock_handoff(regs[0]); pthread_mutex_unlock(&G); regs[0] = 0; return 1;
 """, """    case 0x1B: { thr_t *t = cur(); if (ngr_sync_watch(t->handle)) LOG("[NGR_SYNC] unlock h=%#x addr=%#llx word=%#x", t->handle, (unsigned long long)regs[0], ld32(regs[0])); G_lock(); lock_handoff(regs[0]); pthread_mutex_unlock(&G); regs[0] = 0; return 1; }
 """),
-("""        pthread_mutex_lock(&G);
+("""        G_lock();
         // The order matters: first set the condition key = 1, then release the mutex. The SDK's InternalConditionVariable::Signal first reads the condition key in user mode, and does not issue svc 0x1D if it is 0;
-""", """        pthread_mutex_lock(&G);
+""", """        G_lock();
         if (ngr_sync_watch(t->handle)) {
             ngr_sync_track_key(key);
             LOG("[NGR_SYNC] cv-wait h=%#x lock=%#llx key=%#llx tag=%#x timeout_ns=%lld lockword=%#x keyword=%#x",
