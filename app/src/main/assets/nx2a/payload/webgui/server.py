@@ -91,6 +91,7 @@ def library_update(game_id, mutate):
 COVER_CACHE = CFG.parent / 'covers'
 COVER_JOB = {'running': False, 'done': True, 'found': 0, 'checked': 0, 'error': ''}
 COVER_LOCK = threading.Lock()
+COVER_RETRY_AFTER = {}
 
 
 def _cover_cache_path(game_id):
@@ -137,19 +138,30 @@ def _fetch_switch_icon(game):
     return True
 
 
-def _run_cover_refresh():
+def _run_cover_refresh(force=False):
     with COVER_LOCK:
         COVER_JOB.update(running=True, done=False, found=0, checked=0, error='')
     try:
         games = library_read().get('games', [])
+        now = time.time()
         for game in games:
-            if game.get('cover_source') != 'nlib-icon' and _cover_is_readable(game):
+            game_id = str(game.get('id') or '')
+            title_id = str(game.get('title_id') or '')
+            if not re.fullmatch(r'[0-9a-f]{20}', game_id) or not re.fullmatch(r'[0-9A-Fa-f]{16}', title_id):
+                continue
+            if _cover_is_readable(game):
+                continue
+            if not force and COVER_RETRY_AFTER.get(game_id, 0) > now:
                 continue
             try:
                 if _fetch_switch_icon(game):
                     COVER_JOB['found'] += 1
+                    COVER_RETRY_AFTER.pop(game_id, None)
+                else:
+                    COVER_RETRY_AFTER[game_id] = time.time() + 86400
             except Exception as error:
                 COVER_JOB['error'] = str(error)[:240]
+                COVER_RETRY_AFTER[game_id] = time.time() + 21600
             COVER_JOB['checked'] += 1
     finally:
         with COVER_LOCK:
@@ -157,14 +169,25 @@ def _run_cover_refresh():
             COVER_JOB['done'] = True
 
 
-def start_cover_refresh():
+def start_cover_refresh(force=False):
+    games = library_read().get('games', [])
+    now = time.time()
+    candidates = [
+        g for g in games
+        if re.fullmatch(r'[0-9a-f]{20}', str(g.get('id') or ''))
+        and re.fullmatch(r'[0-9A-Fa-f]{16}', str(g.get('title_id') or ''))
+        and not _cover_is_readable(g)
+        and (force or COVER_RETRY_AFTER.get(str(g.get('id')), 0) <= now)
+    ]
+    if not candidates:
+        return False
     with COVER_LOCK:
         if COVER_JOB['running']:
             return False
         COVER_JOB.update(running=True, done=False, found=0, checked=0, error='')
     def worker():
         try:
-            _run_cover_refresh()
+            _run_cover_refresh(force)
         except Exception as error:
             with COVER_LOCK:
                 COVER_JOB.update(running=False, done=True, error=str(error)[:240])
@@ -704,7 +727,7 @@ class H(BaseHTTPRequestHandler):
             game = library_update(str(o.get('id', '')), lambda g: g.update(settings=clean, updated_at=int(time.time())))
             return self.j({'ok': game is not None, 'game': game})
         if u.path == '/api/library/covers/refresh':
-            return self.j({'started': start_cover_refresh()})
+            return self.j({'started': start_cover_refresh(force=bool(o.get('force')))})
         if u.path == '/api/library/cover':
             path = Path(norm_path(str(o.get('path', ''))))
             try:
