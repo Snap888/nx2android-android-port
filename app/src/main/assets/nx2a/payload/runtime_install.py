@@ -32,7 +32,10 @@ def validate_payload(source, game_id):
     size = 0
     for path in source.rglob("*"):
         if path.is_symlink():
-            raise ValueError(f"game data pack contains an unsupported symbolic link: {path}")
+            target = path.resolve(strict=True)
+            if not target.is_relative_to(source):
+                raise ValueError(f"game data pack contains a symbolic link outside its root: {path}")
+            continue
         if path.is_file():
             files.append(path)
             size += path.stat().st_size
