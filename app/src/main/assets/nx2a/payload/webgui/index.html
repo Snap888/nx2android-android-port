@@ -70,7 +70,7 @@ button.b{padding:11px 14px;border-radius:8px;border:0;background:var(--red);colo
 </main>
 <div id="dlg"><div class="card"><div id="dlgmsg" style="white-space:pre-wrap"></div><div class="row" style="margin-top:12px"><button class="b" id="dlgok">OK</button><button class="b g" id="dlgno">Cancel</button></div></div></div>
 <div id="fmodal"><div class="card"><div id="fplaces" class="row" style="flex-wrap:wrap"></div><div id="fpath" class="sm"></div><div id="flist"></div><div class="row"><button class="b g" onclick="fmAll()">Select all</button><button class="b" onclick="fmDel()">Delete selected</button><button class="b g" onclick="fmodal.style.display='none'">Close</button></div><div id="fmsg" class="sm"></div></div></div>
-<div id="gmodal" class="gmodal"><div class="card"><div class="row"><b id="gtitle" style="flex:1"></b><button class="b g" style="margin:0" onclick="closeGame()">Close</button></div><div id="gdetails" class="sm"></div><div class="runtimewarn">This game runs inside the NGR application. Install its native runtime and data into NGR storage once; no separate game APK is installed.</div><div class="row"><button class="b" style="flex:1" onclick="launchGame()">▶ Launch game</button><button class="b g" style="flex:1" onclick="installGameRuntime()">Install runtime + data</button></div><div class="row"><button class="b g" style="flex:1" onclick="exportRuntimeLog()">Export runtime log</button><button class="b g" style="flex:1" onclick="exportGameplayLog()">Export gameplay log</button><button class="b g" style="flex:1" onclick="clearRuntimeLog()">Clear logs</button></div><label>Resolution</label><select id="gres"><option>Auto</option><option>1280×720</option><option>1920×1080</option></select><label>Graphics preset</label><select id="ggfx"><option>Compatibility</option><option>Balanced</option><option>Quality</option></select><label>FPS limit</label><select id="gfps"><option>Auto</option><option>30</option><option>60</option></select><label>Controller</label><select id="gcontroller"><option>Auto</option><option>Touch</option><option>Gamepad</option></select><label>Vulkan driver path (optional)</label><input id="gdriver" type="text" placeholder="/sdcard/Switch/Drivers/libvulkan_freedreno.so"><input id="coverPath" type="text" style="display:none"><div class="row"><button class="b g" onclick="pick('coverPath',false)">Choose cover</button><button class="b g" onclick="saveGameSettings()">Save settings</button></div><div class="row"><button class="b g" onclick="removeGame()">Remove shortcut</button><button class="b" onclick="recompileGame()">Recompile / update</button></div><div id="gmsg" class="sm"></div></div></div>
+<div id="gmodal" class="gmodal"><div class="card"><div class="row"><b id="gtitle" style="flex:1"></b><button class="b g" style="margin:0" onclick="closeGame()">Close</button></div><div id="gdetails" class="sm"></div><div class="runtimewarn">This game runs inside NGR. The existing game data is validated and launched in place; only native executable libraries are staged privately. No game-data copy or separate game APK is created.</div><div class="row"><button class="b" style="flex:1" onclick="launchGame()">▶ Launch game</button><button class="b g" style="flex:1" onclick="installGameRuntime()">Prepare runtime</button></div><div class="row"><button class="b g" style="flex:1" onclick="exportRuntimeLog()">Export runtime log</button><button class="b g" style="flex:1" onclick="exportGameplayLog()">Export gameplay log</button><button class="b g" style="flex:1" onclick="clearRuntimeLog()">Clear logs</button></div><label>Resolution</label><select id="gres"><option>Auto</option><option>1280×720</option><option>1920×1080</option></select><label>Graphics preset</label><select id="ggfx"><option>Compatibility</option><option>Balanced</option><option>Quality</option></select><label>FPS limit</label><select id="gfps"><option>Auto</option><option>30</option><option>60</option></select><label>Controller</label><select id="gcontroller"><option>Auto</option><option>Touch</option><option>Gamepad</option></select><label>Vulkan driver path (optional)</label><input id="gdriver" type="text" placeholder="/sdcard/Switch/Drivers/libvulkan_freedreno.so"><input id="coverPath" type="text" style="display:none"><div class="row"><button class="b g" onclick="pick('coverPath',false)">Choose cover</button><button class="b g" onclick="saveGameSettings()">Save settings</button></div><div class="row"><button class="b g" onclick="removeGame()">Remove shortcut</button><button class="b" onclick="recompileGame()">Recompile / update</button></div><div id="gmsg" class="sm"></div></div></div>
 <div id="modal"><div class="card"><div class="row" id="mnative" style="display:none"><button class="b" id="mnb" style="width:100%">Use Android file picker (SD card, USB…)</button></div><div id="mplaces" class="row" style="flex-wrap:wrap"></div><div id="mpath" class="sm"></div><div id="mlist"></div><div class="row"><button class="b" id="msel">Use this folder</button><button class="b g" onclick="modal.style.display='none'">Close</button></div></div></div>
 <script>
 const $=id=>document.getElementById(id),modal=$('modal'),fmodal=$('fmodal');let since=0,timer=null,raw=[];
@@ -158,7 +158,7 @@ function gameDetails(id){const g=libraryGames.find(x=>x.id===id);if(!g)return;se
 function closeGame(){$('gmodal').style.display='none';selectedGame=''}
 async function installRuntimeAndWait(g){
  if(!g.data_path||!g.runtime_so_path)throw new Error(g.runtime_error||'This game has no extracted NGR runtime. Recompile/update it with the latest NGR build.');
- $('gmsg').textContent='Installing game runtime and data into NGR storage… Keep the app open.';
+ $('gmsg').textContent='Checking the existing game data in place… No copy to Android/data is made.';
  const start=await api('/api/runtime/install',{id:g.id});
  if(!start.started)throw new Error(start.error||'Could not start runtime installation.');
  let since=0,last='';
@@ -166,7 +166,7 @@ async function installRuntimeAndWait(g){
   await new Promise(resolve=>setTimeout(resolve,1000));
   const state=await api('/api/job?since='+since);since=state.next;
   if(state.lines&&state.lines.length)last=state.lines[state.lines.length-1];
-  if(last)$('gmsg').textContent='Installing runtime… '+String(last).slice(-180);
+  if(last)$('gmsg').textContent='Verifying payload… '+String(last).slice(-180);
   if(state.done){
    if(state.code!==0)throw new Error('Runtime installation failed: '+(state.lines||[]).slice(-8).join(' | '));
    await libraryLoad();
@@ -199,12 +199,12 @@ async function launchGame(){
  try{
   if(!g.runtime_installed)await installRuntimeAndWait(g);
   $('gmsg').textContent='Starting '+(g.title||'game')+'…';
-  NX2A.launchGame(g.id);
+  NX2A.launchGame(g.id,g.data_path);
  }catch(e){$('gmsg').textContent=String(e&&e.message||e)}
 }
 async function installGameRuntime(){
  const g=libraryGames.find(x=>x.id===selectedGame);if(!g)return;
- try{await installRuntimeAndWait(g);$('gmsg').textContent='Runtime installed. Launch game is ready.';await libraryLoad()}
+ try{await installRuntimeAndWait(g);$('gmsg').textContent='Game data verified in place. Launch is ready.';await libraryLoad()}
  catch(e){$('gmsg').textContent=String(e&&e.message||e)}
 }
 function recompileGame(){const g=libraryGames.find(x=>x.id===selectedGame);if(!g)return;const s=g.settings||{};$('folder').value=g.source_folder||'';$('app_name').value=g.title||'';$('package').value=g.package||'';$('vkdriver').value=s.vulkan_driver||'';$('touch').checked=!!s.touch;$('fps60').checked=!!s.fps60||String(s.fps)==='60';drvSave();closeGame();tab('port');if(!$('folder').value)$('folder').focus()}
