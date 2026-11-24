@@ -864,13 +864,15 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     setenv("DM_WATCH_NO_EXIT", "1", 1);
     setenv("DM_FS", log_fs ? "1" : "0", 1);
     setenv("DM_FSLOG_HASH", "0", 1);
+    /* libdmhost opens DM_FSLOG during startup even when DM_FS=0. An empty
+       value therefore aborts the game before it reaches guest startup. Keep a
+       valid sink when tracing is disabled; /dev/null discards all trace output. */
+    setenv("DM_FSLOG", "/dev/null", 1);
     if (log_fs && g_runtime_log_dir[0]) {
         char fslog_path[1500];
         int fsn = snprintf(fslog_path, sizeof(fslog_path), "%s/fs-%s.tsv", g_runtime_log_dir, id);
-        if (fsn > 0 && (size_t)fsn < sizeof(fslog_path)) setenv("DM_FSLOG", fslog_path, 1);
-        else setenv("DM_FSLOG", "", 1);
-    } else {
-        setenv("DM_FSLOG", "", 1);
+        if (fsn > 0 && (size_t)fsn < sizeof(fslog_path))
+            setenv("DM_FSLOG", fslog_path, 1);
     }
     LOGI("[stage 1/8] payload validated; game_dir=%s private_dir=%s", game_dir, private_dir);
     LOGI("[stage 2/8] native libraries staged; runtime=%s", lib_path);
