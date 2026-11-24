@@ -117,14 +117,7 @@ def update(force=False):
         log('update check failed:', e); return False
 
 
-def updater():
-    time.sleep(20)
-    while True:
-        update(); time.sleep(6 * 3600)
-
-
 def main():
-    threading.Thread(target=updater, daemon=True).start()
     crashes = 0
     while True:
         P = pick(); m = manifest(P)
