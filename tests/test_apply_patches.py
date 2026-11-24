@@ -47,7 +47,7 @@ class ApplyPatchesTests(unittest.TestCase):
                 capture_output=True, text=True, env=env, check=False,
             )
             self.assertEqual(second.returncode, 0, second.stdout + second.stderr)
-            self.assertIn("already", second.stdout)
+            self.assertIn("implementation present", second.stdout)
 
 
     def test_twelve_minutes_offline_presence_patch_and_profile(self):
