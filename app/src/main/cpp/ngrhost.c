@@ -955,6 +955,9 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     setenv("DM_WATCH_LOAD_INTERVAL", log_watchdog ? "10" : "0", 1);
     setenv("DM_WATCH_STALL", log_watchdog ? "15" : "0", 1);
     setenv("DM_WATCH_DUMP_ALL", log_watchdog ? "1" : "0", 1);
+    /* The existing thread-snapshot checkbox also enables detailed synchronization
+       tracing; the per-lock trace is fully disabled during normal gameplay. */
+    setenv("DM_SYNC_TRACE", log_watchdog ? "1" : "0", 1);
     setenv("DM_WATCH_NO_EXIT", "1", 1);
     setenv("DM_FS", log_fs ? "1" : "0", 1);
     setenv("DM_FSLOG_HASH", "0", 1);
