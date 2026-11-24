@@ -763,11 +763,11 @@ mem_stack\t0x10000000
 app_pool\t0xCD500000
 sys_resource\t0x1000000
 shader_groups\t/Data/=data
-shader_note\tTwelve Minutes shaders
+shader_note\tTwelve Minutes shaders; NX2A_TWELVE_MINUTES_PROFILE
 depth_mode\tzero
 """, encoding='utf-8')
     (d / 'android.tsv').write_text(
-        "# Android port status: not yet verified on device.\nstatus\texperimental\n",
+        "status\texperimental\n",
         encoding='utf-8')
     (d / 'README.md').write_text("""# Twelve Minutes (0100CD701434C000)
 
