@@ -471,8 +471,8 @@ static void on_resume(ANativeActivity *a) { if (g_quit) { act_finish(a); return;
 ])
 
 patch('NGR overlay exit labels', 'nxnative/dm/android/gfx_vk_present.c', 'NX2A_NGR_EXIT_LABEL', [
-("static const char *const OVM_LABELS[OVM_N] = {\"Show gamepad\", \"Opacity\", \"Edit layout\", \"Rumble\", \"Show FPS\", \"Mode\", \"Export save\", \"Import save\", \"Resume\", \"\"};",
- "static const char *const OVM_LABELS[OVM_N] = {\"Show gamepad\", \"Opacity\", \"Edit layout\", \"Rumble\", \"Show FPS\", \"Mode\", \"Export save\", \"Import save\", \"Resume\", \"Exit game\", \"\"};"),
+("static const char *const OVM_LABELS[OVM_N] = {\"Show gamepad\", \"Opacity\", \"Edit layout\", \"Rumble\", \"Show FPS\", \"Mode\", \"Export save\", \"Import save\", \"Face buttons\", \"Resume\", \"\"};",
+ "static const char *const OVM_LABELS[OVM_N] = {\"Show gamepad\", \"Opacity\", \"Edit layout\", \"Rumble\", \"Show FPS\", \"Mode\", \"Export save\", \"Import save\", \"Face buttons\", \"Resume\", \"Exit game\", \"\"};"),
 ("if (it == OVM_RESUME) { cv_rrect(cv, r[0], r[1], r[0] + rw, r[1] + 1, 0.5f, C_LINE); cv_text(cv, r[0] + (rw - cv_text_w(\"Resume\", is)) / 2, cy, \"Resume\", is, C_ACCENT); continue; }",
  "if (it == OVM_RESUME || it == OVM_EXIT) { const char *word = OVM_LABELS[it]; cv_rrect(cv, r[0], r[1], r[0] + rw, r[1] + 1, 0.5f, C_LINE); cv_text(cv, r[0] + (rw - cv_text_w(word, is)) / 2, cy, word, is, C_ACCENT); continue; }"),
 ])
@@ -657,7 +657,7 @@ static int ngr_sync_key_watched(uint64_t key) {
             if (ov) pthread_override_qos_class_end_np(ov); }
 """),
 ("""    case 0x1B: G_lock(); lock_handoff(regs[0]); pthread_mutex_unlock(&G); regs[0] = 0; return 1;
-""", """    case 0x1B: { thr_t *t = cur(); if (ngr_sync_watch(t->handle)) LOG("[NGR_SYNC] unlock h=%#x addr=%#llx word=%#x", t->handle, (unsigned long long)regs[0], ld32(regs[0])); pthread_mutex_lock(&G); lock_handoff(regs[0]); pthread_mutex_unlock(&G); regs[0] = 0; return 1; }
+""", """    case 0x1B: { thr_t *t = cur(); if (ngr_sync_watch(t->handle)) LOG("[NGR_SYNC] unlock h=%#x addr=%#llx word=%#x", t->handle, (unsigned long long)regs[0], ld32(regs[0])); G_lock(); lock_handoff(regs[0]); pthread_mutex_unlock(&G); regs[0] = 0; return 1; }
 """),
 ("""        pthread_mutex_lock(&G);
         // The order matters: first set the condition key = 1, then release the mutex. The SDK's InternalConditionVariable::Signal first reads the condition key in user mode, and does not issue svc 0x1D if it is 0;
