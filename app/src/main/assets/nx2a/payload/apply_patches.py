@@ -705,6 +705,13 @@ patch('NGR condition-variable wait/wake trace', 'nxnative/dm/host/hle_thread.c',
         LOG("[NGR_SYNC_WAIT] register h=%#x key=%#llx lock=%#llx timeout_ns=%lld",
             t->handle, (unsigned long long)t->wkey, (unsigned long long)t->waddr, (long long)ns);
     t->wkind = kind;"""),
+("""        for (thr_t *w; (cnt <= 0 || n < cnt) && (w = pick(2, key)); n++) lock_acquire_for(w, w->waddr, w->wtag);   // In kernel order; once turned into a lock wait or woken it is no longer kind 2""",
+ """        for (thr_t *w; (cnt <= 0 || n < cnt) && (w = pick(2, key)); n++) {
+            if (ngr_sync_watch(w->handle))
+                LOG("[NGR_SYNC_WAIT] signal-target h=%#x key=%#llx lock=%#llx tag=%#x",
+                    w->handle, (unsigned long long)key, (unsigned long long)w->waddr, w->wtag);
+            lock_acquire_for(w, w->waddr, w->wtag);
+        }   // In kernel order; once turned into a lock wait or woken it is no longer kind 2"""),
 ]);
 
 sys.exit(1 if failed else 0)
