@@ -4,6 +4,7 @@ import contextlib, glob, hashlib, hmac, http.cookies, io, json, mimetypes, os, r
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
+from urllib.request import Request, urlopen
 
 HERE = Path(__file__).parent
 
@@ -84,6 +85,91 @@ def library_update(game_id, mutate):
             library_write(catalog)
             return game
     return None
+
+# Switch icons are fetched lazily from the public Nlib catalogue. Downloads are
+# cached locally; a user's manually selected cover always takes precedence.
+COVER_CACHE = CFG.parent / 'covers'
+COVER_JOB = {'running': False, 'done': True, 'found': 0, 'checked': 0, 'error': ''}
+COVER_LOCK = threading.Lock()
+
+
+def _cover_cache_path(game_id):
+    return COVER_CACHE / (game_id + '.jpg')
+
+
+def _cover_is_readable(game):
+    try:
+        p = Path(game.get('cover_path') or '').resolve(strict=True)
+        return p.is_file() and p.stat().st_size > 0
+    except (OSError, RuntimeError):
+        return False
+
+
+def _fetch_switch_icon(game):
+    game_id = str(game.get('id') or '')
+    title_id = str(game.get('title_id') or '').upper()
+    if not re.fullmatch(r'[0-9a-f]{20}', game_id) or not re.fullmatch(r'[0-9A-F]{16}', title_id):
+        return False
+    if _cover_is_readable(game):
+        return False
+    api_url = 'https://api.nlib.cc/nx/' + title_id + '?fields=name,icon'
+    req = Request(api_url, headers={'User-Agent': 'NGR-Launcher/1.0', 'Accept': 'application/json'})
+    with urlopen(req, timeout=10) as response:
+        meta = json.loads(response.read(256 * 1024).decode('utf-8'))
+    icon_url = meta.get('icon') if isinstance(meta, dict) else None
+    if not isinstance(icon_url, str) or not icon_url.startswith('https://api.nlib.cc/nx/'):
+        return False
+    image_req = Request(icon_url, headers={'User-Agent': 'NGR-Launcher/1.0'})
+    with urlopen(image_req, timeout=15) as response:
+        content_type = (response.headers.get('Content-Type') or '').lower()
+        data = response.read(8 * 1024 * 1024 + 1)
+    if not content_type.startswith('image/') or not data or len(data) > 8 * 1024 * 1024:
+        return False
+    COVER_CACHE.mkdir(parents=True, exist_ok=True)
+    target = _cover_cache_path(game_id)
+    temp = target.with_suffix('.jpg.tmp')
+    temp.write_bytes(data)
+    temp.replace(target)
+    library_update(game_id, lambda g: g.update(
+        cover_path=str(target.resolve()), cover_source='nlib-icon',
+        title=(g.get('title') or meta.get('name') or 'Nintendo Switch game'),
+        updated_at=int(time.time())))
+    return True
+
+
+def _run_cover_refresh():
+    with COVER_LOCK:
+        COVER_JOB.update(running=True, done=False, found=0, checked=0, error='')
+    try:
+        games = library_read().get('games', [])
+        for game in games:
+            if game.get('cover_source') != 'nlib-icon' and _cover_is_readable(game):
+                continue
+            try:
+                if _fetch_switch_icon(game):
+                    COVER_JOB['found'] += 1
+            except Exception as error:
+                COVER_JOB['error'] = str(error)[:240]
+            COVER_JOB['checked'] += 1
+    finally:
+        with COVER_LOCK:
+            COVER_JOB['running'] = False
+            COVER_JOB['done'] = True
+
+
+def start_cover_refresh():
+    with COVER_LOCK:
+        if COVER_JOB['running']:
+            return False
+        COVER_JOB.update(running=True, done=False, found=0, checked=0, error='')
+    def worker():
+        try:
+            _run_cover_refresh()
+        except Exception as error:
+            with COVER_LOCK:
+                COVER_JOB.update(running=False, done=True, error=str(error)[:240])
+    threading.Thread(target=worker, name='NGR-CoverArt', daemon=True).start()
+    return True
 
 
 def extract_runtime_libraries(apk_path, data_dir):
@@ -562,16 +648,23 @@ class H(BaseHTTPRequestHandler):
             try: return self.j({'checks': json.loads(out)})
             except ValueError: return self.j({'error': (err or out)[-600:]})
         if u.path == '/api/config': return self.j(cfg())
-        if u.path == '/api/library': return self.j(library_read())
+        if u.path == '/api/library':
+            start_cover_refresh()
+            return self.j(library_read())
+        if u.path == '/api/library/covers/status':
+            return self.j(dict(COVER_JOB))
         if u.path == '/api/cover':
             game = next((g for g in library_read()['games'] if g.get('id') == q.get('id', [''])[0]), None)
             path = Path(game.get('cover_path', '')) if game else Path('/')
             try:
                 resolved = path.resolve(strict=True)
-                if not (str(resolved).startswith('/sdcard/') or str(resolved).startswith('/storage/')) or not resolved.is_file() or resolved.stat().st_size > 8 * 1024 * 1024:
+                cache_root = COVER_CACHE.resolve()
+                in_cache = os.path.commonpath((str(cache_root), str(resolved))) == str(cache_root)
+                in_shared = str(resolved).startswith(('/sdcard/', '/storage/'))
+                if not (in_cache or in_shared) or not resolved.is_file() or resolved.stat().st_size > 8 * 1024 * 1024:
                     raise OSError('invalid cover')
                 return self.send(resolved.read_bytes(), mimetypes.guess_type(str(resolved))[0] or 'application/octet-stream')
-            except OSError:
+            except (OSError, ValueError):
                 return self.send(b'', 'application/octet-stream', 404)
         if u.path == '/api/lastlog': return self.j(last_build_log())
         if u.path == '/api/work': return self.j({'bytes': sum(dir_size(d) for d in build_dirs()), 'dirs': [d.name for d in build_dirs()]})
@@ -610,6 +703,8 @@ class H(BaseHTTPRequestHandler):
             clean = {k: v for k, v in settings.items() if k in allowed and isinstance(v, (str, int, bool))}
             game = library_update(str(o.get('id', '')), lambda g: g.update(settings=clean, updated_at=int(time.time())))
             return self.j({'ok': game is not None, 'game': game})
+        if u.path == '/api/library/covers/refresh':
+            return self.j({'started': start_cover_refresh()})
         if u.path == '/api/library/cover':
             path = Path(norm_path(str(o.get('path', ''))))
             try:
