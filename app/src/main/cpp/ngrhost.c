@@ -711,11 +711,13 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
             LOGE("cannot resolve in-place game data path '%s': %s", requested_data_path, strerror(errno));
         } else {
             root_len = strlen(canonical_root);
+            struct stat game_st;
             if (!strncmp(canonical_game, canonical_root, root_len) &&
-                canonical_game[root_len] == '/' && S_ISDIR(({ struct stat st; stat(canonical_game, &st) == 0 ? st.st_mode : 0; }))) {
+                canonical_game[root_len] == '/' &&
+                stat(canonical_game, &game_st) == 0 && S_ISDIR(game_st.st_mode)) {
                 a = snprintf(game_dir, sizeof(game_dir), "%s", canonical_game);
             } else {
-                LOGE("refusing game data path outside NGR private storage: %s", canonical_game);
+                LOGE("refusing game data path outside NGR private storage or not a directory: %s", canonical_game);
             }
         }
         if (a < 0 || (size_t)a >= sizeof(game_dir)) {
