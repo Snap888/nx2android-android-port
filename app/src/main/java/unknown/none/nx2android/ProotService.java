@@ -36,15 +36,44 @@ import java.util.zip.GZIPInputStream;
 public class ProotService extends Service {
     static final int PORT = 7331;
     private static final StringBuilder LOG = new StringBuilder();
+    private static File LOG_FILE;
+    private static boolean logStoreLoaded;
     static volatile boolean ready, failed, running;
     static volatile String token = "";
     private Process server;
     private boolean wasRunning;
     private PowerManager.WakeLock wl;
 
+    private void initLogStore() {
+        synchronized (ProotService.class) {
+            if (logStoreLoaded) return;
+            LOG_FILE = new File(new File(getFilesDir(), "launcher-logs"), "system.log");
+            File dir = LOG_FILE.getParentFile();
+            if (dir != null) dir.mkdirs();
+            try (java.io.RandomAccessFile in = new java.io.RandomAccessFile(LOG_FILE, "r")) {
+                long start = Math.max(0L, in.length() - 80000L); in.seek(start);
+                if (start > 0) in.readLine();
+                String line;
+                while ((line = in.readLine()) != null) LOG.append(new String(line.getBytes("ISO-8859-1"), StandardCharsets.UTF_8)).append('\n');
+            } catch (Exception ignored) { }
+            if (LOG.length() > 80000) LOG.delete(0, LOG.length() - 80000);
+            logStoreLoaded = true;
+        }
+    }
+
     static synchronized void log(String s) {
-        LOG.append(s).append('\n');
-        if (LOG.length() > 80000) LOG.delete(0, 30000);
+        String line = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", java.util.Locale.US).format(new java.util.Date()) + " " + s;
+        LOG.append(line).append('\n');
+        if (LOG.length() > 80000) LOG.delete(0, LOG.length() - 30000);
+        try {
+            if (LOG_FILE != null) {
+                if (LOG_FILE.exists() && LOG_FILE.length() > 2L * 1024L * 1024L) {
+                    File previous = new File(LOG_FILE.getParentFile(), "system.log.1");
+                    if (previous.exists()) previous.delete(); LOG_FILE.renameTo(previous);
+                }
+                try (FileOutputStream out = new FileOutputStream(LOG_FILE, true)) { out.write((line + "\n").getBytes(StandardCharsets.UTF_8)); }
+            }
+        } catch (IOException ignored) { }
     }
 
     static synchronized String snapshot() { return LOG.toString(); }
@@ -52,6 +81,8 @@ public class ProotService extends Service {
     @Override public IBinder onBind(Intent i) { return null; }
 
     @Override public int onStartCommand(Intent i, int flags, int id) {
+        initLogStore();
+        log("NGR service start requested");
         startForeground(1, notification("nx2android is running"));
         if (i != null && "experiments".equals(i.getAction())) { new Thread(this::experiments, "nx2a-exp").start(); return START_STICKY; }
         if (i != null && "trace".equals(i.getAction())) { new Thread(this::traceDotnet, "nx2a-trace").start(); return START_STICKY; }
@@ -435,7 +466,7 @@ public class ProotService extends Service {
         env.put("NX2A_TOKEN", token);
         env.put("NX2A_PORT", String.valueOf(PORT));
         env.put("NX2A_REPO", "/root/nx2android");
-        log("Starting the GUI (the first start also fetches the porter, up to a minute)...");
+        log("Starting the GUI (using the saved porter cache; network is only needed for first install or repair)...");
         final Process p = proot("exec /root/venv/bin/python /nx2a/launcher.py", env).start();
         server = p;
         new Thread(() -> {
