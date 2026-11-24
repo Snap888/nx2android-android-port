@@ -24,6 +24,30 @@ def patch(name, rel, marker, edits):
     f.write_text(s); print(f'{name}: ok')
 
 
+
+# 1d. NGR runtime packaging also runs against the pinned older porter. Newer
+# upstream revisions define ui_font_assets(); older pinned revisions do not.
+# Keep both supported: backport the helper only when upstream has not added it.
+_pipeline_file = repo / 'porter/pipeline.py'
+try: _pipeline_source = _pipeline_file.read_text()
+except OSError: _pipeline_source = ''
+if 'def ui_font_assets()' in _pipeline_source:
+    print('NGR UI font assets: upstream implementation present')
+else:
+    patch('NGR UI font assets', 'porter/pipeline.py', 'NX2A_UI_FONT_ASSETS', [
+        ("""from porter.paths import DM, NXNATIVE
+""", """from porter.paths import DM, NXNATIVE
+
+# NX2A_UI_FONT_ASSETS: compatibility with the pre-font upstream porter.
+UI_FONT = DM / 'third_party/fusion-pixel-font/fusion-pixel-12px-proportional-zh_tw.nxpf'
+def ui_font_assets():
+    d = UI_FONT.parent
+    if not UI_FONT.is_file():
+        return {}
+    return {'font/ui.bin': UI_FONT, **{f'font/{f.relative_to(d).as_posix()}': f for f in sorted(p for p in d.rglob('*.txt'))}}
+"""),
+    ])
+
 # 1. the NDK's own tools are x86-64: use the system clang/glslc with the NDK sysroot, the system clang's headers and the NDK's runtime libraries
 patch('arm host build', 'nxnative/dm/android/build.py', 'NX2A_ARM_HOST', [
 ("""host = 'windows-x86_64' if os.name == 'nt' else 'linux-x86_64' if sys.platform.startswith('linux') else 'darwin-x86_64'
