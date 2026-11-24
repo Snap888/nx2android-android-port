@@ -69,10 +69,21 @@ jobs:
           bash tools/fetch_rootfs.sh
       - name: Check Python payload syntax and runtime installer tests
         run: |
-          python3 -m py_compile app/src/main/assets/nx2a/payload/webgui/server.py app/src/main/assets/nx2a/payload/runtime_install.py app/src/main/assets/nx2a/payload/profile_export.py app/src/main/assets/nx2a/launcher.py
+          python3 -m py_compile app/src/main/assets/nx2a/payload/apply_patches.py app/src/main/assets/nx2a/payload/porter_sync.py app/src/main/assets/nx2a/payload/webgui/server.py app/src/main/assets/nx2a/payload/runtime_install.py app/src/main/assets/nx2a/payload/profile_export.py app/src/main/assets/nx2a/launcher.py
           python3 -m unittest discover -s tests -p 'test_*.py' -v
           cc -std=c11 -Wall -Wextra -Werror -Iapp/src/main/cpp tests/test_profile_json.c app/src/main/cpp/ngr_profile.c -o /tmp/test_profile_json
           /tmp/test_profile_json
+      - name: Verify NGR patch set against the pinned porter
+        run: |
+          upstream_sha=e9bd2b764608facf841e39292d868ee657eaf634
+          git init /tmp/nx2a-upstream
+          git -C /tmp/nx2a-upstream remote add origin https://github.com/shirai91/nx2android.git
+          git -C /tmp/nx2a-upstream fetch --depth 1 origin "$upstream_sha"
+          git -C /tmp/nx2a-upstream checkout --detach FETCH_HEAD
+          python3 app/src/main/assets/nx2a/payload/apply_patches.py /tmp/nx2a-upstream
+          python3 app/src/main/assets/nx2a/payload/apply_patches.py /tmp/nx2a-upstream
+          grep -q 'NX2A_FRIENDS_OFFLINE_PRESENCE' /tmp/nx2a-upstream/nxnative/dm/host/hle_friends.c
+          grep -q 'mem_alias.*0x138000000' /tmp/nx2a-upstream/nxnative/dm/games/0100CD701434C000/game.tsv
       - name: Check WebView JavaScript syntax
         run: |
           python3 - <<'PY'
