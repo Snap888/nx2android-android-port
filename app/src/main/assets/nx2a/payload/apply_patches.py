@@ -767,7 +767,7 @@ shader_note\tTwelve Minutes shaders; NX2A_TWELVE_MINUTES_PROFILE
 depth_mode\tzero
 """, encoding='utf-8')
     (d / 'android.tsv').write_text(
-        "status\texperimental\n",
+        "status\texperimental\npackage\tunknown.none.nx2android\norientation\tlandscape\n",
         encoding='utf-8')
     (d / 'README.md').write_text("""# Twelve Minutes (0100CD701434C000)
 
