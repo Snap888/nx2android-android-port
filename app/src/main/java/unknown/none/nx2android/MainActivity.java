@@ -642,12 +642,11 @@ public class MainActivity extends Activity {
                 final boolean logNvn = logOptions.optBoolean("nvn", false);
                 final boolean logWatchdog = logOptions.optBoolean("watchdog", false);
                 final boolean logFs = logOptions.optBoolean("fs", false);
-                final boolean anyLogging = logRuntime || logSlowframe || logNvn || logWatchdog || logFs;
-                if (anyLogging && !resetRuntimeLogForLaunch(gameId)) {
+                if ((logRuntime || logFs) && !resetRuntimeLogForLaunch(gameId)) {
                     Toast.makeText(MainActivity.this, "Could not start a fresh runtime log. Check app storage.", Toast.LENGTH_LONG).show();
                     return;
                 }
-                if (anyLogging) appendRuntimeLog(gameId, "NEW LAUNCH SESSION; previous per-game log truncated; appPid="
+                if (logRuntime) appendRuntimeLog(gameId, "NEW LAUNCH SESSION; previous per-game log truncated; appPid="
                         + android.os.Process.myPid() + " package=" + getPackageName()
                         + " sdk=" + Build.VERSION.SDK_INT);
                 try {
