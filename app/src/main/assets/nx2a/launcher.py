@@ -65,8 +65,13 @@ def sync_porter(P, m):
             log('porter download failed:', e)
     if not REPO.exists(): return
     r = run([sys.executable, str(P / 'apply_patches.py'), str(REPO)])
-    STATUS.write_text((r.stdout + r.stderr).strip() + f'\nexit {r.returncode}\n')
-    log('patches:', (r.stdout.strip().splitlines() or ['?'])[-1], '| exit', r.returncode)
+    detail = (r.stdout + r.stderr).strip()
+    STATUS.write_text(detail + f'\nexit {r.returncode}\n')
+    log('porter patch validation: exit', r.returncode)
+    for line in detail.splitlines():
+        log('patch:', line)
+    if r.returncode != 0:
+        log('WARNING: one or more porter patches failed; GUI startup will continue and the status is available in /api/status')
 
 
 def fetch(url):
