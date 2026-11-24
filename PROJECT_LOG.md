@@ -238,3 +238,42 @@
 - Test APK SHA-256: `99463d28c5c42fbd63c5e4c68e3adce3e0550ad63aacdac6e3ce2742fcb4bfbe`.
 - Later commit `80155c53c4c7b392ca5cdf9f9e84db65d41d8b6d` updates documentation only; no code changed after the successful APK build.
 - Device test and one-time Metro recompile are still pending.
+
+
+## 2026-11-25 — Import precompiled games from a selected folder
+
+### Реализовано
+- В библиотеку добавлена отдельная кнопка **Import folder**; она не запускает вкладку Recompiler и не вызывает Porter.
+- Используется существующий Android SAF picker с выбором каталога. Пользователь выбирает непосредственно готовую папку игры, содержащую `nx2a-data.json` и `libdmhost.so`.
+- Новый API `POST /api/library/import` проверяет папку, JSON manifest и наличие непустого NGR native runtime, затем регистрирует игру в общей `library.json`.
+- Если manifest содержит корректный 20-символьный `game_id`, он сохраняется; иначе создаётся стабильный ID от канонического пути папки. Проверяется конфликт ID в manifest.
+- Запись игры использует тот же формат каталога, что и результат рекомпилятора: `data_path`, `runtime_so_path`, `runtime_libs`, `runtime_ready`, настройки и обложка. Существующие настройки/обложка сохраняются при повторном импорте.
+- Игровые файлы не копируются и не перепаковываются: runtime работает с выбранной папкой на месте; подготовка runtime остаётся существующим действием в карточке игры.
+- Payload manifest поднят до версии 172; обновлены SHA-256 для `webgui/server.py` и `webgui/index.html`.
+
+### Ограничения / важные детали
+- Импортируется именно готовый NGR data pack, а не произвольная папка исходных файлов. Обязательны `nx2a-data.json` и `libdmhost.so`.
+- Выбирать нужно каталог самой игры (обычно заканчивается на `-data`), а не родительскую папку с несколькими играми.
+- Для папок на SD-карте/USB доступ зависит от того, предоставляет ли Android SAF реальный filesystem path, который текущий Python runtime может читать. Облачные провайдеры без filesystem path не поддерживаются.
+- Импорт добавляет shortcut в библиотеку, но не доказывает, что payload полностью совместим с текущей версией runtime. Это подтверждается на этапе Prepare runtime и реального запуска.
+
+### Следующие шаги
+1. Проверить GitHub Actions для коммитов импорта и manifest; исправить ошибки Python/JS/manifest freshness, если появятся.
+2. Установить APK и импортировать ранее собранную папку `*-data` с `nx2a-data.json` и `libdmhost.so`.
+3. Проверить, что игра появляется в Library без запуска рекомпилятора, проходит Prepare runtime и запускается.
+4. Проверить повторный импорт той же папки: не должно появляться дубликата.
+5. Проверить импорт с отсутствующим manifest и с отсутствующим `libdmhost.so`: UI должен показать понятную ошибку, библиотека не должна измениться.
+
+### Изменённые файлы
+- `app/src/main/assets/nx2a/payload/webgui/server.py`
+- `app/src/main/assets/nx2a/payload/webgui/index.html`
+- `app/src/main/assets/nx2a/payload/payload.json`
+
+### Коммиты
+- `460cd0a1` — Add import for precompiled NGR game folders
+- `60f66684` — Add precompiled game folder import to library
+- `f607eaf4` — Correct payload hashes for precompiled import
+
+### Статус
+- Реализация внесена в `feature/ngr-universal-library`.
+- CI, APK artifact и тест на устройстве пока не подтверждены.
