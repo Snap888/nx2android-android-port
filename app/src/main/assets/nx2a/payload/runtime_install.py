@@ -53,7 +53,7 @@ def main():
     ap.add_argument("--game-id", required=True)
     ap.add_argument("--package", default=APP_PACKAGE)  # retained for old callers
     a = ap.parse_args()
-    if len(a.package) > 255 or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)+", a.package):
+    if len(a.package) > 255 or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+", a.package):
         raise SystemExit("invalid Android package name")
     validate_payload(a.data, a.game_id)
 
