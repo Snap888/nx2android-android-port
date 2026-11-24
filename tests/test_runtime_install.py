@@ -67,8 +67,10 @@ class RuntimeInstallTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             source = self.make_payload(root)
+            outside = root / "outside.bin"
+            outside.write_text("outside", encoding="utf-8")
             target = source / "RomFS" / "link.bin"
-            target.symlink_to(source / "RomFS" / "game.bin")
+            target.symlink_to(outside)
             with self.assertRaisesRegex(ValueError, "symbolic link"):
                 RUNTIME.validate_payload(source, "0123456789abcdefabcd")
 
