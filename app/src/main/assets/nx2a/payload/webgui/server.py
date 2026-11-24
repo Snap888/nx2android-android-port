@@ -374,7 +374,7 @@ def auto_porter():
 def auto_update():
     time.sleep(20)
     while True:
-        check_update(); time.sleep(300)
+        check_update(); time.sleep(6 * 3600)
 
 
 def need_prebuilt():
