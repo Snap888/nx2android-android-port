@@ -730,7 +730,6 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     const int log_nvn = intent_boolean_extra(activity, "ngr_log_nvn");
     const int log_watchdog = intent_boolean_extra(activity, "ngr_log_watchdog");
     const int log_fs = intent_boolean_extra(activity, "ngr_log_fs");
-    const int any_logging = log_runtime || log_slowframe || log_nvn || log_watchdog || log_fs;
     if (runtime_log_init(internal, id, log_runtime, log_fs)) {
         __android_log_print(ANDROID_LOG_ERROR, TAG, "cannot initialize persistent runtime log under %s: %s", internal ? internal : "(null)", strerror(errno));
     }
