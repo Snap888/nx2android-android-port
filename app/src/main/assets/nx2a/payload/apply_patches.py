@@ -719,4 +719,81 @@ patch('NGR condition-variable wait/wake trace', 'nxnative/dm/host/hle_thread.c',
         }   // In kernel order; once turned into a lock wait or woken it is no longer kind 2"""),
 ]);
 
+
+// Twelve Minutes (0100CD701434C000): its local UserPresence object must accept
+// offline initialization/updates. The network-facing friends service stays cut.
+patch('NGR offline UserPresence', 'nxnative/dm/host/hle_friends.c', 'NX2A_FRIENDS_OFFLINE_PRESENCE', [
+("""// Presence
+HLE_FORCE("_ZN2nn7friends12UserPresence10InitializeERKNS_7account3UidE", "presence unavailable (cut)", Result, h_fr_UpInit, void *self, const void *uid) { (void)self; (void)uid; return RES_FAIL; }
+HLE_FORCE("_ZN2nn7friends12UserPresence14SetDescriptionEPKc", "presence unavailable (cut)", Result, h_fr_UpDesc, void *self, const char *s) { (void)self; (void)s; return RES_FAIL; }
+HLE_FORCE("_ZN2nn7friends12UserPresence6CommitEv", "presence unavailable (cut)", Result, h_fr_UpCommit, void *self) { (void)self; return RES_FAIL; }""",
+ """// Presence is a local object. Accept its state changes offline; do not publish to the friends service.
+HLE_FORCE("_ZN2nn7friends12UserPresence10InitializeERKNS_7account3UidE", "presence accepted, not published (cut)", Result, h_fr_UpInit, void *self, const void *uid) { (void)self; (void)uid; return RES_OK; }
+HLE_FORCE("_ZN2nn7friends12UserPresence10InitializeEv", "presence accepted, not published (cut)", Result, h_fr_UpInitNoUid, void *self) { (void)self; return RES_OK; } /* NX2A_FRIENDS_OFFLINE_PRESENCE */
+HLE_FORCE("_ZN2nn7friends12UserPresence14SetDescriptionEPKc", "presence accepted, not published (cut)", Result, h_fr_UpDesc, void *self, const char *s) { (void)self; (void)s; return RES_OK; }
+HLE_FORCE("_ZN2nn7friends12UserPresence6CommitEv", "presence accepted, not published (cut)", Result, h_fr_UpCommit, void *self) { (void)self; return RES_OK; }""")
+]);
+
+def ensure_twelve_minutes_profile():
+    if PATCH_ONLY and 'NGR Twelve Minutes profile' not in PATCH_ONLY: return
+    d = repo / 'nxnative/dm/games/0100CD701434C000'
+    game = d / 'game.tsv'
+    if game.exists():
+        if 'NX2A_TWELVE_MINUTES_PROFILE' in game.read_text(encoding='utf-8'):
+            print('NGR Twelve Minutes profile: already')
+        else:
+            print('NGR Twelve Minutes profile: upstream profile exists; leaving it unchanged')
+        return
+    d.mkdir(parents=True, exist_ok=True)
+    game.write_text("""# NGR profile based on the measured nxnative Twelve Minutes profile (seedds/nxnative ff b06d6).
+# Android remains experimental until tested on the target device. NX2A_TWELVE_MINUTES_PROFILE
+title_id\t0100CD701434C000
+program_id\t0100CD701434C000
+name\tTwelve Minutes
+ipa\tTwelveMinutes.ipa
+app_category\tpublic.app-category.games
+build\tv0\t1.0.1\tmain=e93717eabaa393489060fcbf8f086ca3\tsubsdk0=bffed55ea46c1b48ddeabcacdfbf81bf\tsdk=56ec24747ec9e7f19b3efb062483a19d
+package\tv0
+shader_versions\tv0
+modules\tmain subsdk0 sdk
+romfs_marker\tData/resources.assets
+zip_store\t.assets:.bank:.dat:.resource:.ress:.metallib
+# 5.5 GiB guest block, 4.875 GiB alias region; the default 4.375 GiB layout cannot
+# fit Unity's 16.25 MiB region request during first load.
+mem_reserve\t0x160000000
+mem_alias\t0x138000000
+mem_stack\t0x10000000
+app_pool\t0xCD500000
+sys_resource\t0x1000000
+shader_groups\t/Data/=data
+shader_note\tTwelve Minutes shaders
+depth_mode\tzero
+""", encoding='utf-8')
+    (d / 'android.tsv').write_text(
+        "# Android port status: not yet verified on device.\nstatus\texperimental\n",
+        encoding='utf-8')
+    (d / 'README.md').write_text("""# Twelve Minutes (0100CD701434C000)
+
+Profile based on the measured upstream nxnative profile at seedds/nxnative commit
+ffb06d603bd9262417d8bcd076c4cf6829ace8f3. The game is Unity 2019.4.31f1 IL2CPP,
+FMOD, SDK 12.3.7; modules are main, subsdk0 and sdk.
+
+The 22% loading stall was traced to UserPresence::Initialize failing while the
+friends service is unavailable. The NGR HLE patch accepts local UserPresence
+initialization, description and commit without enabling online friends features.
+
+The memory profile uses a 5.5 GiB guest layout, a 4.875 GiB alias region and the
+3,285 MiB application pool. It also uses /Data/=data shader grouping and zero
+depth mode. Android status remains experimental until verified on the target
+device.
+""", encoding='utf-8')
+    print('NGR Twelve Minutes profile: installed (Build IDs, memory layout, shader/depth settings)')
+
+try:
+    ensure_twelve_minutes_profile()
+except Exception as e:
+    failed += 1
+    print(f'NGR Twelve Minutes profile: FAILED: {e}')
+
+
 sys.exit(1 if failed else 0)
