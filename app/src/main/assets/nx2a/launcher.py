@@ -44,35 +44,22 @@ def setup_if_needed(P, m):
 
 
 def sync_porter(P, m):
-    want = m.get('porter_sha')
-    if not want: return
-    mark = REPO / '.nx2a_sha'
-    try: have = mark.read_text().strip()
-    except OSError: have = ''
-    if have != want:
-        log('downloading the porter', want[:9])
-        try:
-            data = fetch(os.environ.get('NX2A_PORTER_URL') or f'https://codeload.github.com/shirai91/nx2android/tar.gz/{want}')
-            tmp = REPO.with_name(REPO.name + '.new'); shutil.rmtree(tmp, ignore_errors=True); tmp.mkdir(parents=True)
-            with tarfile.open(fileobj=io.BytesIO(data), mode='r:gz') as t:
-                if hasattr(tarfile, 'data_filter'): t.extractall(tmp, filter='data')
-                else: t.extractall(tmp)
-            kids = list(tmp.iterdir())
-            src = kids[0] if len(kids) == 1 and kids[0].is_dir() else tmp
-            (src / '.nx2a_sha').write_text(want)
-            shutil.rmtree(REPO, ignore_errors=True); src.rename(REPO); shutil.rmtree(tmp, ignore_errors=True)
-        except Exception as e:
-            log('porter download failed:', e)
-    if not REPO.exists(): return
-    r = run([sys.executable, str(P / 'apply_patches.py'), str(REPO)])
+    # Use the same selector as the GUI/build path. The old launcher pinned
+    # porter_sha while porter_sync followed upstream (or porter_good), causing
+    # the two processes to replace each other's checkout on every app start.
+    script = P / 'porter_sync.py'
+    if not script.is_file():
+        log('porter sync script is missing:', script)
+        return
+    r = run([sys.executable, str(script)])
     detail = (r.stdout + r.stderr).strip()
-    STATUS.write_text(detail + f'\nexit {r.returncode}\n')
-    log('porter patch validation: exit', r.returncode)
+    try: STATUS.write_text(detail + f'\nexit {r.returncode}\n')
+    except OSError: pass
+    log('porter sync: exit', r.returncode)
     for line in detail.splitlines():
-        log('patch:', line)
+        log('porter:', line)
     if r.returncode != 0:
-        log('WARNING: one or more porter patches failed; GUI startup will continue and the status is available in /api/status')
-
+        log('WARNING: porter is not ready; GUI startup will continue and port operations will report the error')
 
 def fetch(url):
     last = None
