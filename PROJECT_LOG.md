@@ -114,3 +114,35 @@
 
 ### Статус
 - Исправление внесено в `feature/ngr-universal-library`; проверка CI и реального запуска на Android ещё не выполнена.
+
+
+## 2026-11-25 — Vulkan driver picker audit and Metro audio runtime analysis
+
+### Vulkan driver selection audit
+- Audited the current HEAD `4fdedb4f960cc6824b0c6f98360cd35fb256578a`.
+- The shortcut settings already contain a Browse button and a local file browser; Android's ACTION_OPEN_DOCUMENT picker is also available for local files/SD cards/USB providers that expose a filesystem path. Non-filesystem cloud providers are not supported by the native runtime path flow.
+- Confirmed the end-to-end path in source: WebView `settings.vulkan_driver` → `NX2A.launchGame(...vulkanDriver)` → Java intent extra `ngr_vulkan_driver_path` → native validation/copy to private per-game directory → `NGR_DM_VK_DRIVER_OVERRIDE`.
+- The pinned porter patch `NX2A_DM_VK_DRIVER_OVERRIDE` applies the override after reading `env.txt`, by setting `DM_VK_DRIVER`; `gfx_vk_core.c` then loads the selected library through `adrenotools_open_libvulkan`, validates a Vulkan 1.3 GPU and falls back to system Vulkan if custom loading fails.
+- This confirms the implementation chain exists in source. Device proof still requires a runtime log containing both `[Vulkan] using per-launch driver override` and `Vulkan driver <name> through adrenotools`. The uploaded successful Metro log confirms Turnip Adreno 740 / Vulkan 1.4.363 / driver 26.2.99, but does not by itself prove that a different manually selected driver was applied.
+
+### Metro audio analysis
+- Inspected the exact pinned runtime source at porter SHA `468937822219a56eb81da1aa2e40f05e8c453af2`, including `nxnative/dm/host/hle_audio.c`, `nxnative/dm/host/hle_audren.c` and `nxnative/dm/android/compat/audiotoolbox_aaudio.c`.
+- AAudio requests low-latency shared output with fixed 5 ms callbacks (240 frames at 48 kHz). The HLE AudioRenderer path has four 1024-frame buffers in flight and blocks on released-buffer notifications; the AudioOut path uses a bounded SPSC queue.
+- Metro's successful gameplay log shows severe queue starvation: callback interval 8k had 94 underruns, 10k had 1,845, 12k had 927, 14k had 607, 16k had 1,559; average queue depth collapsed to 0.3 blocks at 10k. The log also shows frame-work stalls and high synchronization activity.
+- No audio code has been changed yet. Increasing the buffer count or thread priority without identifying whether Metro uses AudioOut or AudioRenderer, and which producer thread stalls, risks adding latency or masking the root cause. Next diagnostic step is to map Metro's audio open call sites and correlate producer-thread snapshots with underrun intervals.
+
+### CI / manifest
+- CI run `45503091419` for HEAD `4fdedb4` failed only at the payload-manifest freshness check; Python tests, porter patch validation and WebView JavaScript syntax passed.
+- Commit `0343d1afff47ddb20cd96201b9bbf10497a9a0b5` refreshes `payload.json` hashes for the current `apply_patches.py` and `webgui/index.html`, bumping payload version from 168 to 170. A new CI run must confirm the manifest check and build.
+
+### Следующие шаги
+1. Confirm CI success and retrieve the signed APK artifact.
+2. On device, select a different known-good ARM64 driver using Browse; verify the two explicit Vulkan override log lines and GPU identity/version. Test fallback to system Vulkan after clearing the field.
+3. For Metro, collect a fresh gameplay/runtime log with main runtime diagnostics and NVN/Vulkan lifecycle enabled, but leave FS trace and per-operation synchronization tracing disabled. Capture thread snapshots around the first audio underruns.
+4. Identify whether Metro's output is AudioOut or AudioRenderer and patch only the proven producer/scheduling bottleneck; then compare underrun counts and frame pacing against the control game.
+
+### Проблемы / блокеры
+- Driver picker and intent/native override are present; no real-device A/B confirmation yet.
+- Audio underruns are confirmed, but the exact producer-side cause is not isolated. No runtime audio patch has been made.
+- APK for manifest refresh is pending CI.
+
