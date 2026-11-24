@@ -187,7 +187,7 @@ static int valid_game_id(const char *id) {
     return 1;
 }
 
-static jstring game_id_from_intent(ANativeActivity *activity) {
+static jstring intent_string_extra(ANativeActivity *activity, const char *name) {
     JNIEnv *env = activity->env;
     jclass activity_cls = (*env)->GetObjectClass(env, activity->clazz);
     if (!activity_cls) return NULL;
@@ -198,8 +198,16 @@ static jstring game_id_from_intent(ANativeActivity *activity) {
     jclass intent_cls = (*env)->GetObjectClass(env, intent);
     jmethodID get_extra = (*env)->GetMethodID(env, intent_cls, "getStringExtra", "(Ljava/lang/String;)Ljava/lang/String;");
     if (!get_extra) return NULL;
-    jstring key = (*env)->NewStringUTF(env, "game_id");
-    return (jstring)(*env)->CallObjectMethod(env, intent, get_extra, key);
+    jstring key = (*env)->NewStringUTF(env, name);
+    if (!key) return NULL;
+    jstring value = (jstring)(*env)->CallObjectMethod(env, intent, get_extra, key);
+    (*env)->DeleteLocalRef(env, key);
+    if ((*env)->ExceptionCheck(env)) { (*env)->ExceptionClear(env); return NULL; }
+    return value;
+}
+
+static jstring game_id_from_intent(ANativeActivity *activity) {
+    return intent_string_extra(activity, "game_id");
 }
 
 static int mkdirs(const char *path) {
@@ -692,8 +700,39 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     LOGI("NGR launch session started: game_id=%s sdk=%d abi=arm64-v8a", id, activity->sdkVersion);
     LOGI("NativeActivity paths: internal=%s external=%s", internal ? internal : "(null)", external ? external : "(null)");
     /* The active game profile is a data-pack env.txt; log only graphics-related switches. */
-    char game_dir[1024], private_dir[1024], lib_path[1200], external_lib[1200];
-    int a = snprintf(game_dir, sizeof(game_dir), "%s/games/%s", external, id);
+    char game_dir[4096], private_dir[1200], lib_path[1200], external_lib[4200];
+    jstring jdata_path = intent_string_extra(activity, "game_data_path");
+    const char *requested_data_path = jdata_path ? (*activity->env)->GetStringUTFChars(activity->env, jdata_path, NULL) : NULL;
+    int a = -1;
+    if (requested_data_path && requested_data_path[0]) {
+        char canonical_root[4096], canonical_game[4096];
+        size_t root_len = 0;
+        if (!realpath(internal, canonical_root) || !realpath(requested_data_path, canonical_game)) {
+            LOGE("cannot resolve in-place game data path '%s': %s", requested_data_path, strerror(errno));
+        } else {
+            root_len = strlen(canonical_root);
+            if (!strncmp(canonical_game, canonical_root, root_len) &&
+                canonical_game[root_len] == '/' && S_ISDIR(({ struct stat st; stat(canonical_game, &st) == 0 ? st.st_mode : 0; }))) {
+                a = snprintf(game_dir, sizeof(game_dir), "%s", canonical_game);
+            } else {
+                LOGE("refusing game data path outside NGR private storage: %s", canonical_game);
+            }
+        }
+        if (a < 0 || (size_t)a >= sizeof(game_dir)) {
+            if (requested_data_path) (*activity->env)->ReleaseStringUTFChars(activity->env, jdata_path, requested_data_path);
+            if (jdata_path) (*activity->env)->DeleteLocalRef(activity->env, jdata_path);
+            LOGE("invalid in-place game data path; refusing launch");
+            toast(activity, "Game data path is invalid or outside NGR storage");
+            (*activity->env)->ReleaseStringUTFChars(activity->env, jid, id);
+            ANativeActivity_finish(activity);
+            return;
+        }
+        LOGI("[NGR storage] using game data in place: %s", game_dir);
+    } else {
+        a = snprintf(game_dir, sizeof(game_dir), "%s/games/%s", external, id);
+    }
+    if (requested_data_path) (*activity->env)->ReleaseStringUTFChars(activity->env, jdata_path, requested_data_path);
+    if (jdata_path) (*activity->env)->DeleteLocalRef(activity->env, jdata_path);
     int b = snprintf(private_dir, sizeof(private_dir), "%s/games/%s", internal, id);
     int d = snprintf(external_lib, sizeof(external_lib), "%s/libdmhost.so", game_dir);
     int e = snprintf(lib_path, sizeof(lib_path), "%s/libdmhost.so", private_dir);
