@@ -111,33 +111,57 @@ def _install(sha, log, must_patch):
 
 
 def sync(force=False, log=print):
-    """Returns (ok, message). Follows upstream's newest commit when the payload says porter_track = main; the pinned commit is the known-good fallback."""
-    pl = _payload(); pinned = pl.get('porter_sha'); track = pl.get('porter_track') == 'main'
-    if mode() == 'good' and pl.get('porter_good'): pinned = pl['porter_good']; track = False   # the person's switch: the version known to work, not upstream's newest
+    """Validate the active porter first; if newest no longer accepts our patches, fall back to the pinned known-good checkout."""
+    pl = _payload(); pinned = pl.get('porter_good') or pl.get('porter_sha'); track = pl.get('porter_track') == 'main'
+    if mode() == 'good' and pl.get('porter_good'):
+        pinned = pl['porter_good']; track = False
     try: have = (REPO / '.nx2a_sha').read_text().strip()
     except OSError: have = ''
     target = pinned
     if track:
         try: target = upstream_head()
         except Exception as e: log(f'cannot ask GitHub for the newest porter ({e}); keeping {have[:9] or pinned[:9]}'); target = have or pinned
-    if not force and complete() and have == target:
-        patch(); return True, 'porter ready (' + have[:9] + ')'
+
     msgs = []
     for sha, must in ((target, True), (pinned, False)):
-        if not sha or (sha == pinned and sha == target and msgs): break
-        if complete() and have == sha and not force: patch(); return True, ' ; '.join(msgs + ['staying on ' + have[:9]])
+        if not sha or (sha == pinned and sha == target and msgs):
+            break
+        if not force and complete() and have == sha:
+            try:
+                patch()
+                return True, ' ; '.join(msgs + ['porter ready (' + have[:9] + ')'])
+            except Exception as e:
+                m = f'porter {sha[:9]} is present but its NGR patches are invalid: {e}'
+                log(m); msgs.append(m)
+                # Do not compile from a complete-but-unpatched tree. If this is
+                # the moving upstream branch, try the pinned known-good source.
+                if sha == target and track and pinned != target:
+                    continue
+                try: STATUS.write_text(' ; '.join(msgs) + '\\n')
+                except OSError: pass
+                return False, ' ; '.join(msgs)
+
         log(f'downloading the porter ({sha[:9]})')
         try:
             _install(sha, log, must_patch=must)
-            patch(); return True, ' ; '.join(msgs + [f'porter {sha[:9]} installed and patched'])
+            patch()
+            return True, ' ; '.join(msgs + [f'porter {sha[:9]} installed and patched'])
         except Exception as e:
-            m = f'porter {sha[:9]} not installed: {e}'; log(m); msgs.append(m)
+            m = f'porter {sha[:9]} not installed: {e}'
+            log(m); msgs.append(m)
             if complete() and sha == target and track:
-                # keep what works rather than fall back further
-                patch(); return True, ' ; '.join(msgs + [f'keeping {have[:9] or "the current porter"}'])
-    try: STATUS.write_text(' ; '.join(msgs) + '\n')
+                # The previous checkout may still be usable. Validate it before
+                # keeping it; otherwise continue to the pinned fallback.
+                try:
+                    patch()
+                    return True, ' ; '.join(msgs + [f'keeping {have[:9] or "the current porter"}'])
+                except Exception as previous_error:
+                    m = f'current porter patch validation also failed: {previous_error}'
+                    log(m); msgs.append(m)
+
+    try: STATUS.write_text(' ; '.join(msgs) + '\\n')
     except OSError: pass
-    return complete(), ' ; '.join(msgs) or 'porter unavailable'
+    return False, ' ; '.join(msgs) or 'porter unavailable or patch validation failed'
 
 
 if __name__ == '__main__':
