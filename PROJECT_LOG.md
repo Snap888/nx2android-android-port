@@ -199,3 +199,28 @@
 
 ### Статус
 - Код и manifest обновлены в `feature/ngr-universal-library`; CI и тест на устройстве ожидаются.
+
+
+## 2026-11-25 — Metro gameplay log: Turnip verified, AudioOut starvation and hot yield loops
+
+### Факты из полного gameplay blob `95e1e4d7aebcb3242cd649b293c6947b5b758950`
+- Файл содержит 3,823,554 символа / 49,897 строк; предыдущая попытка `fetch_file` вернула пустой контент из-за размера, поэтому полный анализ выполнен через Git blob.
+- Vulkan в самой игре работает через custom driver: `Vulkan driver libvulkan_freedreno.so through adrenotools, not the system's`; GPU `Turnip Adreno (TM) 740`, Vulkan 1.4.363, driver 26.2.99 (`0x6802063`). Значит, предыдущие `AdrenoVK`/Chromium сообщения из Logcat не отражали игровой Vulkan, но gameplay log подтверждает успешный Turnip.
+- Metro использует `AudioOut` (2 канала, real output), AAudio callback получает ровно 240 frames = 5 ms. Это не AudioRenderer output path.
+- AudioOut queue начинается с 4.0 блоков и без underrun на callback 2k/4k/6k. Затем очередь истощается: callback 8k — 94/2000 underrun; 10k — 1845/2000 (9,225 ms zero-padded); 12k — 927; 14k — 607; 16k — 1559; 18k–24k — 2000/2000 в каждом окне, очередь 0.0 блока; 26k — 282; с 28k до 32k underrun снова 0. Это подтверждает временное starvation producer/очереди, а не постоянную неисправность AAudio callback.
+- В том же логе 30,672 `[NGR_SYNC]` событий; они действительно писались при обычном запуске. Новая patch 19 теперь отключает их без `DM_SYNC_TRACE=1`.
+- Yield watchdog фиксирует три Unity-потока (`uEngine :: PhysX simulator`, `uEngine :: Secondary`, `main thread`) с 2.2–3.84 млн yield/s, один и тот же SDK callsite `sdk+0xd688c0`. Thread CPU time около 30 секунд за 30 секунд наблюдения у PhysX/Secondary. Это сильный признак CPU busy-yield/poll loop; default `DM_YIELD_BACKOFF` не обязательно помогает, потому что `thr_yield` трактует меняющиеся callee-saved registers как прогресс и пропускает backoff.
+- На первых 600 кадрах frame work p50 около 33.3 ms, GPU p50 около 0.36 ms; позже (900–1800) GPU p50 растёт примерно до 17–23 ms. Игра фактически держит present interval 2 / около 30 FPS; сначала заметна CPU-side нагрузка, позднее добавляется GPU-side нагрузка.
+- В логе есть отдельные NVN unimplemented warnings и present thread time-constraint policy failure; это не объясняет AudioOut starvation само по себе.
+
+### Диагноз / решение
+- Vulkan chain для текущей сборки Metro проверен и исправен: Turnip действительно загружается через AdrenoTools. Не следует менять драйвер/шейдерный backend ради этих аудио underrun.
+- Самый безопасный первый runtime шаг — убрать безусловный per-lock `[NGR_SYNC]` I/O (сделано patch 19). Синхронизацию и scheduler пока не меняли.
+- Если после gate аудио всё ещё проваливается, следующий кандидат — точечный backoff для повторного `YieldThread` на `sdk+0xd688c0`; нельзя включать глобальный forced backoff без проверки, поскольку другие игры используют yield для реального прогресса.
+- Буфер AAudio пока не увеличивать: очередь пустеет потому, что guest producer перестаёт подавать блоки; дополнительная задержка не устраняет первопричину.
+
+### Следующий A/B тест после APK
+1. Установить APK с default-off sync trace.
+2. Metro: `Main runtime + game stdout/stderr` ON; `Hang watchdog / thread snapshots + synchronization trace` OFF; `Filesystem / RomFS read trace` OFF; остальные категории OFF.
+3. Проверить, что `[NGR_SYNC]`/`[NGR_SYNC_WAIT]` отсутствуют, сравнить AudioOut underrun окна и frame work/GPU stats.
+4. Если starvation остаётся, подготовить адресный backoff для `sdk+0xd688c0` и A/B тестировать только на Metro.
