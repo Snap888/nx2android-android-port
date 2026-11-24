@@ -169,16 +169,57 @@ public class MainActivity extends Activity {
 
     private String pickId = "";
     private boolean pickDir = false;
+    private String pickCoverGameId = "";
 
     /** Android's own file picker (it lists SD cards, USB drives and every storage app); the answer is turned into a path the porter can read. */
     private void startPick(String id, boolean dir) {
-        pickId = id; pickDir = dir;
+        pickId = id; pickDir = dir; pickCoverGameId = "";
         Intent i = new Intent(dir ? Intent.ACTION_OPEN_DOCUMENT_TREE : Intent.ACTION_OPEN_DOCUMENT);
         if (!dir) { i.addCategory(Intent.CATEGORY_OPENABLE); i.setType("*/*"); }
         i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
         if (dir) i.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         try { startActivityForResult(i, 4711); }
         catch (Exception e) { Toast.makeText(this, "No file picker on this phone", Toast.LENGTH_LONG).show(); }
+    }
+
+    private void startPickCover(String gameId) {
+        if (gameId == null || !gameId.matches("[0-9a-f]{20}")) {
+            Toast.makeText(this, "Invalid game ID", Toast.LENGTH_LONG).show();
+            return;
+        }
+        pickId = "coverPath"; pickDir = false; pickCoverGameId = gameId;
+        Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        i.addCategory(Intent.CATEGORY_OPENABLE);
+        i.setType("image/*");
+        i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        try { startActivityForResult(i, 4711); }
+        catch (Exception e) { Toast.makeText(this, "No image picker on this phone", Toast.LENGTH_LONG).show(); }
+    }
+
+    private String copyPickedCover(Uri uri, String gameId) throws Exception {
+        String mime = getContentResolver().getType(uri);
+        String ext = "jpg";
+        if ("image/png".equalsIgnoreCase(mime)) ext = "png";
+        else if ("image/webp".equalsIgnoreCase(mime)) ext = "webp";
+        File folder = getExternalFilesDir("covers");
+        if (folder == null) throw new java.io.IOException("External app storage is unavailable");
+        if (!folder.isDirectory() && !folder.mkdirs()) throw new java.io.IOException("Cannot create cover folder");
+        File target = new File(folder, gameId + "." + ext);
+        File temp = new File(folder, gameId + "." + ext + ".tmp");
+        try (java.io.InputStream in = getContentResolver().openInputStream(uri);
+             java.io.FileOutputStream out = new java.io.FileOutputStream(temp, false)) {
+            if (in == null) throw new java.io.IOException("Cannot read selected image");
+            byte[] buffer = new byte[32 * 1024]; int n; long total = 0;
+            while ((n = in.read(buffer)) != -1) {
+                total += n;
+                if (total > 8L * 1024L * 1024L) throw new java.io.IOException("Cover image must be 8 MB or smaller");
+                out.write(buffer, 0, n);
+            }
+            out.flush();
+        } catch (Exception e) { temp.delete(); throw e; }
+        if (target.exists() && !target.delete()) { temp.delete(); throw new java.io.IOException("Cannot replace previous cover"); }
+        if (!temp.renameTo(target)) { temp.delete(); throw new java.io.IOException("Cannot save selected cover"); }
+        return target.getAbsolutePath();
     }
 
     /** content://.../primary:Games/x or .../1234-ABCD:Games/x -> /sdcard/Games/x or /storage/1234-ABCD/Games/x; "" when the picker's choice has no real path (Downloads, cloud apps). */
@@ -198,12 +239,23 @@ public class MainActivity extends Activity {
     @Override protected void onActivityResult(int req, int res, Intent data) {
         super.onActivityResult(req, res, data);
         if (req != 4711 || res != RESULT_OK || data == null || data.getData() == null) return;
+        if (!pickCoverGameId.isEmpty()) {
+            final String gameId = pickCoverGameId;
+            pickCoverGameId = "";
+            try {
+                String saved = copyPickedCover(data.getData(), gameId);
+                web.evaluateJavascript("nx2aPicked(\"coverPath\"," + org.json.JSONObject.quote(saved) + ")", null);
+            } catch (Exception error) {
+                Toast.makeText(this, "Could not use this image: " + error.getMessage(), Toast.LENGTH_LONG).show();
+            }
+            return;
+        }
         try {
             int grantFlags = data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            getContentResolver().takePersistableUriPermission(data.getData(), grantFlags);
+            if (grantFlags != 0) getContentResolver().takePersistableUriPermission(data.getData(), grantFlags);
         } catch (SecurityException ignored) { }
         String p = pathOf(data.getData());
-        if (p.isEmpty()) { Toast.makeText(this, "That location has no file path. Pick it from Internal storage or the SD card.", Toast.LENGTH_LONG).show(); return; }
+        if (p.isEmpty()) { Toast.makeText(this, "This provider does not expose a filesystem path. Use a local file or choose an image for a game cover.", Toast.LENGTH_LONG).show(); return; }
         web.evaluateJavascript("nx2aPicked(" + org.json.JSONObject.quote(pickId) + "," + org.json.JSONObject.quote(p) + ")", null);
     }
 
@@ -624,6 +676,7 @@ public class MainActivity extends Activity {
 
     private class Bridge {
         @JavascriptInterface public void pick(String id, boolean dir) { runOnUiThread(() -> startPick(id, dir)); }
+        @JavascriptInterface public void pickCover(String gameId) { runOnUiThread(() -> startPickCover(gameId)); }
         @JavascriptInterface public void runProotExperiments() {
             startForegroundService(new Intent(MainActivity.this, ProotService.class).setAction("experiments"));
         }
