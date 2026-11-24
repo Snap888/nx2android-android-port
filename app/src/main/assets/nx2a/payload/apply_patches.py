@@ -388,9 +388,9 @@ patch('NGR no per-game APK', 'porter/pipeline.py', 'NX2A_NGR_NO_APK', [
         else:
             say(f'done: {self.result["apk"]} and {self.result["data"]}')
 """),
-("""        man = datapack.build(dst, profile=self.ap, version=self.pkg_ver, display=self.display, patched=self.patched, romfs=romfs, shaders=self.dmsv,
+("""        man = datapack.build(dst, profile=self.ap, version=self.pkg_ver, display=self.display, patched=self.patched, romfs=self.game / 'RomFS', shaders=self.dmsv,
 """, """        pack_files = {**self.fps_files, **font_files, **self.ngr_runtime_files()}
-        man = datapack.build(dst, profile=self.ap, version=self.pkg_ver, display=self.display, patched=self.patched, romfs=romfs, shaders=self.dmsv,
+        man = datapack.build(dst, profile=self.ap, version=self.pkg_ver, display=self.display, patched=self.patched, romfs=self.game / 'RomFS', shaders=self.dmsv,
 """),
 ("""                             files={**self.fps_files, **font_files},
 """, """                             files=pack_files, profile_h=profile_h,
@@ -656,7 +656,7 @@ static int ngr_sync_key_watched(uint64_t key) {
             if (ngr_sync_watch(t->handle)) LOG("[NGR_SYNC] lock-wake h=%#x addr=%#llx result=%lld word=%#x", t->handle, (unsigned long long)addr, (long long)r, ld32(addr));
             if (ov) pthread_override_qos_class_end_np(ov); }
 """),
-("""    case 0x1B: pthread_mutex_lock(&G); lock_handoff(regs[0]); pthread_mutex_unlock(&G); regs[0] = 0; return 1;
+("""    case 0x1B: G_lock(); lock_handoff(regs[0]); pthread_mutex_unlock(&G); regs[0] = 0; return 1;
 """, """    case 0x1B: { thr_t *t = cur(); if (ngr_sync_watch(t->handle)) LOG("[NGR_SYNC] unlock h=%#x addr=%#llx word=%#x", t->handle, (unsigned long long)regs[0], ld32(regs[0])); pthread_mutex_lock(&G); lock_handoff(regs[0]); pthread_mutex_unlock(&G); regs[0] = 0; return 1; }
 """),
 ("""        pthread_mutex_lock(&G);
