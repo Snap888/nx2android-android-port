@@ -76,6 +76,9 @@ def patch():
     out = (r.stdout + r.stderr).strip()
     try: STATUS.write_text(out + f'\nexit {r.returncode}\n')
     except OSError: pass
+    if r.returncode != 0:
+        detail = out.replace(chr(10), ' | ')[:1800] or f'exit {r.returncode}'
+        raise RuntimeError('NGR porter patch validation failed: ' + detail)
     return out
 
 
@@ -93,7 +96,7 @@ def _install(sha, log, must_patch):
         bad = missing(src)
         if bad: raise RuntimeError('the download is incomplete, missing ' + ', '.join(bad[:3]))
         r = subprocess.run([sys.executable, str(HERE / 'apply_patches.py'), str(src)], capture_output=True, text=True)
-        if r.returncode != 0 and must_patch: raise RuntimeError('our patches no longer fit this commit: ' + (r.stdout + r.stderr).strip().replace(chr(10), ' | ')[:300])
+        if r.returncode != 0: raise RuntimeError('our patches no longer fit this commit: ' + (r.stdout + r.stderr).strip().replace(chr(10), ' | ')[:1200])
         (src / '.nx2a_sha').write_text(sha)
         old = None
         if REPO.exists():
