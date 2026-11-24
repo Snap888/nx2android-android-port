@@ -198,9 +198,11 @@ public class MainActivity extends Activity {
 
     private String copyPickedCover(Uri uri, String gameId) throws Exception {
         String mime = getContentResolver().getType(uri);
-        String ext = "jpg";
+        String ext;
         if ("image/png".equalsIgnoreCase(mime)) ext = "png";
         else if ("image/webp".equalsIgnoreCase(mime)) ext = "webp";
+        else if ("image/jpeg".equalsIgnoreCase(mime) || "image/jpg".equalsIgnoreCase(mime)) ext = "jpg";
+        else throw new java.io.IOException("Use a JPEG, PNG or WebP image");
         File folder = getExternalFilesDir("covers");
         if (folder == null) throw new java.io.IOException("External app storage is unavailable");
         if (!folder.isDirectory() && !folder.mkdirs()) throw new java.io.IOException("Cannot create cover folder");
