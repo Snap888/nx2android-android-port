@@ -253,7 +253,7 @@ async function pollCoverRefresh(){
  if(coverPollActive)return;coverPollActive=true;
  const b=document.querySelector('.librarytools button[onclick="refreshGameCovers()"]');
  for(let i=0;i<120;i++){await new Promise(r=>setTimeout(r,1000));try{const state=await api('/api/library/covers/status');if(state.done){const data=await api('/api/library');libraryGames=Array.isArray(data.games)?data.games:[];renderLibrary();if(b){b.textContent='Covers';b.disabled=false}coverPollActive=false;return}}catch(e){break}}
- if(b){b.textContent='Covers';b.disabled=false}
+ if(b){b.textContent='Covers';b.disabled=false}coverPollActive=false;
 }
 
 async function removeGame(){if(!selectedGame)return;if(!await ask('Remove this shortcut from the library? Game files and existing APK/data will not be deleted.','Remove'))return;const r=await api('/api/library/remove',{id:selectedGame});if(r.ok){closeGame();await libraryLoad()}else $('gmsg').textContent='Could not remove shortcut'}
