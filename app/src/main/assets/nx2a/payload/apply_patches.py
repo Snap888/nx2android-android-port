@@ -1005,7 +1005,6 @@ patch('NGR Metro scheduler env after env.txt', 'nxnative/dm/android/front_androi
 """),
 ])
 
-sys.exit(1 if failed else 0)
 
 
 # 24. The AudioOutBuffer is the SDK's 40-byte object, not the host's former
@@ -1112,22 +1111,26 @@ def _audio_spsc_test(src):
 _saved_patch_only = PATCH_ONLY
 PATCH_ONLY = set()
 try:
-    _header = (repo / 'nxnative/dm/host/hle.h').read_text()
-    if 'typedef struct { void *next; void *ptr; uint64_t cap, size, offset; } aout_buf;' not in _header:
-        patch('NGR AudioOutBuffer ABI declaration', 'nxnative/dm/host/hle.h', 'NX2A_AUDIOOUTBUFFER_ABI', [
-            ('#include "dm.h"\n', '#include "dm.h"\n#include <stddef.h>\n'),
-            ('void dm_audio_reset(void);   // iOS media services reset: recreate the AudioUnits (hle_audio.c)\n',
-             '''void dm_audio_reset(void);   // iOS media services reset: recreate the AudioUnits (hle_audio.c)
+    _header_path = repo / 'nxnative/dm/host/hle.h'
+    if not _header_path.exists():
+        print('NGR AudioOutBuffer ABI: skipped (porter source not staged in this patch test)')
+    else:
+        _header = _header_path.read_text()
+        if 'typedef struct { void *next; void *ptr; uint64_t cap, size, offset; } aout_buf;' not in _header:
+            patch('NGR AudioOutBuffer ABI declaration', 'nxnative/dm/host/hle.h', 'NX2A_AUDIOOUTBUFFER_ABI', [
+                ('#include "dm.h"\n', '#include "dm.h"\n#include <stddef.h>\n'),
+                ('void dm_audio_reset(void);   // iOS media services reset: recreate the AudioUnits (hle_audio.c)\n',
+                 '''void dm_audio_reset(void);   // iOS media services reset: recreate the AudioUnits (hle_audio.c)
 // NX2A_AUDIOOUTBUFFER_ABI: nn::audio::AudioOutBuffer layout used by the SDK (SDK 8 through Switch 2).
 typedef struct { void *next; void *ptr; uint64_t cap, size, offset; } aout_buf;   // next, data, buffer_size, data_size, data_offset
 _Static_assert(sizeof(aout_buf) == 40 && offsetof(aout_buf, ptr) == 0x08 && offsetof(aout_buf, cap) == 0x10 && offsetof(aout_buf, size) == 0x18 && offsetof(aout_buf, offset) == 0x20,
                "nn::audio::AudioOutBuffer layout");
 ''')
-        ])
-    _rewrite_audio_file('nxnative/dm/host/hle_audio.c', 'NX2A_AUDIOOUTBUFFER_ABI', _audio_output)
-    _rewrite_audio_file('nxnative/dm/host/hle_audren.c', 'NX2A_AUDIOOUTBUFFER_ABI', _audio_renderer)
-    _rewrite_audio_file('nxnative/dm/host/tests/t_audio.c', 'NX2A_AUDIOOUTBUFFER_ABI', _audio_test)
-    _rewrite_audio_file('nxnative/dm/host/tests/t_audio_spsc.c', 'NX2A_AUDIOOUTBUFFER_ABI', _audio_spsc_test)
+            ])
+        _rewrite_audio_file('nxnative/dm/host/hle_audio.c', 'NX2A_AUDIOOUTBUFFER_ABI', _audio_output)
+        _rewrite_audio_file('nxnative/dm/host/hle_audren.c', 'NX2A_AUDIOOUTBUFFER_ABI', _audio_renderer)
+        _rewrite_audio_file('nxnative/dm/host/tests/t_audio.c', 'NX2A_AUDIOOUTBUFFER_ABI', _audio_test)
+        _rewrite_audio_file('nxnative/dm/host/tests/t_audio_spsc.c', 'NX2A_AUDIOOUTBUFFER_ABI', _audio_spsc_test)
 finally:
     PATCH_ONLY = _saved_patch_only
 
@@ -1191,3 +1194,5 @@ patch('NGR Metro named-worker yield backoff env', 'nxnative/dm/android/front_and
         setenv("DM_YIELD_PROGRESS_SLEEP_NAMES", "uEngine :: PhysX simulator;uEngine :: Secondary", 1);
         LOG("[scheduler] Metro profile: PhysX/Secondary use Utility QoS plus 100us back-off after 50k progressing yields/s");  // NX2A_METRO_YIELD_SLEEP''')
 ])
+
+sys.exit(1 if failed else 0)
