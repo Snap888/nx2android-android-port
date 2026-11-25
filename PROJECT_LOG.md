@@ -500,3 +500,9 @@
 - Active patcher commit: ef7864cf306ec28286b7a40bfa13b7c4e753a656.
 - Payload manifest commit: e51d319ea4d4cd7ac4a7c19bf3642e4fb065d2ea (version 178; apply_patches.py SHA-256 29659d71d890ece1014f6d93a9810a9089c37b49030b56c2b6357bb618d660a3).
 - Previous "Verify NGR patch set" success is not evidence for these new patches; require a fresh run on this exact manifest commit and inspect that it prints NGR AudioOutBuffer ABI and NGR named-worker back-off as applied.
+### Payload manifest canonicalization — 25.11.2026
+- The next CI run confirmed all new patches apply to the pinned Porter and are idempotent, including the 40-byte AudioOutBuffer changes and named-worker 100us back-off.
+- That run stopped only at manifest verification: payload versions are intentionally odd and the canonical writer uses json.dumps(indent=1). The previous hand-written manifest used even version 178 and two-space indentation.
+- Corrected to version 179, one-space canonical indentation, and the exact SHA-256 of apply_patches.py.
+- Manifest commit: df527a58ff468ba956381a5ef20015c443eb27e5.
+- Await a fresh CI run on the exact latest branch head before treating the APK as built.
