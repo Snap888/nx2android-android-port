@@ -172,6 +172,7 @@ public class MainActivity extends Activity {
     private String pickCoverGameId = "";
 
     /** Android's own file picker (it lists SD cards, USB drives and every storage app); the answer is turned into a path the porter can read. */
+    // Folder picks are also used by the precompiled-game library importer; the server validates the data-pack manifest before registration.
     private void startPick(String id, boolean dir) {
         pickId = id; pickDir = dir; pickCoverGameId = "";
         Intent i = new Intent(dir ? Intent.ACTION_OPEN_DOCUMENT_TREE : Intent.ACTION_OPEN_DOCUMENT);
