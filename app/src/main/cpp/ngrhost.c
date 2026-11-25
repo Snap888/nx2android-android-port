@@ -953,10 +953,11 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
        compatibility guard scoped to this stable game ID; env.txt can override. */
     if (!strcmp(id, "9383b4fd4e8540ed5d6e")) {
         setenv("DM_QOS_MAP", "1", 0);
-        setenv("DM_QOS_EDGES", "42,58", 0);
+        setenv("DM_QOS_EDGES", "44,58", 0);
+        setenv("DM_QOS_UTILITY_NAMES", "uEngine :: PhysX simulator;uEngine :: Secondary", 0);
         setenv("DM_YIELD_PROGRESS_LIMIT", "50000", 0);
-        setenv("DM_YIELD_PROGRESS_SLEEP_US", "50", 0);
-        LOGI("[scheduler] Metro 2033 yield-storm guard enabled (50k progressing yields/s, 50 us backoff; guest priority 43 is user-initiated)");
+        setenv("DM_YIELD_PROGRESS_HANDOFF", "256", 0);
+        LOGI("[scheduler] Metro 2033 guard enabled (PhysX/Secondary Utility QoS, audio/main priority inheritance, 50k progressing yields/s then scheduler handoff every 256 excess yields)");
     }
     /* Horizon guest priorities must not collapse into one Android scheduling class.
        In particular, Unity background workers (priority 59+) otherwise compete
