@@ -429,6 +429,10 @@ patch('NGR no per-game APK', 'porter/pipeline.py', 'NX2A_NGR_NO_APK', [
 """, """    def ngr_runtime_files(self):
         if os.environ.get('NX2A_NGR') != '1': return {}
         files = {'libdmhost.so': self.so}
+        # NX2A_NGR_GAME_COVER: nx_extract already decrypted the control NACP icon.
+        # Keep the original JPEG in the game data pack; the launcher caches it as library art.
+        icon = next((d / 'icon.jpg' for d in (self.game, self.base) if d and (d / 'icon.jpg').is_file()), None)
+        if icon: files['ngr-cover.jpg'] = icon
         # NGR packages every native library produced by this game's source build.
         # No hand-maintained companion list and no modification of prebuilt binaries.
         for library in sorted(self.so.parent.glob('*.so')):
