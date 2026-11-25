@@ -488,3 +488,9 @@
 4. Снять gameplay log и проверить, что повтор PCM исчез, а worker yield rate и аудио underruns резко снизились.
 5. Сравнить p95/p99 frame time, Android Looper delivery и CPU usage до/после.
 6. Если submit+present остаётся большим при низком GPU time, отдельно профилировать Android BufferQueue/Vulkan present.
+### CI correction — 25.11.2026
+- First CI attempt on 273c2a47 failed in the Python unit tests because the synthetic test checkout intentionally omits porter/pipeline.py; the newly forced UI-font dependency treated that as a production failure.
+- Corrected the guard: skip that porter-only helper when the porter source tree is not staged in a unit test, but force it when the real Porter tree exists.
+- Patch commit: 75f12caad8c3952922109247cfc80febb140bf2b.
+- Manifest commit: 6b1b650993af6d702faef0640666587f313ed573 (payload version 177; apply_patches.py SHA-256 3a676be3b6c2964d6b8e0226a99b9251616b82ad20ca7e3df628d1c2e24d8b33).
+- Re-run validation against this exact branch head is still required; do not use the failed/cancelled earlier run as validation.
