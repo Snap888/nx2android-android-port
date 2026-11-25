@@ -716,16 +716,19 @@ def import_precompiled_game(folder):
     if not title:
         title = 'Imported NGR game'
     libs = sorted(p.name for p in data.glob('*.so') if p.is_file() and not p.is_symlink())
-    embedded_cover = _cache_embedded_game_cover(data, game_id)
-    cover_path, cover_source = _select_game_cover(existing, embedded_cover)
     if 'libdmhost.so' not in libs:
         raise ValueError('The NGR native runtime library is not available in the selected folder.')
+    # Resolve an existing library entry before selecting its cover/settings. Previously
+    # _select_game_cover(existing, ...) referenced 'existing' before assignment and
+    # raised UnboundLocalError, so every valid folder import failed with HTTP 500.
     catalog = library_read()
     existing = next((g for g in catalog['games'] if g.get('id') == game_id), None)
     # A path already registered under another shortcut is updated rather than duplicated.
     if existing is None:
         existing = next((g for g in catalog['games'] if
                          str(Path(g.get('data_path') or '').resolve()) == str(data)), None)
+    embedded_cover = _cache_embedded_game_cover(data, game_id)
+    cover_path, cover_source = _select_game_cover(existing, embedded_cover)
     item = {
         'id': game_id, 'title': title, 'platform': 'switch', 'title_id': title_id,
         'package': str(manifest.get('package') or 'unknown.none.nx2android'),
