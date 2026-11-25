@@ -283,3 +283,38 @@
 - Первый CI для manifest выявил расхождение SHA-256 (Python syntax, Porter patch validation и WebView JS syntax до этого прошли).
 - Взяты контрольные SHA-256 непосредственно из diff шага `tools/make_manifest.py`; manifest исправлен коммитом `d7fc6b2d`.
 - Новый CI должен подтвердить актуальный manifest и собрать APK; предыдущий run `45507296557` завершился failure только на manifest freshness check, APK не создавался.
+
+
+## 2026-11-25 — Peanuts Native comparison and game-embedded cover extraction
+
+### Сравнительный аудит
+- NGR уже использует единый launcher/NativeActivity и общий native dispatcher; библиотеки runtime по игре лежат в data pack. Переписывать архитектуру под Peanuts Generic Host не требуется.
+- NGR уже валидирует schema-v1 profile.json относительно nx2a-data.json и сохраняет legacy compiled-profile fallback; бинарный формат Peanuts переносить не нужно.
+- Импорт NGR *-data папки пока проверяет manifest и наличие libdmhost.so, затем регистрирует путь без копирования. В отличие от Peanuts PackImport, здесь ещё нет проверки build identity/ABI/hash всей сборки и staged atomic replace; это отдельный следующий этап.
+- Per-game Vulkan override и выборочные диагностические категории уже реализованы. Из Peanuts полезно адаптировать каталог известных проблемных GPU-драйверов.
+- Обложки NGR до этого поддерживали ручной SAF import и Nlib fallback. Peanuts LibraryScanner извлекает NACP icon из исходной игры или .nup и кеширует PNG локально.
+
+### Сделано — встроенная иконка игры
+- Добавлен патч Porter pipeline: при NGR-сборке извлекается уже расшифрованный icon.jpg из extraction output (self.game / self.base) и добавляется в data pack как ngr-cover.jpg. Дополнительная расшифровка NSP/XCI не запускается.
+- Server кэширует встроенную иконку в локальном cover cache по стабильному game ID и помечает источник game-nacp.
+- Приоритет обложек: существующая пользовательская обложка > встроенная NACP-иконка > ранее загруженная Nlib-иконка. Ручной выбор явно помечается manual.
+- Импорт готовой NGR data-папки также распознаёт sidecar ngr-cover.*, icon.* и cover.* (JPEG/PNG/WebP до 8 MiB); неизвестные/повреждённые файлы игнорируются.
+- В библиотеке встроенная квадратная иконка отображается без обрезки, как и Nlib fallback. Уже существующие сборки без встроенного файла продолжают использовать текущую обложку/Nlib fallback; новая иконка будет доступна после сборки с обновлённым Porter patch.
+
+### Файлы
+- app/src/main/assets/nx2a/payload/apply_patches.py
+- app/src/main/assets/nx2a/payload/webgui/server.py
+- app/src/main/assets/nx2a/payload/webgui/index.html
+- app/src/main/assets/nx2a/payload/payload.json
+- PROJECT_LOG.md
+
+### Следующие шаги
+1. Проверить manifest hashes, Python syntax, patch idempotency, WebView JavaScript syntax и APK build в GitHub Actions.
+2. На устройстве собрать игру и проверить, что *-data/ngr-cover.jpg появляется и библиотека показывает её без сетевого Nlib запроса.
+3. Проверить ручную обложку: после повторной сборки она должна сохранять приоритет над NACP.
+4. Отдельным этапом усилить импорт готовых сборок: build ID/ABI/hash validation и staged atomic registration.
+
+### Ограничения
+- NACP icon — встроенная квадратная иконка игры, а не скриншот игрового кадра и не вертикальная retail box art.
+- Импорт старого data pack без ngr-cover.* не может восстановить иконку из исходного NSP/XCI, если оригинальные файлы/извлечённые данные недоступны.
+- APK ещё не подтверждён: требуется успешный CI run и artifact.
