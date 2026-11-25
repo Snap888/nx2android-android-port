@@ -321,3 +321,32 @@
 - GitHub Actions run `45571346972` для HEAD `bb74ae7d3cca43953dcfa66919d595838cf2f5a7` завершился `success`: Python syntax/runtime tests, Porter patch validation, WebView JS syntax, payload manifest, signed APK build и artifact upload прошли.
 - Artifact `nx2android-apk` (ID `15002925365`), размер 35,855,289 bytes; SHA-256 `5899a1da8ba6c50ca157fd90ea45fc7c66b4166de234316135f5359d62b23500`; archive: https://api.github.com/repos/Snap888/nx2android-android-port/actions/artifacts/15002925365/zip (expires 2027-02-23).
 - On-device validation is still required: confirm that a newly ported game contains `ngr-cover.jpg`, that Use game icon switches to it, and that a manually chosen cover remains higher priority.
+
+## 2026-11-25 — Android scheduling balance for audio starvation / UI responsiveness
+
+### Анализ
+- В доступной Library-сборке `ngr-gameplay-2f92dce8597c52f2717c.log.txt` обнаружен manifest с Title ID `0100CD701434C000` и названием **Twelve Minutes**. Это не Metro 2033 Redux; его audio/frame цифры нельзя переносить на Metro.
+- Metro-специфичный свежий лог в доступной Library не найден. Предыдущие наблюдения из отдельной Metro-сессии остаются контекстом, но требуют повторной проверки по точному свежему gameplay/runtime export.
+- Проверен Porter AAudio путь на pinned commit `468937822219a56eb81da1aa2e40f05e8c453af2`: AAudio low-latency shared stream, callback 240 frames / 5 ms; callback вызывает AudioOut pull. AudioOut producer публикует блоки в SPSC очередь QMAX=64, callback не захватывает producer mutex. Значит, простое увеличение размера AAudio callback или очереди не доказывает устранение producer starvation и может увеличить latency.
+- Проверен Android QoS compatibility shim: `USER_INTERACTIVE → nice -10`, `USER_INITIATED → nice -4`, `UTILITY → nice +4`. До этого `DM_QOS_MAP` был выключен, поэтому guest-потоки получали один класс QoS; низкоприоритетные worker threads не уступали CPU Android UI как задумано Horizon priority.
+
+### Изменено
+- В `ngrhost.c` включён стандартный маппинг guest priorities в Android QoS, если профиль явно не задал `DM_QOS_MAP`:
+  - приоритеты <=44 — User Interactive (main/audio/game-critical threads);
+  - 45–58 — User Initiated;
+  - >58 — Utility (фоновые worker threads получают nice +4 и уступают CPU системе).
+- Явный `DM_QOS_MAP` / `DM_QOS_EDGES` остаётся override. Добавлен runtime log marker `[scheduler] Android QoS mapping enabled...`.
+- Не менялись AAudio callback period, AudioOut queue depth, sample rate и audio producer synchronization: без свежего Metro-лога эти изменения были бы спекулятивными.
+- Commit: `0281eebfa00ebbc831ae0b66d38e652265975887` — `Map guest thread priorities to Android QoS`.
+
+### Проверки / блокеры
+- Source audit completed; Android device A/B and audio validation are not yet available.
+- CI for commit `0281eebfa00ebbc831ae0b66d38e652265975887` must be checked before distributing an APK.
+- Need the current Metro 2033 Redux gameplay + runtime diagnostic export (game ID previously tracked as `9383b4fd4e8540ed5d6e`, confirm from manifest) to identify AudioOut producer thread, queue starvation intervals, lock waits, frame stalls and actual Android ANR cause.
+
+### Следующие шаги
+1. Verify GitHub Actions APK build for the scheduler commit and publish only a successful artifact.
+2. Run Metro A/B with scheduler mapping on; compare audio underruns, queue depth, frame-time p95/p99, Android UI input latency and battery/thermal state.
+3. From the fresh Metro log, confirm whether the producer is FMOD/AudioOut or AudioRenderer before changing callback buffering or queue semantics.
+4. If underruns persist, instrument only sampled producer enqueue/release timing and thread wait state; keep per-lock trace and filesystem/NVN verbose logs off by default.
+5. Inspect the ANR/tombstone section to distinguish CPU starvation from deadlock, GPU wait or memory pressure.
