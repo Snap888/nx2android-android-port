@@ -446,12 +446,10 @@ def need_dotnet():
 
 
 def need_porter():
-    # Always verify the selected upstream checkout and every NGR patch before a
-    # build. A complete directory is not proof that it contains our patches.
+    # Inspect/analysis/recompile must use the verified local checkout only.
+    # Use Setup > Update / repair porter for an explicit upstream check.
     ok, message = porter_sync.sync()
     if not ok: raise RuntimeError('NGR porter is unavailable: ' + message)
-    porter_sync.patch()
-
 
 def porter(*args, timeout=120):
     need_porter()
@@ -792,7 +790,7 @@ class H(BaseHTTPRequestHandler):
             except ValueError: return self.j({'error': (err or out)[-600:]})
         if u.path == '/api/config': return self.j(cfg())
         if u.path == '/api/library':
-            start_cover_refresh()
+            # Cover downloads are explicit; opening the library must stay offline.
             return self.j(library_read())
         if u.path == '/api/library/covers/status':
             return self.j(dict(COVER_JOB))
@@ -962,7 +960,7 @@ class H(BaseHTTPRequestHandler):
             return self.j({'report': rep, 'state': prebuilt.state()})
         if u.path == '/api/porter_mode':   # off (default): the porter follows upstream's newest commit; on: the version known to work (payload.json porter_good). A switch for one port, never a change for everyone
             porter_sync.set_mode('good' if o.get('mode') == 'good' else 'newest')
-            ok, msg = porter_sync.sync(); return self.j({'ok': ok, 'msg': msg, 'mode': porter_sync.mode(), 'porter': porter_sync.state(), 'porter_commit': porter_sync.commit()})
+            ok, msg = porter_sync.sync(force=True); return self.j({'ok': ok, 'msg': msg, 'mode': porter_sync.mode(), 'porter': porter_sync.state(), 'porter_commit': porter_sync.commit()})
         if u.path == '/api/repair':
             ok, msg = porter_sync.sync(force=True); return self.j({'ok': ok, 'msg': msg, 'porter': porter_sync.state()})
         if u.path == '/api/restart':
@@ -976,8 +974,7 @@ if __name__ == '__main__':
     # GUI must come up even when that checkout needs repair. Port operations
     # call need_porter() and report a precise error in the job log.
     print('NGR GUI boot: deferring porter validation until a port operation', flush=True)
-    threading.Thread(target=auto_update, daemon=True).start()
-    threading.Thread(target=auto_porter, daemon=True).start()
+    print('[network] automatic OTA and upstream Porter polling disabled; use Update / Setup > Update / repair or Covers manually', flush=True)
     threading.Thread(target=adb_auto.loop, args=(ENV, lambda: not JOB['done']), daemon=True).start()
     print(f'nx2android GUI {VERSION} on 127.0.0.1:{PORT} (porter: {REPO})', flush=True)
     ThreadingHTTPServer(('127.0.0.1', PORT), H).serve_forever()
