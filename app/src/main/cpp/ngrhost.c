@@ -1001,7 +1001,12 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
         setenv("DM_NVN_LOG", "0", 1);
         setenv("DM_FS", "0", 1);
         setenv("DM_FSLOG", "/dev/null", 1);
-        LOGI("[scheduler] Metro 2033 performance profile: verbose NVN and filesystem tracing disabled");
+        /* Thread snapshots remain available, but per-lock tracing writes a
+           line for every guest lock handoff. On Metro this produced a multi-MB
+           log and synchronous stderr I/O during audio/render contention.
+           Keep it opt-in only for a dedicated future sync-trace control. */
+        setenv("DM_SYNC_TRACE", "0", 1);
+        LOGI("[scheduler] Metro 2033 performance profile: verbose NVN/filesystem and per-lock synchronization tracing disabled");
     }
     LOGI("[stage 1/8] payload validated; game_dir=%s private_dir=%s", game_dir, private_dir);
     LOGI("[stage 2/8] native libraries staged; runtime=%s", lib_path);
