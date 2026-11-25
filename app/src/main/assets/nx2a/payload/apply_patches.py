@@ -877,4 +877,47 @@ static uint64_t g_ngr_sync_keys[32];"""),
 ])
 
 
+
+# 20. Metro 2033 Redux has guest worker threads that issue millions of progressing
+# SleepThread(0) calls whose callee-saved registers change are normally treated as
+# productive work and returned without a host scheduling point. Metro's PhysX
+# simulator and uEngine Secondary issue millions of such calls while contending
+# for a shared lock; the audio renderer and main thread then wait behind them.
+# Keep the fast path unchanged for other games, but allow a per-game rate cap.
+patch('NGR progressing-yield rate limiter', 'nxnative/dm/host/hle_thread.c', 'NX2A_YIELD_PROGRESS_LIMIT', [
+    ("""static void thr_yield(thr_t *me, const uint64_t *regs) {
+""",
+     """// NX2A_YIELD_PROGRESS_LIMIT: cap pathological progressing-yield loops per thread.
+static void yield_progress_limit(thr_t *me, uint64_t now) {
+    static int limit = -1, sleep_us = 50;
+    static _Thread_local uint64_t window_ns;
+    static _Thread_local unsigned count;
+    if (limit < 0) {
+        const char *e = getenv("DM_YIELD_PROGRESS_LIMIT");
+        const char *s = getenv("DM_YIELD_PROGRESS_SLEEP_US");
+        limit = e && *e ? atoi(e) : 0;
+        if (s && *s) sleep_us = atoi(s);
+        if (sleep_us < 1) sleep_us = 1;
+        if (sleep_us > 1000) sleep_us = 1000;
+        if (limit > 0) LOG("DM_YIELD_PROGRESS_LIMIT=%d/s, sleep=%d us after the limit", limit, sleep_us);
+    }
+    if (limit <= 0) return;
+    if (!window_ns || now - window_ns >= 1000000000ull) { window_ns = now; count = 0; }
+    if (++count > (unsigned)limit) {
+        struct timespec ts = {0, (long)sleep_us * 1000L};
+        me->sleeping = 1;
+        nanosleep(&ts, NULL);
+        me->sleeping = 0;
+    }
+}
+static void thr_yield(thr_t *me, const uint64_t *regs) {
+"""),
+    ("""    if (!moved) yield_for(me, y0 - me->yrun_t0);
+""",
+     """    if (!moved) yield_for(me, y0 - me->yrun_t0);
+    else yield_progress_limit(me, y0);  // NX2A_YIELD_PROGRESS_LIMIT
+"""),
+])
+
+
 sys.exit(1 if failed else 0)
