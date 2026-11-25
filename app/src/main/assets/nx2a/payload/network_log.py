@@ -45,7 +45,7 @@ class _LoggedResponse:
     def read(self, *args, **kwargs):
         data = self._response.read(*args, **kwargs)
         self._received += len(data or b'')
-        if not data: self._finish('complete')
+        if not data or not args or (args and isinstance(args[0], int) and args[0] < 0): self._finish('complete')
         return data
     def readinto(self, b):
         n = self._response.readinto(b)
