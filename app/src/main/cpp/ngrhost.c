@@ -947,6 +947,17 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     setenv("DM_GAME_DIR", game_dir, 1);
     setenv("NGR_PRIVATE_GAME_DIR", private_dir, 1);
     setenv("NGR_GAME_ID", id, 1);
+    /* Horizon guest priorities must not collapse into one Android scheduling class.
+       In particular, Unity background workers (priority 59+) otherwise compete
+       with the audio producer and Android UI at the same default nice level.
+       Keep main/audio threads interactive, but move low-priority guest workers
+       to Android utility QoS so they yield CPU under system/game pressure.
+       Explicit DM_QOS_MAP supplied by a diagnostic/profile override still wins. */
+    if (!getenv("DM_QOS_MAP")) {
+        setenv("DM_QOS_MAP", "1", 1);
+        if (!getenv("DM_QOS_EDGES")) setenv("DM_QOS_EDGES", "44,58", 1);
+        LOGI("[scheduler] Android QoS mapping enabled (interactive <=44, initiated <=58, utility >58)");
+    }
     /* Diagnostics are selected per game in the launcher UI. All options default
        off; enabling one creates the per-game diagnostic files for this session. */
     setenv("DM_SLOWFRAME", log_slowframe ? "1" : "0", 1);
