@@ -854,6 +854,14 @@ class H(BaseHTTPRequestHandler):
             return self.j({'ok': game is not None, 'game': game})
         if u.path == '/api/library/covers/refresh':
             return self.j({'started': start_cover_refresh(force=bool(o.get('force')))})
+        if u.path == '/api/library/cover/game':
+            game_id = str(o.get('id') or '')
+            game = next((g for g in library_read()['games'] if g.get('id') == game_id), None)
+            if not game: return self.j({'ok': False, 'error': 'Game not found'}, 404)
+            embedded = _cache_embedded_game_cover(Path(game.get('data_path') or ''), game_id)
+            if not embedded: return self.j({'ok': False, 'error': 'This game data pack has no embedded NACP icon. Rebuild the game with the current NGR version first.'}, 409)
+            updated = library_update(game_id, lambda g: g.update(cover_path=embedded, cover_source='game-nacp', updated_at=int(time.time())))
+            return self.j({'ok': updated is not None, 'game': updated, 'error': None if updated else 'Game not found'})
         if u.path == '/api/library/cover':
             path = Path(norm_path(str(o.get('path', ''))))
             try:
