@@ -889,26 +889,24 @@ patch('NGR progressing-yield rate limiter', 'nxnative/dm/host/hle_thread.c', 'NX
 """,
      """// NX2A_YIELD_PROGRESS_LIMIT: cap pathological progressing-yield loops per thread.
 static void yield_progress_limit(thr_t *me, uint64_t now) {
-    static int limit = -1, sleep_us = 50;
+    static int limit = -1, handoff_every = 256;
     static _Thread_local uint64_t window_ns;
-    static _Thread_local unsigned count;
+    static _Thread_local unsigned count, excess;
     if (limit < 0) {
         const char *e = getenv("DM_YIELD_PROGRESS_LIMIT");
-        const char *s = getenv("DM_YIELD_PROGRESS_SLEEP_US");
+        const char *h = getenv("DM_YIELD_PROGRESS_HANDOFF");
         limit = e && *e ? atoi(e) : 0;
         if (limit < 0) limit = 0;
-        if (s && *s) sleep_us = atoi(s);
-        if (sleep_us < 1) sleep_us = 1;
-        if (sleep_us > 1000) sleep_us = 1000;
-        if (limit > 0) LOG("DM_YIELD_PROGRESS_LIMIT=%d/s, sleep=%d us after the limit", limit, sleep_us);
+        if (h && *h) handoff_every = atoi(h);
+        if (handoff_every < 1) handoff_every = 1;
+        if (handoff_every > 65536) handoff_every = 65536;
+        if (limit > 0) LOG("DM_YIELD_PROGRESS_LIMIT=%d/s, host scheduler handoff every %d excess yields (no sleep while guest locks may be held)", limit, handoff_every);
     }
     if (limit <= 0) return;
-    if (!window_ns || now - window_ns >= 1000000000ull) { window_ns = now; count = 0; }
-    if (++count > (unsigned)limit) {
-        struct timespec ts = {0, (long)sleep_us * 1000L};
-        me->sleeping = 1;
-        nanosleep(&ts, NULL);
-        me->sleeping = 0;
+    if (!window_ns || now - window_ns >= 1000000000ull) { window_ns = now; count = 0; excess = 0; }
+    if (++count > (unsigned)limit && ++excess >= (unsigned)handoff_every) {
+        excess = 0;
+        sched_yield();
     }
 }
 static void thr_yield(thr_t *me, const uint64_t *regs) {
@@ -920,5 +918,82 @@ static void thr_yield(thr_t *me, const uint64_t *regs) {
 """),
 ])
 
+
+
+
+# 21. Metro's PhysX / Secondary workers share priority 43 with its audio and main
+# threads. Give only these named workers Utility QoS; ArbitrateLock's existing
+# priority-inheritance path temporarily boosts a lock owner to a blocked waiter's
+# class, so the owner can release the mutex without starving audio or the UI.
+patch('NGR name-based Utility QoS for Metro workers', 'nxnative/dm/host/hle_thread.c', 'NX2A_QOS_UTILITY_NAMES', [
+    ("""static int g_qos_map, g_qos_e1 = 44, g_qos_e2 = 59;""",
+     """static const char *thr_name(thr_t *t, char *buf, size_t n);
+static int g_qos_map, g_qos_e1 = 44, g_qos_e2 = 59;"""),
+    ("""static void qos_apply(thr_t *t) {   // on the thread itself
+    qos_class_t q = prio_qos(t->prio);
+    if ((uint32_t)q != t->qos && !pthread_set_qos_class_self_np(q, 0)) t->qos = (uint32_t)q;
+}""",
+     """static int qos_utility_name(thr_t *t) {
+    if (!g_qos_map || !t) return 0;
+    const char *list = getenv("DM_QOS_UTILITY_NAMES");
+    if (!list || !*list) return 0;
+    char name[64];
+    const char *n = thr_name(t, name, sizeof name);
+    size_t nl = strlen(n);
+    for (const char *p = list; *p;) {
+        const char *end = strchr(p, ';');
+        size_t len = end ? (size_t)(end - p) : strlen(p);
+        if (len == nl && nl && !memcmp(p, n, len)) return 1;
+        if (!end) break;
+        p = end + 1;
+    }
+    return 0;
+}
+static qos_class_t thread_qos(thr_t *t) {
+    return qos_utility_name(t) ? QOS_CLASS_UTILITY : prio_qos(t->prio);
+}
+static void qos_apply(thr_t *t) {   // on the thread itself
+    qos_class_t q = thread_qos(t);
+    if ((uint32_t)q != t->qos && !pthread_set_qos_class_self_np(q, 0)) t->qos = (uint32_t)q;
+}"""),
+    ("""    pthread_set_qos_class_self_np(prio_qos(t->prio), 0);""",
+     """    pthread_set_qos_class_self_np(thread_qos(t), 0);  // NX2A_QOS_UTILITY_NAMES"""),
+])
+
+# 22. DM_NVN_LOG is a numeric setting in NGR (0 means off). Upstream used
+# getenv()!=NULL, which treats the literal string "0" as enabled and floods
+# logcat with per-call DeviceGetInteger messages during gameplay.
+patch('NGR numeric DM_NVN_LOG switch', 'nxnative/dm/gfx/nvn/hle_nvn.c', 'NX2A_NVN_LOG_BOOL', [
+    ("""    g_log = getenv("DM_NVN_LOG") != NULL;""",
+     """    const char *nvn_log_env = getenv("DM_NVN_LOG");
+    g_log = nvn_log_env && nvn_log_env[0] && strcmp(nvn_log_env, "0") != 0;  // NX2A_NVN_LOG_BOOL"""),
+])
+
+# 23. Apply the Metro scheduling profile after env.txt so a stale per-game
+# override cannot silently restore the known CPU-starvation configuration.
+patch('NGR Metro scheduler env after env.txt', 'nxnative/dm/android/front_android.c', 'NX2A_METRO_SCHEDULER_ENV', [
+    ("""    const char *ngr_vk_driver_override = getenv("NGR_DM_VK_DRIVER_OVERRIDE");
+    if (ngr_vk_driver_override && *ngr_vk_driver_override) {
+        setenv("DM_VK_DRIVER", ngr_vk_driver_override, 1);  // NX2A_DM_VK_DRIVER_OVERRIDE
+        LOG("[Vulkan] using per-launch driver override: %s", ngr_vk_driver_override);
+    }
+""",
+     """    const char *ngr_vk_driver_override = getenv("NGR_DM_VK_DRIVER_OVERRIDE");
+    if (ngr_vk_driver_override && *ngr_vk_driver_override) {
+        setenv("DM_VK_DRIVER", ngr_vk_driver_override, 1);  // NX2A_DM_VK_DRIVER_OVERRIDE
+        LOG("[Vulkan] using per-launch driver override: %s", ngr_vk_driver_override);
+    }
+    const char *ngr_game_id = getenv("NGR_GAME_ID");
+    if (ngr_game_id && !strcmp(ngr_game_id, "9383b4fd4e8540ed5d6e")) {
+        setenv("DM_QOS_MAP", "1", 1);
+        setenv("DM_QOS_EDGES", "44,58", 1);
+        setenv("DM_QOS_UTILITY_NAMES", "uEngine :: PhysX simulator;uEngine :: Secondary", 1);
+        setenv("DM_YIELD_PROGRESS_LIMIT", "50000", 1);
+        setenv("DM_YIELD_PROGRESS_HANDOFF", "256", 1);
+        unsetenv("DM_YIELD_PROGRESS_SLEEP_US");
+        LOG("[scheduler] Metro profile: PhysX/Secondary use Utility QoS with priority inheritance; progressing-yield handoff=256/256 after 50k/s");
+    }  // NX2A_METRO_SCHEDULER_ENV
+"""),
+])
 
 sys.exit(1 if failed else 0)
