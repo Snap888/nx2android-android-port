@@ -947,6 +947,17 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
     setenv("DM_GAME_DIR", game_dir, 1);
     setenv("NGR_PRIVATE_GAME_DIR", private_dir, 1);
     setenv("NGR_GAME_ID", id, 1);
+    /* Metro 2033 Redux's PhysX simulator / Secondary workers were observed
+       issuing 1.7–2.9 million progressing SleepThread yields per second while
+       holding a mutex needed by the main and audio-render threads. Keep this
+       compatibility guard scoped to this stable game ID; env.txt can override. */
+    if (!strcmp(id, "9383b4fd4e8540ed5d6e")) {
+        setenv("DM_QOS_MAP", "1", 0);
+        setenv("DM_QOS_EDGES", "42,58", 0);
+        setenv("DM_YIELD_PROGRESS_LIMIT", "50000", 0);
+        setenv("DM_YIELD_PROGRESS_SLEEP_US", "50", 0);
+        LOGI("[scheduler] Metro 2033 yield-storm guard enabled (50k progressing yields/s, 50 us backoff; guest priority 43 is user-initiated)");
+    }
     /* Horizon guest priorities must not collapse into one Android scheduling class.
        In particular, Unity background workers (priority 59+) otherwise compete
        with the audio producer and Android UI at the same default nice level.
