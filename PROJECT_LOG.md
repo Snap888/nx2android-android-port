@@ -557,3 +557,26 @@
 3. Сравнить PhysX/Secondary yield/s, CPU seconds, back-off sleeps, main-thread frame_ms, submit+present, GPU ms и Looper Slow delivery.
 4. Ожидаемый результат scheduler patch: alternating A/B loop перестаёт давать сотни тысяч yield/s и начинает накапливать back-off sleeps; frame submit/present stall должен заметно уменьшиться, если он был следствием starvation.
 5. Звук оценивать отдельно: дублирование/хрипы и underruns во время заморозки — разные метрики.
+
+## 2026-11-25 — Исправление импорта data pack и диагностика Handheld display
+
+### Импорт готовой игры из папки
+- Найдена конкретная ошибка в import_precompiled_game(): _select_game_cover(existing, ...) вызывался до присваивания existing. Это давало UnboundLocalError, который не обрабатывался API handler-ом, и валидный импорт завершался HTTP 500.
+- Исправлен порядок: сначала читается library.json и ищется существующая запись по game_id/пути, затем выбирается обложка и собирается запись shortcut. Повторный импорт обновляет прежнюю запись, не создавая дубль.
+- Runtime/data pack по-прежнему не копируется и не пересобирается.
+
+### Metro: зависания и нагрузка CPU
+- В актуальном gameplay log видны повторные yield watchdog: PhysX simulator до 2.92 млн/s, Secondary до 2.37 млн/s, main thread около 1.96 млн/s; callsite одинаковый: sdk+0xd688c0. Это CPU busy-yield, а не GPU shader time.
+- В том же log DM_YIELD_PROGRESS_* отсутствует. Следовательно, этот конкретный libdmhost.so не показывает, что Metro-specific backoff из новых Porter patches был включён. Патчи Porter не меняют уже собранный data pack автоматически: после нового APK требуется Recompile / update для пересборки libdmhost.so.
+- Пользователь сообщает, что звук сейчас чистый. Аудиоподсистему в этом изменении не трогал; аудио нужно считать отдельным уже улучшенным направлением, но оставлять underrun counters в следующем A/B log.
+
+### Handheld / Docked и 1280x720
+- Свежий gameplay log фиксирует VI layer 1920x1080, crop 1280x720, Android window 2448x1080 и swapchain 1080x2448 с pre-rotation. По текущему aspect-fit алгоритму 1280x720 должен масштабироваться до 1920x1080 и центрироваться с боковыми полями x=264 px в окне 2448x1080; код не должен рисовать 1280x720 пикселей в левом верхнем углу.
+- Поэтому пока не меняю aspect ratio на принудительное растяжение: это исказило бы 16:9 картинку на широком экране и могло бы скрыть настоящую ошибку surface/viewport.
+- Добавлен малозатратный [display] trace, который пишет только при изменении геометрии: guest image, crop, Android window, swapchain target и рассчитанный destination rect. Это покажет, на каком этапе размеры перестают совпадать.
+- Для точного исправления нужен свежий лог после переключения в Handheld и Docked на одной и той же сцене; особенно строки [display], [vk] swapchain и vi::CreateLayer/SetLayerCrop.
+
+### Статус
+- Import bug исправлен в source.
+- Display geometry tracing добавлен в Porter patcher.
+- APK/CI и повторная рекомпиляция на устройстве ещё не проверены.
