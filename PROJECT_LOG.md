@@ -402,3 +402,10 @@
 4. Если звук продолжает заикаться, снять новый gameplay log с Metro profile; не включать verbose NVN/FS trace в обычном A/B.
 5. Если `submit+present` продолжит превышать 100 ms при низком GPU time, отдельно исследовать `vkQueuePresentKHR`, BufferQueue/SurfaceFlinger и очередь presentation.
 6. Отдельно исследовать texture alias stale reads (1280x720 ↔ 640x360) с pass/frame capture; пока не менять alias eviction без доказательства неверного содержимого кадра.
+
+
+### Дополнение — исправление payload manifest
+- CI run `45657811477` / `45657820602` подтвердил, что новый Porter patch применяется успешно и повторный запуск patch script идемпотентен; оба run остановились только на проверке устаревшего SHA в `payload.json`.
+- Использован SHA-256, вычисленный непосредственно CI `tools/make_manifest.py` для blob `c65724fd655f85eb3b76b3ad01f0feb276108e84`: `fa32dae0cd9f28266be0d63a90c4213e062242231b09ad881f22298abcd65f4d`.
+- Manifest version оставлен 175; исправление commit `00a63e1b2769c3ac4f1bd851ede6a11bd5d42f1b`.
+- Новый CI run для этого commit требуется проверить отдельно; APK пока не подтверждён.
