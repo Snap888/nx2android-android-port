@@ -896,6 +896,7 @@ static void yield_progress_limit(thr_t *me, uint64_t now) {
         const char *e = getenv("DM_YIELD_PROGRESS_LIMIT");
         const char *s = getenv("DM_YIELD_PROGRESS_SLEEP_US");
         limit = e && *e ? atoi(e) : 0;
+        if (limit < 0) limit = 0;
         if (s && *s) sleep_us = atoi(s);
         if (sleep_us < 1) sleep_us = 1;
         if (sleep_us > 1000) sleep_us = 1000;
