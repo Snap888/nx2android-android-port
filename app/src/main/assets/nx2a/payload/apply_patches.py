@@ -996,7 +996,7 @@ patch('NGR Metro scheduler env after env.txt', 'nxnative/dm/android/front_androi
     if (ngr_game_id && !strcmp(ngr_game_id, "9383b4fd4e8540ed5d6e")) {
         setenv("DM_QOS_MAP", "1", 1);
         setenv("DM_QOS_EDGES", "44,58", 1);
-        setenv("DM_QOS_UTILITY_NAMES", "uEngine :: PhysX simulator;uEngine :: Secondary", 1);
+        setenv("DM_QOS_UTILITY_NAMES", "uEngine :: PhysX simulator;uEngine :: Secondary;main thread", 1);
         setenv("DM_YIELD_PROGRESS_LIMIT", "50000", 1);
         setenv("DM_YIELD_PROGRESS_HANDOFF", "256", 1);
         unsetenv("DM_YIELD_PROGRESS_SLEEP_US");
@@ -1187,12 +1187,13 @@ static void thr_yield(thr_t *me, const uint64_t *regs) {''')
 ])
 
 # 26. Enable the measured back-off only for Metro's two busy-wait workers.
-patch('NGR Metro named-worker yield backoff env', 'nxnative/dm/android/front_android.c', 'NX2A_METRO_YIELD_SLEEP', [
+patch('NGR Metro named-worker yield backoff env v2', 'nxnative/dm/android/front_android.c', 'NX2A_METRO_YIELD_SLEEP_V2', [
     ('''        unsetenv("DM_YIELD_PROGRESS_SLEEP_US");
         LOG("[scheduler] Metro profile: PhysX/Secondary use Utility QoS with priority inheritance; progressing-yield handoff=256/256 after 50k/s");''',
      '''        setenv("DM_YIELD_PROGRESS_SLEEP_US", "100", 1);
         setenv("DM_YIELD_PROGRESS_SLEEP_NAMES", "uEngine :: PhysX simulator;uEngine :: Secondary", 1);
-        LOG("[scheduler] Metro profile: PhysX/Secondary use Utility QoS plus 100us back-off after 50k progressing yields/s");  // NX2A_METRO_YIELD_SLEEP''')
+        setenv("DM_YIELD_BACKOFF", "250:500", 1);
+         LOG("[scheduler] Metro patch v2: PhysX/Secondary/main named back-off; non-progressing yield back-off=250us after 500us");  // NX2A_METRO_YIELD_SLEEP_V2''')
 ])
 
 
@@ -1225,12 +1226,30 @@ patch('NGR Vulkan display geometry diagnostics', 'nxnative/dm/android/gfx_vk_pre
     int nx2a_changed = 0;
     for (int i = 0; i < 10; i++) if (nx2a_geom[i] != nx2a_last_geom[i]) { nx2a_changed = 1; break; }
     if (nx2a_changed) {
-        VKLOG("[display] guest=%ux%u crop=%d,%d %dx%d window=%ux%u target=%ux%u destination=%d,%d %dx%d aspect-fit",
+        VKLOG("[display] guest=%ux%u crop=%d,%d %dx%d window=%ux%u target=%ux%u destination=%d,%d %dx%d mode-aware",
               im->w, im->h, cx, cy, cw, ch, g_sext.width, g_sext.height,
               g_next.width, g_next.height, dx, dy, dw, dh);
         memcpy(nx2a_last_geom, nx2a_geom, sizeof nx2a_geom);
     }
     vk_pic_set((float)dx / g_sext.width, (float)dy / g_sext.height, (float)dw / g_sext.width, (float)dh / g_sext.height); // NX2A_DISPLAY_GEOMETRY_LOG
 ''')
+]);
+# 29. In Handheld mode the game renders 1280x720. Scale that guest image to the full Android surface.
+patch('NGR Handheld full-screen output scaling', 'nxnative/dm/android/gfx_vk_present.c', 'NX2A_HANDHELD_FULLSCREEN_SCALE', [
+    ('''    double s = fmin((double)g_sext.width / cw, (double)g_sext.height / ch); int dw = (int)(cw * s), dh = (int)(ch * s), dx = ((int)g_sext.width - dw) / 2, dy = ((int)g_sext.height - dh) / 2;
+''',
+     '''    int nx2a_handheld = dm_opmode() == 0;
+    int dx, dy, dw, dh;
+    if (nx2a_handheld) {
+        dx = 0; dy = 0; dw = (int)g_sext.width; dh = (int)g_sext.height;
+    } else {
+        double s = fmin((double)g_sext.width / cw, (double)g_sext.height / ch);
+        dw = (int)(cw * s); dh = (int)(ch * s);
+        dx = ((int)g_sext.width - dw) / 2; dy = ((int)g_sext.height - dh) / 2;
+    } // NX2A_HANDHELD_FULLSCREEN_SCALE
+'''),
+    ('''static void present_window(vkimg_t *im, const int crop[4], double period, uint64_t ticket) {''',
+     '''extern int dm_opmode(void);
+static void present_window(vkimg_t *im, const int crop[4], double period, uint64_t ticket) {''')
 ]);
 sys.exit(1 if failed else 0)
