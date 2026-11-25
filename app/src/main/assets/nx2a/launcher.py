@@ -122,7 +122,7 @@ def main():
     while True:
         P = pick(); m = manifest(P)
         setup_if_needed(P, m); sync_porter(P, m)
-        env = dict(os.environ, NX2A_VERSION=str(m['version']))
+        # Make the payload's network audit hook available to this process and all Python children.\n        os.environ['PYTHONPATH'] = str(P) + os.pathsep + os.environ.get('PYTHONPATH', '')\n        env = dict(os.environ, NX2A_VERSION=str(m['version']))
         log('starting payload version', m['version'], 'from', P)
         t0 = time.time()
         rc = subprocess.run([sys.executable, str(P / 'webgui/server.py')], env=env).returncode
