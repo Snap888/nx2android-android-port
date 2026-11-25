@@ -440,8 +440,8 @@
 ### Проверки / статус
 - Porter patch validation на pinned source 468937822219a56eb81da1aa2e40f05e8c453af2 прошла; повторный запуск patcher подтвердил идемпотентность всех новых patch blocks.
 - Первая manifest CI проверка выявила только ошибочное увеличение version с 175 до 177; hash apply_patches.py совпал с вычисленным CI SHA. Version возвращён к 175.
-- Ожидается CI на HEAD 197ad30311dc5a8e992c2880cb824d0800036a8e: manifest, Python/patch validation, CMake/NDK, signed APK и artifact upload.
-- Исправление пока не подтверждено на устройстве. Нужен A/B запуск Metro: сравнить yield rate двух worker threads, AudioOut underruns/queue depth, Android UI responsiveness и p95/p99 frame time.
+- GitHub Actions run 45660491976 для code HEAD 197ad30311dc5a8e992c2880cb824d0800036a8e завершился success: Python tests, Porter patch validation + idempotency, WebView JS, manifest check и signed Release APK build прошли. Artifact nx2android-apk ID 15044364571, 35,857,049 bytes, SHA-256 4f48814f15f09df852f3344e6ac16ba306f81fe4ec9c0157b6bdb2519a8c82e6; archive https://api.github.com/repos/Snap888/nx2android-android-port/actions/artifacts/15044364571/zip (expires 2027-02-23).
+- APK готов для тестирования; исправление пока не подтверждено на устройстве. Важно: CI проверил patch application/idempotency и собрал APK, но не компилировал сам patched Porter runtime C-код на устройстве. Нужен A/B запуск Metro: сравнить yield rate двух worker threads, AudioOut underruns/queue depth, Android UI responsiveness и p95/p99 frame time.
 - Не менялись AAudio callback period, AudioOut QMAX/queue semantics и Vulkan texture aliasing. Presentation stalls и stale texture alias warnings остаются отдельными задачами, если сохранятся после снижения CPU starvation.
 
 ### Следующие шаги
