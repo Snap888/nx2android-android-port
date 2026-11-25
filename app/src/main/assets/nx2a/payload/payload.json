@@ -1,10 +1,10 @@
 {
-  "version": 177,
+  "version": 178,
   "setup": 3,
   "porter_sha": "468937822219a56eb81da1aa2e40f05e8c453af2",
   "files": {
     "adb_auto.py": "1bd9b7bc9fba898bc6acbb7eb29a3d4a2ee75427cafb98329ff8fe38ec2232a7",
-    "apply_patches.py": "3a676be3b6c2964d6b8e0226a99b9251616b82ad20ca7e3df628d1c2e24d8b33",
+    "apply_patches.py": "29659d71d890ece1014f6d93a9810a9089c37b49030b56c2b6357bb618d660a3",
     "dotnet_probe.py": "866983eb4aa53b567bf69e6574a93b00e315c2a85a2c536e95a123b9ded3e53a",
     "fast_tools.py": "665af40effe497d679cef624e0a0da81874900aa43e9fbfef07d172d7cc32070",
     "inner_setup.sh": "413d6980c1c0c129e90cb1892351dfc7a504b6a3919f78091703e4aba54cdd8c",
