@@ -449,3 +449,42 @@
 2. Установить APK, запустить Metro в той же сцене и проверить, что лог содержит DM_YIELD_PROGRESS_LIMIT, DM_QOS_UTILITY_NAMES / Metro scheduler marker, а per-call DeviceGetInteger не спамит при DM_NVN_LOG=0.
 3. Сравнить аудио underruns, queue depth, watchdog CPU time двух worker threads и отклик Android UI.
 4. Если submit+present остаётся >100 ms при GPU <5 ms, отдельно исследовать Vulkan queue present / Android BufferQueue; если stale alias reads сохраняются — записать A/B кадры и проверить alias lifetime.
+## 25.11.2026 — Metro 2033 Redux: audio ABI и starvation игровых потоков
+
+**Свежие доказательства из Logs:**
+- Gameplay log от 25.11, сессия 21:23:58–21:26:38.
+- uEngine :: PhysX simulator: до 2,112,630 progressing yields/s; около 28,53 с CPU за 30 с.
+- uEngine :: Secondary: до 2,105,423 progressing yields/s; около 24,45 с CPU за 30 с.
+- Аудиовывод: при 10 000 callback зафиксировано 1 966 underruns из последних 2 000 интервалов и 9 829,4 мс zero-padding; ранее 620/2 000 и 332/2 000.
+- Кадры доходили до 422 мс, 1,8 с и 5,44 с при GPU около 0,4–0,5 мс; один кадр тратил 389,5 мс в submit+present. Это указывает на CPU/thread starvation и ожидание present, а не на тяжёлую GPU-работу.
+- Android Looper фиксировал задержки доставки 2,8–14,5 с.
+- Отдельный Logs/1 — это не gameplay logcat, а лог неудачного портирования: стадия host прошла, data pack завершился NameError: ui_font_assets is not defined.
+
+**Найденная причина повторяющегося звука:**
+- Porter описывал nn::audio::AudioOutBuffer как 24-байтовый префикс, но Metro SDK использует 40-байтовую структуру: next +0x00, data +0x08, capacity +0x10, data size +0x18, offset +0x20.
+- Из-за несовпадения SDK читал data size как capacity; ресемплер Metro мог повторно отправлять каждый четвёртый блок со старым PCM примерно на 170,6 мс позади.
+- Основа исправления: upstream seedds/nxnative PR #2739 (AudioOutBuffer ABI fix).
+
+**Изменения в NGR patcher:**
+- Добавлен единый aout_buf в hle.h с _Static_assert размера 40 байт и всех критичных offsets.
+- hle_audio.c и hle_audren.c переведены на aout_buf; HLE-перехваты descriptor-функций удалены, их выполняет SDK.
+- Обновлены host audio tests и positional initializers переведены на designated fields.
+- Исправлен progressing-yield limiter: после 50 000 yields/s только два именованных Metro worker (uEngine :: PhysX simulator, uEngine :: Secondary) получают 100 мкс back-off каждые 256 excess yields. Для остальных игр/потоков fast path не меняется.
+- Back-off включён только в Metro profile; текущий Utility QoS и priority inheritance сохранены.
+- UI font helper теперь является обязательной зависимостью даже при NX2A_PATCH_ONLY, чтобы старый pinned Porter не доходил до data pack без ui_font_assets().
+
+**Коммиты:**
+- 273c2a47c3187fa107a0f55ed2f19d195ac4f755 — audio ABI + named-worker yield back-off + UI helper dependency.
+- 87c1c412173b3cd2545f3f0f4f46b7cca6efc0d0 — payload manifest version 176; SHA-256 apply_patches.py 6edd99149aedd617b18db3623b0edd63b17f734fb6bd9cb4ca18083c1dd2eb58.
+
+**Важное ограничение проверки:**
+- Новый APK обновит patcher, но уже установленный Metro data pack содержит старый libdmhost.so. После установки APK Metro необходимо повторно портировать/пересобрать из исходного NSP/XCI, чтобы новый AudioOut ABI и scheduler попали в игровые native libraries.
+- Исправления ещё не подтверждены на устройстве. Не считать повтор звука, зависания или underruns устранёнными до A/B теста.
+
+**Следующие шаги:**
+1. Проверить CI: patcher должен примениться к pinned Porter и пройти повторный idempotency run.
+2. Проверить, что host native compile и APK build проходят; если нет — исправить ошибки по логу CI.
+3. Установить APK и повторно портировать Metro.
+4. Снять gameplay log и проверить, что повтор PCM исчез, а worker yield rate и аудио underruns резко снизились.
+5. Сравнить p95/p99 frame time, Android Looper delivery и CPU usage до/после.
+6. Если submit+present остаётся большим при низком GPU time, отдельно профилировать Android BufferQueue/Vulkan present.
