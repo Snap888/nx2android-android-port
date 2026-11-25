@@ -405,7 +405,8 @@
 
 
 ### Дополнение — исправление payload manifest
-- CI run `45657811477` / `45657820602` подтвердил, что новый Porter patch применяется успешно и повторный запуск patch script идемпотентен; оба run остановились только на проверке устаревшего SHA в `payload.json`.
-- Использован SHA-256, вычисленный непосредственно CI `tools/make_manifest.py` для blob `c65724fd655f85eb3b76b3ad01f0feb276108e84`: `fa32dae0cd9f28266be0d63a90c4213e062242231b09ad881f22298abcd65f4d`.
-- Manifest version оставлен 175; исправление commit `00a63e1b2769c3ac4f1bd851ede6a11bd5d42f1b`.
-- Новый CI run для этого commit требуется проверить отдельно; APK пока не подтверждён.
+- CI patch validation подтвердил, что новый Porter patch применяется к upstream `e9bd2b764608facf841e39292d868ee657eaf634` и повторный запуск patch script идемпотентен.
+- Run `45658097886` для commit `0e4d3cc` показал, что SHA `apply_patches.py` `7c97388ea6eaf97f4071afbb7471e98fe3e6974eed8e8a66a0e4cce8180e2069` совпадает с `tools/make_manifest.py`; failure был только из-за отсутствующей завершающей LF.
+- Промежуточный commit `00a63e1b2769c3ac4f1bd851ede6a11bd5d42f1b` с неверным ручным SHA заменён корректным manifest.
+- Commit `1e75ad6039aa142f3dadee93f1aa4f79e8a46ff1` добавил лишнюю пустую строку; финальный commit `8688b4ccb4204513d7da9402e20ecb5f48a6bc5d` нормализовал файл ровно до одной завершающей LF.
+- Следующий CI run должен подтвердить manifest и продолжить APK build; APK пока не подтверждён.
