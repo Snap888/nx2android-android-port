@@ -1206,12 +1206,10 @@ patch('NGR two-signature yield wait detection', 'nxnative/dm/host/hle_thread.c',
     ("""uint64_t yrun_svc, yrun_t0, yrun_sig;""",
      """uint64_t yrun_svc, yrun_t0, yrun_sig, yrun_sig2; // NX2A_YIELD_TWO_SIG: x19-x28 at the last two consecutive yields
 """),
-    ("""int moved = me->yrun_svc + 1 == me->nsvc && me->yrun_sig != sig;   // the loop moved on since its last yield
-""",
+    ("""int moved = me->yrun_svc + 1 == me->nsvc && me->yrun_sig != sig;""",
      """int moved = me->yrun_svc + 1 == me->nsvc && me->yrun_sig != sig && me->yrun_sig2 != sig; // NX2A_YIELD_TWO_SIG: A/B polling loops are waits
 """),
-    ("""me->yrun_svc = me->nsvc; me->yrun_sig = sig;
-""",
+    ("""me->yrun_svc = me->nsvc; me->yrun_sig = sig;""",
      """me->yrun_svc = me->nsvc; me->yrun_sig2 = me->yrun_sig; me->yrun_sig = sig; // NX2A_YIELD_TWO_SIG
 """),
 ])
