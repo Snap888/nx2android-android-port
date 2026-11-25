@@ -580,3 +580,23 @@
 - Import bug исправлен в source.
 - Display geometry tracing добавлен в Porter patcher.
 - APK/CI и повторная рекомпиляция на устройстве ещё не проверены.
+
+## 2026-11-25 — Metro scheduler v2 и Handheld fullscreen
+
+### Metro 2033 Redux: зависания и CPU
+- Повторно разобран актуальный gameplay log: PhysX simulator до 788,607 YieldThread/s, Secondary до 763,804/s; main thread также выполняет около 1.96 млн yield/s и в snapshots владеет mutex, на котором ждёт Audio Render. В другом snapshot Secondary ждёт mutex владельца main thread. GPU на одном из длинных кадров 0.4 ms, тогда как whole frame 31.6 s; это не GPU-bound stall.
+- Runtime log показывает app-side '[scheduler] Metro 2033 guard enabled', но не показывает marker из patched Porter '[scheduler] Metro patch v2' / DM_YIELD_PROGRESS_LIMIT. Значит активный libdmhost.so не подтверждает наличие последних Porter yield patches; одних изменений APK недостаточно для уже собранного data pack.
+- Исправлен Metro profile в Porter: после порога 50k progressing yields/s named back-off применяется к PhysX, Secondary и main thread; добавлен DM_YIELD_BACKOFF=250:500 для non-progressing yield loops, чтобы A/B polling loop main thread попадал в обычный back-off раньше. Только Game ID Metro 2033 Redux.
+- Добавлен новый runtime marker '[scheduler] Metro patch v2'. После повторной рекомпиляции его отсутствие означает, что используется старый/непропатченный libdmhost.so. Не считать фиксом до device A/B подтверждения.
+
+### Handheld 1280x720 и fullscreen
+- Android NgrGameActivity теперь скрывает status/navigation bars в immersive sticky режиме и разворачивает content под system bars; окно должно занимать всю панель, а не только inset content rect.
+- Vulkan present: Handheld (DM_OPMODE=0) растягивает guest 1280x720 на полный ANativeWindow surface; Docked сохраняет aspect-fit. Это убирает маленькое изображение в левом верхнем углу и заполняет панель; Handheld stretch может слегка менять геометрию 16:9 на широком дисплее.
+- Сохранён change-triggered [display] trace для guest/crop/window/swapchain/destination geometry.
+
+### Импорт готовой игры
+- Ранее исправлен UnboundLocalError в import_precompiled_game(): existing теперь находится до _select_game_cover(). CI уже проверил syntax, manifest и сборку APK в run 45698896569.
+
+### Проверка
+- Нужна установка свежего APK и Recompile/Update Metro data pack. После этого в runtime/gameplay log проверить '[scheduler] Metro patch v2' и 'DM_YIELD_PROGRESS_LIMIT'. Сравнить yield/s, CPU seconds, main-thread mutex waits, longframe и Audio Render underruns.
+- Проверить Handheld и Docked на одной сцене; ожидание: Handheld window/surface full-screen, destination 0,0 width,height; Docked aspect-fit centered. APK пока не подтверждает реальное поведение на устройстве.
