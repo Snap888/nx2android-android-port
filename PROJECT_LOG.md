@@ -318,4 +318,6 @@
 ### Ограничения
 - NACP icon — встроенная квадратная иконка игры, а не скриншот игрового кадра и не вертикальная retail box art.
 - Импорт старого data pack без ngr-cover.* не может восстановить иконку из исходного NSP/XCI, если оригинальные файлы/извлечённые данные недоступны.
-- APK ещё не подтверждён: требуется успешный CI run и artifact.
+- GitHub Actions run `45571346972` для HEAD `bb74ae7d3cca43953dcfa66919d595838cf2f5a7` завершился `success`: Python syntax/runtime tests, Porter patch validation, WebView JS syntax, payload manifest, signed APK build и artifact upload прошли.
+- Artifact `nx2android-apk` (ID `15002925365`), размер 35,855,289 bytes; SHA-256 `5899a1da8ba6c50ca157fd90ea45fc7c66b4166de234316135f5359d62b23500`; archive: https://api.github.com/repos/Snap888/nx2android-android-port/actions/artifacts/15002925365/zip (expires 2027-02-23).
+- On-device validation is still required: confirm that a newly ported game contains `ngr-cover.jpg`, that Use game icon switches to it, and that a manually chosen cover remains higher priority.
