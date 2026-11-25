@@ -996,7 +996,7 @@ patch('NGR Metro scheduler env after env.txt', 'nxnative/dm/android/front_androi
     if (ngr_game_id && !strcmp(ngr_game_id, "9383b4fd4e8540ed5d6e")) {
         setenv("DM_QOS_MAP", "1", 1);
         setenv("DM_QOS_EDGES", "44,58", 1);
-        setenv("DM_QOS_UTILITY_NAMES", "uEngine :: PhysX simulator;uEngine :: Secondary;main thread", 1);
+        setenv("DM_QOS_UTILITY_NAMES", "uEngine :: PhysX simulator;uEngine :: Secondary", 1);
         setenv("DM_YIELD_PROGRESS_LIMIT", "50000", 1);
         setenv("DM_YIELD_PROGRESS_HANDOFF", "256", 1);
         unsetenv("DM_YIELD_PROGRESS_SLEEP_US");
@@ -1191,7 +1191,7 @@ patch('NGR Metro named-worker yield backoff env v2', 'nxnative/dm/android/front_
     ('''        unsetenv("DM_YIELD_PROGRESS_SLEEP_US");
         LOG("[scheduler] Metro profile: PhysX/Secondary use Utility QoS with priority inheritance; progressing-yield handoff=256/256 after 50k/s");''',
      '''        setenv("DM_YIELD_PROGRESS_SLEEP_US", "100", 1);
-        setenv("DM_YIELD_PROGRESS_SLEEP_NAMES", "uEngine :: PhysX simulator;uEngine :: Secondary", 1);
+        setenv("DM_YIELD_PROGRESS_SLEEP_NAMES", "uEngine :: PhysX simulator;uEngine :: Secondary;main thread", 1);
         setenv("DM_YIELD_BACKOFF", "250:500", 1);
          LOG("[scheduler] Metro patch v2: PhysX/Secondary/main named back-off; non-progressing yield back-off=250us after 500us");  // NX2A_METRO_YIELD_SLEEP_V2''')
 ])
