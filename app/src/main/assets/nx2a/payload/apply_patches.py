@@ -34,8 +34,13 @@ except OSError: _pipeline_source = ''
 if 'def ui_font_assets()' in _pipeline_source:
     print('NGR UI font assets: upstream implementation present')
 else:
-    patch('NGR UI font assets', 'porter/pipeline.py', 'NX2A_UI_FONT_ASSETS', [
-        ("""from porter.paths import DM, NXNATIVE
+    # Required dependency of NGR runtime packaging: never skip it in a
+    # selective patch run, or the pinned porter fails at the data-pack stage.
+    _saved_patch_only = PATCH_ONLY
+    PATCH_ONLY = set()
+    try:
+        patch('NGR UI font assets', 'porter/pipeline.py', 'NX2A_UI_FONT_ASSETS', [
+            ("""from porter.paths import DM, NXNATIVE
 """, """from porter.paths import DM, NXNATIVE
 
 # NX2A_UI_FONT_ASSETS: compatibility with the pre-font upstream porter.
@@ -46,7 +51,9 @@ def ui_font_assets():
         return {}
     return {'font/ui.bin': UI_FONT, **{f'font/{f.relative_to(d).as_posix()}': f for f in sorted(p for p in d.rglob('*.txt'))}}
 """),
-    ])
+        ])
+    finally:
+        PATCH_ONLY = _saved_patch_only
 
 # 1. the NDK's own tools are x86-64: use the system clang/glslc with the NDK sysroot, the system clang's headers and the NDK's runtime libraries
 patch('arm host build', 'nxnative/dm/android/build.py', 'NX2A_ARM_HOST', [
@@ -997,3 +1004,188 @@ patch('NGR Metro scheduler env after env.txt', 'nxnative/dm/android/front_androi
 ])
 
 sys.exit(1 if failed else 0)
+
+
+# 24. The AudioOutBuffer is the SDK's 40-byte object, not the host's former
+# private 24-byte prefix. Metro 2033 Redux's resampler asks the SDK for the
+# capacity; the old layout made it read data_size as capacity, so every fourth
+# block could be re-appended with audio from four blocks earlier (~170 ms).
+# Keep the descriptor accessors in the SDK and let the host consume its layout.
+def _rewrite_audio_file(rel, marker, transform):
+    global failed
+    f = repo / rel
+    try:
+        src = f.read_text()
+    except OSError as e:
+        print(f'NGR AudioOutBuffer ABI: FAILED (cannot read {rel}: {e})')
+        failed += 1
+        return
+    if marker in src or ('gbuf' not in src and 'aout_buf' in src):
+        print(f'NGR AudioOutBuffer ABI {rel}: already')
+        return
+    try:
+        dst = transform(src)
+    except Exception as e:
+        print(f'NGR AudioOutBuffer ABI {rel}: FAILED ({e})')
+        failed += 1
+        return
+    if dst == src or 'gbuf' in dst:
+        print(f'NGR AudioOutBuffer ABI {rel}: FAILED (old layout remains)')
+        failed += 1
+        return
+    if marker not in dst:
+        print(f'NGR AudioOutBuffer ABI {rel}: FAILED (marker missing)')
+        failed += 1
+        return
+    f.write_text(dst)
+    print(f'NGR AudioOutBuffer ABI {rel}: ok')
+
+
+def _audio_output(src):
+    if 'gbuf' not in src and 'aout_buf' in src:
+        return src
+    src = src.replace('gbuf', 'aout_buf')
+    old_typedef = 'typedef struct { void *ptr; uint64_t cap, size; } aout_buf;     // The first 24 bytes written into the guest AudioOutBuffer\n'
+    if src.count(old_typedef) != 1:
+        raise RuntimeError('hle_audio.c old buffer typedef changed')
+    src = src.replace(old_typedef, '', 1)
+    old_accessors = '''HLE_FORCE("_ZN2nn5audio21SetAudioOutBufferInfoEPNS0_14AudioOutBufferEPvmm", "buffer description; written into the first 24 bytes of the guest struct", void, h_au_SetBuf, aout_buf *b, void *p, uint64_t cap, uint64_t size) {
+    b->ptr = p; b->cap = cap; b->size = size;
+}
+HLE_FORCE("_ZN2nn5audio28GetAudioOutBufferDataPointerEPKNS0_14AudioOutBufferE", "buffer data pointer", void *, h_au_BufPtr, const aout_buf *b) { return b->ptr; }
+HLE_FORCE("_ZN2nn5audio25GetAudioOutBufferDataSizeEPKNS0_14AudioOutBufferE", "buffer data size", uint64_t, h_au_BufSize, const aout_buf *b) { return b->size; }
+'''
+    if src.count(old_accessors) != 1:
+        raise RuntimeError('hle_audio.c descriptor takeover block changed')
+    comment = '''// NX2A_AUDIOOUTBUFFER_ABI: SetAudioOutBufferInfo and the AudioOutBuffer getters run in the SDK.
+// The host reads the SDK's complete 40-byte aout_buf; never emulate these accessors with a private layout.
+'''
+    src = src.replace(old_accessors, comment, 1)
+    return src.replace('#include "hle.h"', '#include "hle.h"\n// NX2A_AUDIOOUTBUFFER_ABI', 1)
+
+
+def _audio_renderer(src):
+    if 'gbuf' not in src and 'aout_buf' in src:
+        return src
+    src = src.replace('gbuf', 'aout_buf')
+    old_typedef = "typedef struct { void *ptr; uint64_t cap, size; } aout_buf;       // same as the front of hle_audio.c's AudioOutBuffer\n"
+    if src.count(old_typedef) != 1:
+        raise RuntimeError('hle_audren.c old buffer typedef changed')
+    src = src.replace(old_typedef, '', 1)
+    old_init = '(aout_buf){data[i], sizeof data[i], 0}'
+    if src.count(old_init) != 1:
+        raise RuntimeError('hle_audren.c positional AudioOutBuffer initializer changed')
+    src = src.replace(old_init, '(aout_buf){.ptr = data[i], .cap = sizeof data[i], .size = 0}', 1)
+    return src.replace('#include "hle.h"', '#include "hle.h"\n// NX2A_AUDIOOUTBUFFER_ABI', 1)
+
+
+def _audio_test(src):
+    if 'gbuf' not in src and 'aout_buf' in src:
+        return src
+    src = src.replace('gbuf', 'aout_buf')
+    old = 'aout_buf b[2] = {{in, SPLIT * 12, SPLIT * 12}, {in + SPLIT * 6, (FRAMES - SPLIT) * 12, (FRAMES - SPLIT) * 12}};'
+    new = 'aout_buf b[2] = {{.ptr = in, .cap = SPLIT * 12, .size = SPLIT * 12}, {.ptr = in + SPLIT * 6, .cap = (FRAMES - SPLIT) * 12, .size = (FRAMES - SPLIT) * 12}};'
+    if src.count(old) != 1:
+        raise RuntimeError('t_audio.c positional buffer test initializer changed')
+    src = src.replace(old, new, 1)
+    src = src.replace('h_au_SetBuf(', 'set_buf(')
+    anchor = '// Exercise the actual device callback, not just a mixing helper.'
+    helper = '''// NX2A_AUDIOOUTBUFFER_ABI: test helper writes the SDK-defined fields.
+static void set_buf(aout_buf *b, void *p, uint64_t cap, uint64_t size) {
+    b->next = NULL; b->ptr = p; b->cap = cap; b->size = size; b->offset = 0;
+}
+'''
+    if src.count(anchor) != 1:
+        raise RuntimeError('t_audio.c helper insertion anchor changed')
+    src = src.replace(anchor, helper + anchor, 1)
+    return src
+
+
+def _audio_spsc_test(src):
+    if 'gbuf' not in src and 'aout_buf' in src:
+        return src
+    return src.replace('gbuf', 'aout_buf').replace('// hle_audio.c lock-free queue stress test', '// NX2A_AUDIOOUTBUFFER_ABI: hle_audio.c lock-free queue stress test', 1)
+
+
+_saved_patch_only = PATCH_ONLY
+PATCH_ONLY = set()
+try:
+    _header = (repo / 'nxnative/dm/host/hle.h').read_text()
+    if 'typedef struct { void *next; void *ptr; uint64_t cap, size, offset; } aout_buf;' not in _header:
+        patch('NGR AudioOutBuffer ABI declaration', 'nxnative/dm/host/hle.h', 'NX2A_AUDIOOUTBUFFER_ABI', [
+            ('#include "dm.h"\n', '#include "dm.h"\n#include <stddef.h>\n'),
+            ('void dm_audio_reset(void);   // iOS media services reset: recreate the AudioUnits (hle_audio.c)\n',
+             '''void dm_audio_reset(void);   // iOS media services reset: recreate the AudioUnits (hle_audio.c)
+// NX2A_AUDIOOUTBUFFER_ABI: nn::audio::AudioOutBuffer layout used by the SDK (SDK 8 through Switch 2).
+typedef struct { void *next; void *ptr; uint64_t cap, size, offset; } aout_buf;   // next, data, buffer_size, data_size, data_offset
+_Static_assert(sizeof(aout_buf) == 40 && offsetof(aout_buf, ptr) == 0x08 && offsetof(aout_buf, cap) == 0x10 && offsetof(aout_buf, size) == 0x18 && offsetof(aout_buf, offset) == 0x20,
+               "nn::audio::AudioOutBuffer layout");
+''')
+        ])
+    _rewrite_audio_file('nxnative/dm/host/hle_audio.c', 'NX2A_AUDIOOUTBUFFER_ABI', _audio_output)
+    _rewrite_audio_file('nxnative/dm/host/hle_audren.c', 'NX2A_AUDIOOUTBUFFER_ABI', _audio_renderer)
+    _rewrite_audio_file('nxnative/dm/host/tests/t_audio.c', 'NX2A_AUDIOOUTBUFFER_ABI', _audio_test)
+    _rewrite_audio_file('nxnative/dm/host/tests/t_audio_spsc.c', 'NX2A_AUDIOOUTBUFFER_ABI', _audio_spsc_test)
+finally:
+    PATCH_ONLY = _saved_patch_only
+
+# 25. Metro's PhysX and Secondary workers run a progressing YieldThread loop:
+# their register changes bypass the ordinary no-progress backoff. After the
+# measured 50k/s budget, sleep only these two named workers briefly; other games
+# and other Metro threads retain the scheduler fast path.
+patch('NGR named-worker progressing-yield backoff', 'nxnative/dm/host/hle_thread.c', 'NX2A_YIELD_NAMED_SLEEP', [
+    ('''    static int limit = -1, handoff_every = 256;
+    static _Thread_local uint64_t window_ns;''',
+     '''    static int limit = -1, handoff_every = 256, sleep_us = -1;
+    static _Thread_local int sleep_target = -1;
+    static _Thread_local uint64_t window_ns;'''),
+    ('''        const char *h = getenv("DM_YIELD_PROGRESS_HANDOFF");
+        limit = e && *e ? atoi(e) : 0;''',
+     '''        const char *h = getenv("DM_YIELD_PROGRESS_HANDOFF");
+        const char *su = getenv("DM_YIELD_PROGRESS_SLEEP_US");
+        sleep_us = su && *su ? atoi(su) : 0;
+        if (sleep_us < 0) sleep_us = 0;
+        if (sleep_us > 10000) sleep_us = 10000;
+        limit = e && *e ? atoi(e) : 0;'''),
+    ('''        if (limit > 0) LOG("DM_YIELD_PROGRESS_LIMIT=%d/s, host scheduler handoff every %d excess yields (no sleep while guest locks may be held)", limit, handoff_every);''',
+     '''        if (limit > 0) LOG("DM_YIELD_PROGRESS_LIMIT=%d/s, handoff every %d excess yields, named-worker sleep=%d us", limit, handoff_every, sleep_us);'''),
+    ('''        excess = 0;
+        sched_yield();
+    }
+}
+static void thr_yield(thr_t *me, const uint64_t *regs) {''',
+     '''        excess = 0;
+        if (sleep_us > 0 && me) {
+            if (sleep_target < 0) {
+                sleep_target = 0;
+                const char *names = getenv("DM_YIELD_PROGRESS_SLEEP_NAMES");
+                if (names && *names) {
+                    char name[64]; const char *n = thr_name(me, name, sizeof name);
+                    size_t nl = strlen(n);
+                    for (const char *p = names; *p;) {
+                        const char *end = strchr(p, ';');
+                        size_t len = end ? (size_t)(end - p) : strlen(p);
+                        if (len == nl && nl && !memcmp(p, n, len)) { sleep_target = 1; break; }
+                        if (!end) break;
+                        p = end + 1;
+                    }
+                }
+            }
+            if (sleep_target) {
+                struct timespec ts = { sleep_us / 1000000, (long)(sleep_us % 1000000) * 1000L };
+                nanosleep(&ts, NULL);
+            } else sched_yield();
+        } else sched_yield();
+    }
+}
+static void thr_yield(thr_t *me, const uint64_t *regs) {''')
+])
+
+# 26. Enable the measured back-off only for Metro's two busy-wait workers.
+patch('NGR Metro named-worker yield backoff env', 'nxnative/dm/android/front_android.c', 'NX2A_METRO_YIELD_SLEEP', [
+    ('''        unsetenv("DM_YIELD_PROGRESS_SLEEP_US");
+        LOG("[scheduler] Metro profile: PhysX/Secondary use Utility QoS with priority inheritance; progressing-yield handoff=256/256 after 50k/s");''',
+     '''        setenv("DM_YIELD_PROGRESS_SLEEP_US", "100", 1);
+        setenv("DM_YIELD_PROGRESS_SLEEP_NAMES", "uEngine :: PhysX simulator;uEngine :: Secondary", 1);
+        LOG("[scheduler] Metro profile: PhysX/Secondary use Utility QoS plus 100us back-off after 50k progressing yields/s");  // NX2A_METRO_YIELD_SLEEP''')
+])
