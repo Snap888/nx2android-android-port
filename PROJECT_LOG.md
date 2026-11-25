@@ -494,3 +494,9 @@
 - Patch commit: 75f12caad8c3952922109247cfc80febb140bf2b.
 - Manifest commit: 6b1b650993af6d702faef0640666587f313ed573 (payload version 177; apply_patches.py SHA-256 3a676be3b6c2964d6b8e0226a99b9251616b82ad20ca7e3df628d1c2e24d8b33).
 - Re-run validation against this exact branch head is still required; do not use the failed/cancelled earlier run as validation.
+### Patcher execution-order correction — 25.11.2026
+- Audit of the first patch-set verification showed the new AudioOutBuffer and named-worker patches had been appended after the terminal sys.exit, so that verification only exercised the pre-existing patch set. They are now moved before sys.exit and will execute.
+- The audio patch block skips only when the Porter source tree is absent in a synthetic unit-test fixture; real Porter checkouts still receive all ABI edits.
+- Active patcher commit: ef7864cf306ec28286b7a40bfa13b7c4e753a656.
+- Payload manifest commit: e51d319ea4d4cd7ac4a7c19bf3642e4fb065d2ea (version 178; apply_patches.py SHA-256 29659d71d890ece1014f6d93a9810a9089c37b49030b56c2b6357bb618d660a3).
+- Previous "Verify NGR patch set" success is not evidence for these new patches; require a fresh run on this exact manifest commit and inspect that it prints NGR AudioOutBuffer ABI and NGR named-worker back-off as applied.
