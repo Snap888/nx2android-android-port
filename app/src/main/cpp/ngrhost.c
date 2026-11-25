@@ -993,6 +993,15 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
         if (fsn > 0 && (size_t)fsn < sizeof(fslog_path))
             setenv("DM_FSLOG", fslog_path, 1);
     }
+    /* Metro's per-call NVN and filesystem traces generate avoidable I/O while
+       diagnosing a CPU-bound game. Keep frame timing / watchdog aggregates, but
+       suppress verbose call-level traces for this title. */
+    if (!strcmp(id, "9383b4fd4e8540ed5d6e")) {
+        setenv("DM_NVN_LOG", "0", 1);
+        setenv("DM_FS", "0", 1);
+        setenv("DM_FSLOG", "/dev/null", 1);
+        LOGI("[scheduler] Metro 2033 performance profile: verbose NVN and filesystem tracing disabled");
+    }
     LOGI("[stage 1/8] payload validated; game_dir=%s private_dir=%s", game_dir, private_dir);
     LOGI("[stage 2/8] native libraries staged; runtime=%s", lib_path);
     LOGI("[stage 3/8] preloading companion dependencies");
