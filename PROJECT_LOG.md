@@ -410,3 +410,42 @@
 - Промежуточный commit `00a63e1b2769c3ac4f1bd851ede6a11bd5d42f1b` с неверным ручным SHA заменён корректным manifest.
 - Commit `1e75ad6039aa142f3dadee93f1aa4f79e8a46ff1` добавил лишнюю пустую строку; финальный commit `8688b4ccb4204513d7da9402e20ecb5f48a6bc5d` нормализовал файл ровно до одной завершающей LF.
 - Следующий CI run должен подтвердить manifest и продолжить APK build; APK пока не подтверждён.
+
+
+## 2026-11-25 — Metro 2033 Redux: avoid sleeping inside contended guest locks
+
+### Уточнение по новому логу
+- Подтверждён Game ID 9383b4fd4e8540ed5d6e, Title ID 0100D4900E82C000.
+- На watchdog snapshot около 30 s Audio Render и main thread одновременно ждут mutex, owner — uEngine :: Secondary (0x100f). Это прямее указывает на задержку владельца mutex, чем общая гипотеза о недостаточном AAudio буфере.
+- PhysX simulator (0x1010) и Secondary (0x100f) имеют guest priority 43 и выполняют 2.9M / 1.7M SleepThread(0) вызовов в секунду. Upstream fast path для progressing yields возвращает управление без host scheduling point.
+- В NVN trace обнаружено, что DM_NVN_LOG=0 всё равно включает OLOG: upstream использовал getenv("DM_NVN_LOG") != NULL, то есть любое непустое значение, включая "0", считалось включённым. Это объясняет повторяющиеся per-call DeviceGetInteger сообщения несмотря на настройку выключения.
+- Vulkan submit+present достигал 1177.5 ms при GPU 1.4 ms; это отдельный CPU/Surface presentation stall, вероятно усиливаемый starvation, но не доказанная первопричина аудиопроблемы.
+
+### Изменено
+- apply_patches.py:
+  - Добавлен name-based QoS override только для uEngine :: PhysX simulator и uEngine :: Secondary: эти два worker thread работают с Utility QoS.
+  - Основной и аудиопотоки priority 43 остаются User Interactive. Существующий ArbitrateLock QoS inheritance повышает владельца mutex до класса ожидающего потока, пока тот не освободит lock.
+  - Metro progressing-yield guard больше не делает nanosleep(50us) на каждом yield сверх лимита: это могло искусственно удерживать mutex дольше. После 50k progressing yields/s выполняется sched_yield() один раз на каждые 256 дополнительных yield-вызовов.
+  - DM_NVN_LOG теперь трактует "0" как выключено, пустое значение как выключено, а ненулевое значение как включено.
+  - Scheduler profile повторно применяется в front_android.c после чтения env.txt, поэтому сохранённый пользовательский env-файл не отменит защиту Metro.
+- ngrhost.c задаёт Metro edges 44,58, список двух worker names и новый cooperative handoff. Общая политика для остальных игр не меняется.
+- Payload manifest обновлён до версии 175 с актуальным SHA-256 apply_patches.py: a66635c3556d27fd9337e3561a30520a625789bc2664656b780e1f53842467b4.
+
+### Коммиты
+- 514298e3aa810ce68aa015e00f0facc8d5ca5813 — Improve Metro worker scheduling and disable NVN log flood
+- 7f97db0fcfb628db5c2cf5747574807a662d85c6 — Configure Metro worker QoS and cooperative yield handoff
+- e888f5d35096cae8278c0f6a9cadda486f91108a — intermediate manifest update (version bump corrected)
+- 197ad30311dc5a8e992c2880cb824d0800036a8e — Keep payload version while refreshing Metro patch hash
+
+### Проверки / статус
+- Porter patch validation на pinned source 468937822219a56eb81da1aa2e40f05e8c453af2 прошла; повторный запуск patcher подтвердил идемпотентность всех новых patch blocks.
+- Первая manifest CI проверка выявила только ошибочное увеличение version с 175 до 177; hash apply_patches.py совпал с вычисленным CI SHA. Version возвращён к 175.
+- Ожидается CI на HEAD 197ad30311dc5a8e992c2880cb824d0800036a8e: manifest, Python/patch validation, CMake/NDK, signed APK и artifact upload.
+- Исправление пока не подтверждено на устройстве. Нужен A/B запуск Metro: сравнить yield rate двух worker threads, AudioOut underruns/queue depth, Android UI responsiveness и p95/p99 frame time.
+- Не менялись AAudio callback period, AudioOut QMAX/queue semantics и Vulkan texture aliasing. Presentation stalls и stale texture alias warnings остаются отдельными задачами, если сохранятся после снижения CPU starvation.
+
+### Следующие шаги
+1. Дождаться CI на commit 197ad30311dc5a8e992c2880cb824d0800036a8e и проверить APK artifact.
+2. Установить APK, запустить Metro в той же сцене и проверить, что лог содержит DM_YIELD_PROGRESS_LIMIT, DM_QOS_UTILITY_NAMES / Metro scheduler marker, а per-call DeviceGetInteger не спамит при DM_NVN_LOG=0.
+3. Сравнить аудио underruns, queue depth, watchdog CPU time двух worker threads и отклик Android UI.
+4. Если submit+present остаётся >100 ms при GPU <5 ms, отдельно исследовать Vulkan queue present / Android BufferQueue; если stale alias reads сохраняются — записать A/B кадры и проверить alias lifetime.
