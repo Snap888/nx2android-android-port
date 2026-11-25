@@ -600,3 +600,5 @@
 ### Проверка
 - Нужна установка свежего APK и Recompile/Update Metro data pack. После этого в runtime/gameplay log проверить '[scheduler] Metro patch v2' и 'DM_YIELD_PROGRESS_LIMIT'. Сравнить yield/s, CPU seconds, main-thread mutex waits, longframe и Audio Render underruns.
 - Проверить Handheld и Docked на одной сцене; ожидание: Handheld window/surface full-screen, destination 0,0 width,height; Docked aspect-fit centered. APK пока не подтверждает реальное поведение на устройстве.
+
+- Follow-up correction: keep Utility QoS limited to PhysX/Secondary; include `main thread` only in the Metro named yield back-off list (it must retain interactive QoS). Payload version 195 refreshes the patcher manifest.
