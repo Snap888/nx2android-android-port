@@ -98,6 +98,59 @@ def _cover_cache_path(game_id):
     return COVER_CACHE / (game_id + '.jpg')
 
 
+def _cache_embedded_game_cover(data_dir, game_id):
+    """Cache the decrypted NACP icon carried by a new NGR pack or a compatible imported pack."""
+    if not re.fullmatch(r'[0-9a-f]{20}', str(game_id or '')):
+        return ''
+    root = Path(data_dir)
+    names = ('ngr-cover.jpg', 'ngr-cover.png', 'ngr-cover.webp',
+             'icon.jpg', 'icon.png', 'icon.webp', 'cover.jpg', 'cover.png', 'cover.webp')
+    for name in names:
+        source = root / name
+        temp = None
+        try:
+            if source.is_symlink() or not source.is_file():
+                continue
+            size = source.stat().st_size
+            if size <= 0 or size > 8 * 1024 * 1024:
+                continue
+            with source.open('rb') as stream:
+                header = stream.read(12)
+            if header.startswith(b'\xff\xd8\xff'):
+                ext = 'jpg'
+            elif header.startswith(b'\x89PNG\r\n\x1a\n'):
+                ext = 'png'
+            elif header[:4] == b'RIFF' and header[8:12] == b'WEBP':
+                ext = 'webp'
+            else:
+                continue
+            COVER_CACHE.mkdir(parents=True, exist_ok=True)
+            target = COVER_CACHE / (game_id + '.' + ext)
+            temp = target.with_suffix(target.suffix + '.tmp')
+            shutil.copyfile(source, temp)
+            os.replace(temp, target)
+            return str(target.resolve())
+        except OSError:
+            if temp is not None:
+                try: temp.unlink()
+                except OSError: pass
+    return ''
+
+
+def _select_game_cover(existing, embedded_path):
+    """Manual art wins; a game's own NACP icon wins over a downloaded catalogue fallback."""
+    old_path = str((existing or {}).get('cover_path') or '')
+    old_source = str((existing or {}).get('cover_source') or '')
+    old_readable = bool(existing) and _cover_is_readable(existing)
+    if old_readable and old_source not in ('nlib-icon', 'game-nacp'):
+        return old_path, old_source or 'manual'
+    if embedded_path:
+        return embedded_path, 'game-nacp'
+    if old_readable:
+        return old_path, old_source or 'nlib-icon'
+    return '', ''
+
+
 def _cover_is_readable(game):
     try:
         p = Path(game.get('cover_path') or '').resolve(strict=True)
@@ -265,10 +318,10 @@ def register_port_result(lines):
         # Migrate an earlier package-hash shortcut to the stable title-ID shortcut.
         catalog['games'] = [g for g in catalog['games'] if g.get('id') != existing.get('id')]
     title = str(result.get('name') or result.get('app_name') or Path(data_path).name.removesuffix('-data'))
+    data_dir = Path(data_path)
     runtime_libs = []
     runtime_error = ''
     try:
-        data_dir = Path(data_path)
         if result.get('runtime') and (data_dir / 'libdmhost.so').is_file():
             runtime_libs = sorted(p.name for p in data_dir.glob('*.so') if p.is_file())
         elif result.get('apk'):
@@ -308,6 +361,8 @@ def register_port_result(lines):
         profile_error = 'porter result has no valid 16-digit title_id'
         JOB['lines'].append(f'[NGR profile] {profile_error}')
 
+    embedded_cover = _cache_embedded_game_cover(data_dir, game_id)
+    cover_path, cover_source = _select_game_cover(existing, embedded_cover)
     ready = not runtime_error
     item = {
         'id': game_id, 'title': title, 'platform': 'switch', 'title_id': title_id,
@@ -324,7 +379,7 @@ def register_port_result(lines):
             'fps60': bool(JOB.get('port_options', {}).get('fps60')),
             'vulkan_driver': str(JOB.get('port_options', {}).get('vulkan_driver') or '')
         }),
-        'cover_path': (existing or {}).get('cover_path', ''),
+        'cover_path': cover_path, 'cover_source': cover_source,
         'created_at': (existing or {}).get('created_at', int(time.time())),
         'updated_at': int(time.time())
     }
@@ -663,6 +718,8 @@ def import_precompiled_game(folder):
     if not title:
         title = 'Imported NGR game'
     libs = sorted(p.name for p in data.glob('*.so') if p.is_file() and not p.is_symlink())
+    embedded_cover = _cache_embedded_game_cover(data, game_id)
+    cover_path, cover_source = _select_game_cover(existing, embedded_cover)
     if 'libdmhost.so' not in libs:
         raise ValueError('The NGR native runtime library is not available in the selected folder.')
     catalog = library_read()
@@ -683,7 +740,7 @@ def import_precompiled_game(folder):
         'source_folder': '', 'imported_precompiled': True,
         'status': 'runtime_ready', 'runtime_error': '',
         'settings': (existing or {}).get('settings', {}),
-        'cover_path': (existing or {}).get('cover_path', ''),
+        'cover_path': cover_path, 'cover_source': cover_source,
         'created_at': (existing or {}).get('created_at', int(time.time())),
         'updated_at': int(time.time())
     }
@@ -804,7 +861,7 @@ class H(BaseHTTPRequestHandler):
                 if not (str(resolved).startswith('/sdcard/') or str(resolved).startswith('/storage/')) or not resolved.is_file() or resolved.suffix.lower() not in ('.png', '.jpg', '.jpeg', '.webp'):
                     raise ValueError('Choose a PNG, JPG or WebP image in shared storage.')
                 if resolved.stat().st_size > 8 * 1024 * 1024: raise ValueError('Cover image must be 8 MB or smaller.')
-                game = library_update(str(o.get('id', '')), lambda g: g.update(cover_path=str(resolved), updated_at=int(time.time())))
+                game = library_update(str(o.get('id', '')), lambda g: g.update(cover_path=str(resolved), cover_source='manual', updated_at=int(time.time())))
                 return self.j({'ok': game is not None, 'error': None if game else 'Game not found'})
             except (OSError, ValueError) as e:
                 return self.j({'ok': False, 'error': str(e)})
