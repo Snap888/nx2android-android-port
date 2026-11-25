@@ -1214,4 +1214,23 @@ patch('NGR two-signature yield wait detection', 'nxnative/dm/host/hle_thread.c',
 """),
 ])
 
+# 28. Record the guest image, Android window and centered destination rectangle.
+# This is change-triggered rather than per-frame, so the diagnostic has negligible overhead.
+patch('NGR Vulkan display geometry diagnostics', 'nxnative/dm/android/gfx_vk_present.c', 'NX2A_DISPLAY_GEOMETRY_LOG', [
+    ('''    vk_pic_set((float)dx / g_sext.width, (float)dy / g_sext.height, (float)dw / g_sext.width, (float)dh / g_sext.height);
+''',
+     '''    static int nx2a_last_geom[10] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
+    int nx2a_geom[10] = {(int)im->w, (int)im->h, cx, cy, cw, ch,
+                         (int)g_sext.width, (int)g_sext.height, dx, dy};
+    int nx2a_changed = 0;
+    for (int i = 0; i < 10; i++) if (nx2a_geom[i] != nx2a_last_geom[i]) { nx2a_changed = 1; break; }
+    if (nx2a_changed) {
+        VKLOG("[display] guest=%ux%u crop=%d,%d %dx%d window=%ux%u target=%ux%u destination=%d,%d %dx%d aspect-fit",
+              im->w, im->h, cx, cy, cw, ch, g_sext.width, g_sext.height,
+              g_next.width, g_next.height, dx, dy, dw, dh);
+        memcpy(nx2a_last_geom, nx2a_geom, sizeof nx2a_geom);
+    }
+    vk_pic_set((float)dx / g_sext.width, (float)dy / g_sext.height, (float)dw / g_sext.width, (float)dh / g_sext.height); // NX2A_DISPLAY_GEOMETRY_LOG
+''')
+]);
 sys.exit(1 if failed else 0)
