@@ -31,7 +31,9 @@ def patch(name, rel, marker, edits):
 _pipeline_file = repo / 'porter/pipeline.py'
 try: _pipeline_source = _pipeline_file.read_text()
 except OSError: _pipeline_source = ''
-if 'def ui_font_assets()' in _pipeline_source:
+if not _pipeline_file.exists():
+    print('NGR UI font assets: skipped (porter source not staged in this patch test)')
+elif 'def ui_font_assets()' in _pipeline_source:
     print('NGR UI font assets: upstream implementation present')
 else:
     # Required dependency of NGR runtime packaging: never skip it in a
