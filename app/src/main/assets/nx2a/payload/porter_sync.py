@@ -127,7 +127,11 @@ def _install(sha, log, must_patch):
 
 
 def sync(force=False, log=print):
-    """Validate the active porter first; if newest no longer accepts our patches, fall back to the pinned known-good checkout."""
+    """Use a verified local checkout for normal analysis/build; upstream polling is explicit."""
+    if not force:
+        cached, cached_sha = local_ready()
+        if cached:
+            return True, f'porter cache {cached_sha[:9]} is complete and patched; no network check'
     pl = _payload(); pinned = pl.get('porter_good') or pl.get('porter_sha'); track = pl.get('porter_track') == 'main'
     if mode() == 'good' and pl.get('porter_good'):
         pinned = pl['porter_good']; track = False
