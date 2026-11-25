@@ -350,3 +350,55 @@
 3. From the fresh Metro log, confirm whether the producer is FMOD/AudioOut or AudioRenderer before changing callback buffering or queue semantics.
 4. If underruns persist, instrument only sampled producer enqueue/release timing and thread wait state; keep per-lock trace and filesystem/NVN verbose logs off by default.
 5. Inspect the ANR/tombstone section to distinguish CPU starvation from deadlock, GPU wait or memory pressure.
+
+
+## 2026-11-25 — Metro 2033 Redux: CPU yield storm and audio starvation
+
+### Лог и подтверждённые причины
+- Новый пользовательский gameplay log: Game ID `9383b4fd4e8540ed5d6e`, profile / Title ID `0100D4900E82C000`, Android package `unknown.none.nx2android`, Vulkan Turnip Adreno 740 driver 26.2.99.
+- Важная коррекция прежней гипотезы: это не просто малый аудиобуфер. Два гостевых потока Unity/uEngine выполняют патологически частые progressing `SleepThread` yields, которые текущий `thr_yield()` намеренно пропускает без host scheduling point, когда меняются callee-saved регистры.
+- Watchdog зафиксировал `uEngine :: PhysX simulator` до 2.92 млн yields/s и `uEngine :: Secondary` до 2.36 млн yields/s. На снимке через 74.3 s CPU time составлял PhysX 58.15 s и Secondary 44.96 s.
+- В снимке на 30 s `Audio Render` и `main thread` оба ждут mutex, owner которого — `uEngine :: Secondary`. Это прямой механизм starvation аудиопроизводителя и основного потока.
+- AAudio запрашивает 240 frames / 5 ms. Аудиоочередь имела 4.0 блока в среднем в начале; позже:
+  - callbacks 10000: 544 underruns, 2714.9 ms zero-padded;
+  - 12000: 78 underruns, 389.4 ms;
+  - 14000: 133 underruns, 665.0 ms;
+  - 18000: 293 underruns, 1462.8 ms;
+  - 20000: 169 underruns, 844.1 ms;
+  - 22000: 747 underruns, 3731.2 ms.
+- Callback 24000: 2000 underruns / 10000 ms совпадает с явным `audio suspended (background / interruption)`; это не считаем обычным игровым underrun.
+- Frame interval p50 около 33.33 ms (present interval 2 / примерно 30 FPS). На frame 1294 `submit+present` занял 1177.5 ms при GPU 1.4 ms; на frame 1707 — 788.1 ms при GPU 1.4 ms. Это отдельные задержки presentation/driver/Surface, а не время выполнения GPU. В некоторых других длинных кадрах submit+present был быстрым, что дополнительно указывает на starvation/блокировку.
+- Появляются повторные `[vk] [alias] stale read` для 1280x720 sampled texture и перекрывающей её 640x360 render texture. Это отдельная графическая hazard-сигнатура; не объявляем её причиной аудио, требуется отдельная проверка захватом кадров.
+- NVN verbose logging генерировал повторяющиеся per-call `DeviceGetInteger` сообщения; для Metro это лишняя нагрузка на log I/O.
+
+### Изменено в исходниках
+- `apply_patches.py`: добавлен опциональный `DM_YIELD_PROGRESS_LIMIT` для progressing yields. Он учитывает частоту отдельно на каждом guest thread; после лимита применяет короткий nanosleep и отмечает thread как sleeping. По умолчанию выключен — другие игры не меняют поведение.
+- `ngrhost.c`: только для стабильного Metro Game ID `9383b4fd4e8540ed5d6e`:
+  - включён QoS mapping с edges `42,58`, чтобы игровые guest threads priority 43 были User-Initiated, а не User-Interactive;
+  - `DM_YIELD_PROGRESS_LIMIT=50000` в секунду;
+  - `DM_YIELD_PROGRESS_SLEEP_US=50`;
+  - verbose `DM_NVN_LOG` и filesystem trace отключены; frame timing и watchdog aggregates сохраняются.
+- AAudio callback period, sample rate, AudioOut queue layout и producer locking пока не менялись: лог указывает на starvation выше по цепочке, а увеличение буфера без исправления владельца mutex лишь маскировало бы причину.
+- Payload manifest version увеличен до 175; SHA-256 `apply_patches.py`: `7c97388ea6eaf97f4071afbb7471e98fe3e6974eed8e8a66a0e4cce8180e2069`.
+
+### Коммиты
+- `d2a86c38451326f4f92b86b571d3ac24ab693ebd` — Add per-game guard for pathological yield storms.
+- `39f360c12da36aa21fbf866063896cfd15678618` — Apply Metro 2033 CPU yield guard.
+- `0ca1a7d71dda5e2f8754122e79c0f467be442dd9` — Clamp invalid yield limiter configuration.
+- `15cf9991fe19dd21db7e5cb61aa19749e0041488` — Disable verbose traces for Metro 2033.
+- `0e4d3cc35086779d5aafa98665748f1ab6065fbb` — Update payload manifest for Metro scheduler guard.
+
+### Проверки и ограничения
+- Источник pinned Porter: `shirai91/nx2android` commit `468937822219a56eb81da1aa2e40f05e8c453af2`.
+- CI patch validation и APK build ещё должны подтвердить, что новый патч применяется к Porter и Android C-код собирается.
+- Rate limiter — адресный workaround по наблюдаемой Metro-сессии, не доказательство устранения всех зависаний. Нужен A/B запуск на устройстве.
+- Длинные Vulkan present stalls и stale texture aliases остаются отдельными пунктами для повторной проверки после снижения CPU starvation.
+- APK не публиковать до успешного GitHub Actions run и проверки artifact.
+
+### Следующие шаги
+1. Проверить GitHub Actions для HEAD `0e4d3cc35086779d5aafa98665748f1ab6065fbb`: Python syntax, patch validation/idempotency, manifest, CMake/NDK build, APK artifact.
+2. Установить APK и запустить Metro в том же месте/сцене; проверить responsiveness Android UI.
+3. Сравнить watchdog yield rate (цель — убрать миллионы yields/s), AudioOut underruns/queue depth, frame p95/p99 и presentation stalls.
+4. Если звук продолжает заикаться, снять новый gameplay log с Metro profile; не включать verbose NVN/FS trace в обычном A/B.
+5. Если `submit+present` продолжит превышать 100 ms при низком GPU time, отдельно исследовать `vkQueuePresentKHR`, BufferQueue/SurfaceFlinger и очередь presentation.
+6. Отдельно исследовать texture alias stale reads (1280x720 ↔ 640x360) с pass/frame capture; пока не менять alias eviction без доказательства неверного содержимого кадра.
