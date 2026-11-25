@@ -1203,8 +1203,7 @@ patch('NGR Metro named-worker yield backoff env', 'nxnative/dm/android/front_and
 # the previous two consecutive yields as the same wait; true work that advances
 # to a third signature still returns immediately.
 patch('NGR two-signature yield wait detection', 'nxnative/dm/host/hle_thread.c', 'NX2A_YIELD_TWO_SIG', [
-    ("""uint64_t yrun_svc, yrun_t0, yrun_sig;     // Current run of yields: nsvc of the last yield, when the run began, and the caller's x19–x28 at the last yield (a run lasts while no other SVC comes between two yields and those registers stay the same, thr_yield)
-""",
+    ("""uint64_t yrun_svc, yrun_t0, yrun_sig;""",
      """uint64_t yrun_svc, yrun_t0, yrun_sig, yrun_sig2; // NX2A_YIELD_TWO_SIG: x19-x28 at the last two consecutive yields
 """),
     ("""int moved = me->yrun_svc + 1 == me->nsvc && me->yrun_sig != sig;   // the loop moved on since its last yield
