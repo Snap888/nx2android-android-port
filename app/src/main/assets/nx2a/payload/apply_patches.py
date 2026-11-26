@@ -1420,7 +1420,7 @@ patch('NGR Metro hard cap every excess progressing yield', 'nxnative/dm/host/hle
      """if (++count > (unsigned)limit) { // NX2A_METRO_HARD_YIELD_CAP_V2""")
 ]);
 
-sys.exit(1 if failed else 0)
+# moved to the end so all appended NGR patches execute
 
 # 37. Metro's named PhysX/Secondary/main loops have changing registers, so the
 # progressing-yield budget does not throttle them. Hard throttle their SVC yield
@@ -1460,3 +1460,5 @@ patch('NGR Android save clone failure diagnostics', 'nxnative/dm/android/compat/
     ('''        r = clonefile(a, b, flags);''',
      '''        r = clonefile(a, b, flags); if (r) __android_log_print(ANDROID_LOG_ERROR, "NGRRuntime", "[fs] clonefile child failed src=%s dst=%s errno=%d", a, b, errno);''')
 ]);
+
+sys.exit(1 if failed else 0)
