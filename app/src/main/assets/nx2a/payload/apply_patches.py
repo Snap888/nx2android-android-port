@@ -1448,4 +1448,13 @@ patch('NGR Metro hard progressing-yield cap', 'nxnative/dm/host/hle_thread.c', '
     }""")
 ]);
 
+
+# 36. Patch 25 wraps the excess-yield action in the named-worker sleep branch.
+# Remove the 256-yield batching condition so the configured sleep is applied to
+# every progressing yield after the per-thread rate budget is exceeded.
+patch('NGR Metro hard cap every excess progressing yield', 'nxnative/dm/host/hle_thread.c', 'NX2A_METRO_HARD_YIELD_CAP_V2', [
+    ("""if (++count > (unsigned)limit && ++excess >= (unsigned)handoff_every) {""",
+     """if (++count > (unsigned)limit) { // NX2A_METRO_HARD_YIELD_CAP_V2""")
+]);
+
 sys.exit(1 if failed else 0)
