@@ -701,5 +701,7 @@
 ### CI fix — reflink patch idempotence — 2026-11-26
 - Diagnosed run 45855491169: patch-set verification passed on first application, then failed on the idempotence pass. Patch 32 rewrote copy_file() but did not leave its declared marker; patch 34 subsequently altered that same function, so the generic replacement-verification fallback could no longer match the complete replacement block.
 - Fixed patch 32 by embedding its explicit NX2A_ANDROID_REFLINK_CLONE marker beside the FICLONE state declaration. Patch 34's writable-mode edit does not touch this marker. The second patcher invocation can now recognize the already-patched source and skip safely.
-- Updated payload manifest to version 203 and refreshed apply_patches.py SHA-256 to aea761c50981ad23c49f495fe561a159d0dd48f8e4a556d4fd98f2ea602a73b5.
+- Updated payload manifest hash refreshed from the authoritative CI manifest generator output (version remains 202; apply_patches.py SHA-256 e74998702e142e36bc7868487d05d648311b7145ea3f5baedc8d2e2ac96722e8).
 - CI run 45855491169 failed before native compilation; no APK from that run is valid. Await a fresh run for patch-set validation, native compilation, and artifact upload.
+
+- Follow-up CI run 45856075092 confirms the patch-set verification now passes on both applications. It then caught a stale payload hash; the manifest is corrected to the exact SHA-256 emitted by `tools/make_manifest.py` (version 202, no unnecessary version bump).
