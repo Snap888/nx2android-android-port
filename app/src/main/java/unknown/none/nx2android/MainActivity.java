@@ -42,6 +42,25 @@ public class MainActivity extends Activity {
     private ScrollView scroll;
     private final Handler h = new Handler(Looper.getMainLooper());
     private String loadedToken = "";
+    private volatile String pendingSaveSyncGameId;
+
+    @Override protected void onResume() {
+        super.onResume();
+        final String gameId = pendingSaveSyncGameId;
+        if (gameId != null) {
+            pendingSaveSyncGameId = null;
+            new Thread(() -> {
+                try {
+                    File privateSave = privateSaveDirectory(gameId);
+                    File publicSave = publicSaveDirectory(gameId);
+                    syncSaveFiles(privateSave, publicSave, true);
+                    android.util.Log.i("NGRRuntime", "[save] mirrored committed private saves to Download: " + publicSave);
+                } catch (Exception error) {
+                    android.util.Log.e("NGRRuntime", "[save] post-game public mirror failed", error);
+                }
+            }, "NGR-Save-Publish").start();
+        }
+    }
 
     @Override protected void onCreate(Bundle b) {
         super.onCreate(b);
@@ -677,34 +696,41 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** Download/NX2A/Saves is user-visible; import legacy private saves without overwriting newer public files. */
-    private String preparePublicSaveRoot(String gameId) throws java.io.IOException {
+    private File privateSaveDirectory(String gameId) {
+        return new File(new File(new File(getFilesDir(), "games"), gameId), "save");
+    }
+
+    private File publicSaveDirectory(String gameId) {
         File downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        File root = new File(new File(new File(downloads, "NX2A"), "Saves"), gameId);
+        return new File(new File(new File(downloads, "NX2A"), "Saves"), gameId);
+    }
+
+    /** Keep transactional game writes on app-private storage; Download is a user-visible mirror. */
+    private String preparePublicSaveRoot(String gameId) throws java.io.IOException {
+        File root = publicSaveDirectory(gameId);
         if (!root.isDirectory() && !root.mkdirs()) throw new java.io.IOException("Cannot create " + root);
-        File legacy = new File(new File(new File(getFilesDir(), "games"), gameId), "save");
-        File marker = new File(root.getParentFile(), gameId + ".private-import-v1");
-        if (!marker.isFile() && legacy.isDirectory()) {
-            copyMissingSaveFiles(legacy, root);
-            try (java.io.FileOutputStream out = new java.io.FileOutputStream(marker, false)) {
-                out.write(("Imported from " + legacy.getAbsolutePath() + "\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
-                out.getFD().sync();
-            }
-        }
+        File privateSave = privateSaveDirectory(gameId);
+        if (!privateSave.isDirectory() && !privateSave.mkdirs()) throw new java.io.IOException("Cannot create private save directory " + privateSave);
+        syncSaveFiles(root, privateSave, false);
+        syncSaveFiles(privateSave, root, true);
         return root.getCanonicalPath();
     }
 
-    private void copyMissingSaveFiles(File source, File destination) throws java.io.IOException {
+    /** Copies complete files through a sibling temp and atomic rename; never exposes partial saves. */
+    private void syncSaveFiles(File source, File destination, boolean sourceWinsTies) throws java.io.IOException {
+        if (!source.exists()) return;
         File[] children = source.listFiles();
-        if (children == null) throw new java.io.IOException("Cannot list legacy save directory: " + source);
+        if (children == null) throw new java.io.IOException("Cannot list save directory: " + source);
+        if (!destination.isDirectory() && !destination.mkdirs()) throw new java.io.IOException("Cannot create save directory: " + destination);
         for (File child : children) {
-            if (child.getName().equals(".") || child.getName().equals("..")) continue;
             File target = new File(destination, child.getName());
             if (child.isDirectory()) {
-                if (!target.isDirectory() && !target.mkdirs()) throw new java.io.IOException("Cannot create save directory: " + target);
-                copyMissingSaveFiles(child, target);
-            } else if (child.isFile() && !target.exists()) {
-                File temp = new File(destination, child.getName() + ".nx2a-import.tmp");
+                syncSaveFiles(child, target, sourceWinsTies);
+            } else if (child.isFile()) {
+                long srcTime = child.lastModified(), dstTime = target.exists() ? target.lastModified() : -1L;
+                boolean newer = !target.exists() || (sourceWinsTies ? srcTime >= dstTime : srcTime > dstTime + 2000L);
+                if (!newer) continue;
+                File temp = new File(destination, child.getName() + ".nx2a-sync.tmp");
                 try (java.io.FileInputStream in = new java.io.FileInputStream(child);
                      java.io.FileOutputStream out = new java.io.FileOutputStream(temp, false)) {
                     byte[] buffer = new byte[64 * 1024]; int count;
@@ -715,7 +741,17 @@ public class MainActivity extends Activity {
                     if (error instanceof java.io.IOException) throw (java.io.IOException) error;
                     throw new java.io.IOException(error);
                 }
-                if (!temp.renameTo(target)) { temp.delete(); throw new java.io.IOException("Cannot publish imported save: " + target); }
+                try {
+                    java.nio.file.Files.move(temp.toPath(), target.toPath(),
+                            java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+                            java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+                } catch (java.nio.file.AtomicMoveNotSupportedException unsupported) {
+                    java.nio.file.Files.move(temp.toPath(), target.toPath(),
+                            java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                } finally {
+                    if (temp.exists()) temp.delete();
+                }
+                if (srcTime > 0) target.setLastModified(srcTime);
             }
         }
     }
@@ -757,11 +793,13 @@ public class MainActivity extends Activity {
             launch.putExtra("ngr_log_fs", logFs);
             launch.putExtra("ngr_vulkan_driver_path", driver);
             launch.putExtra("game_data_path", dataPath);
-            if (publicSaveRoot != null) launch.putExtra("ngr_public_save_path", publicSaveRoot);
+            // DM_SAVE stays app-private for transactional rename/exchange semantics.
+            // Download is synchronized before launch and after NativeActivity returns.
+            pendingSaveSyncGameId = gameId;
             getSharedPreferences("nx2a", MODE_PRIVATE).edit()
                     .putString("game_data_path_" + gameId, dataPath).apply();
             if (logRuntime) appendRuntimeLog(gameId, "Starting NGR game=" + gameId + " data=" + dataPath
-                    + " publicSave=" + (publicSaveRoot == null ? "private-fallback" : publicSaveRoot));
+                    + " DM_SAVE=app-private; Download mirror=" + (publicSaveRoot == null ? "unavailable" : publicSaveRoot));
             startActivity(launch);
             if (logRuntime) appendRuntimeLog(gameId, "NativeActivity startActivity returned successfully");
             h.postDelayed(() -> {
