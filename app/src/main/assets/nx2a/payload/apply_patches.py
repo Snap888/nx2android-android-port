@@ -1617,26 +1617,42 @@ static VkPipeline mc_pipeline(uint32_t mask, uint32_t index, uint32_t kind) {
 
 # Generate three statically typed MRT fragment shaders. Every location is
 # declared so any of the eight NVN colour attachments can be selected by mask.
+
+# 47. A fragment shader must not declare outputs at locations whose active
+# attachments have different numeric classes. Use one statically located,
+# statically typed shader per attachment and numeric class (8 x 3 variants).
+patch('NGR masked clear typed shader per attachment', 'nxnative/dm/android/gfx_vk_exec.c', 'NX2A_MASKED_CLEAR_TYPED_SHADER_PER_ATTACHMENT', [
+    ("""#include "maskclear_frag.spv.h"
+#include "maskclear_uint_frag.spv.h"
+#include "maskclear_sint_frag.spv.h"
+#include "flatdbg_frag.spv.h"
+typedef struct { uint32_t ncol, cfmt[8], dfmt, samples, mask, index, kind; } mckey;
+static struct { VkPipelineLayout pl; VkShaderModule vs, fs[3]; int bad; mckey k[64]; VkPipeline p[64]; int n; } g_mc;""",
+     "#include \"maskclear_f0_frag.spv.h\"\\n#include \"maskclear_f1_frag.spv.h\"\\n#include \"maskclear_f2_frag.spv.h\"\\n#include \"maskclear_f3_frag.spv.h\"\\n#include \"maskclear_f4_frag.spv.h\"\\n#include \"maskclear_f5_frag.spv.h\"\\n#include \"maskclear_f6_frag.spv.h\"\\n#include \"maskclear_f7_frag.spv.h\"\\n#include \"maskclear_f8_frag.spv.h\"\\n#include \"maskclear_f9_frag.spv.h\"\\n#include \"maskclear_f10_frag.spv.h\"\\n#include \"maskclear_f11_frag.spv.h\"\\n#include \"maskclear_f12_frag.spv.h\"\\n#include \"maskclear_f13_frag.spv.h\"\\n#include \"maskclear_f14_frag.spv.h\"\\n#include \"maskclear_f15_frag.spv.h\"\\n#include \"maskclear_f16_frag.spv.h\"\\n#include \"maskclear_f17_frag.spv.h\"\\n#include \"maskclear_f18_frag.spv.h\"\\n#include \"maskclear_f19_frag.spv.h\"\\n#include \"maskclear_f20_frag.spv.h\"\\n#include \"maskclear_f21_frag.spv.h\"\\n#include \"maskclear_f22_frag.spv.h\"\\n#include \"maskclear_f23_frag.spv.h\"" + "\\n#include \\"flatdbg_frag.spv.h\\"\\ntypedef struct { uint32_t ncol, cfmt[8], dfmt, samples, mask, index, kind; } mckey;\\nstatic const uint32_t *mc_fs_spv[24] = {" + maskclear_f0_frag_spv, maskclear_f1_frag_spv, maskclear_f2_frag_spv, maskclear_f3_frag_spv, maskclear_f4_frag_spv, maskclear_f5_frag_spv, maskclear_f6_frag_spv, maskclear_f7_frag_spv, maskclear_f8_frag_spv, maskclear_f9_frag_spv, maskclear_f10_frag_spv, maskclear_f11_frag_spv, maskclear_f12_frag_spv, maskclear_f13_frag_spv, maskclear_f14_frag_spv, maskclear_f15_frag_spv, maskclear_f16_frag_spv, maskclear_f17_frag_spv, maskclear_f18_frag_spv, maskclear_f19_frag_spv, maskclear_f20_frag_spv, maskclear_f21_frag_spv, maskclear_f22_frag_spv, maskclear_f23_frag_spv + "};\\nstatic const size_t mc_fs_size[24] = {" + sizeof maskclear_f0_frag_spv, sizeof maskclear_f1_frag_spv, sizeof maskclear_f2_frag_spv, sizeof maskclear_f3_frag_spv, sizeof maskclear_f4_frag_spv, sizeof maskclear_f5_frag_spv, sizeof maskclear_f6_frag_spv, sizeof maskclear_f7_frag_spv, sizeof maskclear_f8_frag_spv, sizeof maskclear_f9_frag_spv, sizeof maskclear_f10_frag_spv, sizeof maskclear_f11_frag_spv, sizeof maskclear_f12_frag_spv, sizeof maskclear_f13_frag_spv, sizeof maskclear_f14_frag_spv, sizeof maskclear_f15_frag_spv, sizeof maskclear_f16_frag_spv, sizeof maskclear_f17_frag_spv, sizeof maskclear_f18_frag_spv, sizeof maskclear_f19_frag_spv, sizeof maskclear_f20_frag_spv, sizeof maskclear_f21_frag_spv, sizeof maskclear_f22_frag_spv, sizeof maskclear_f23_frag_spv + "};\\nstatic struct { VkPipelineLayout pl; VkShaderModule vs, fs[24]; int bad; mckey k[64]; VkPipeline p[64]; int n; } g_mc;"),
+    ("""        fi.codeSize = sizeof maskclear_frag_spv; fi.pCode = maskclear_frag_spv;
+        if (vkCreatePipelineLayout(V.dev, &li, NULL, &g_mc.pl) || vkCreateShaderModule(V.dev, &vi, NULL, &g_mc.vs) ||
+            vkCreateShaderModule(V.dev, &fi, NULL, &g_mc.fs[0])) { g_mc.bad = 1; return VK_NULL_HANDLE; }
+        fi.codeSize = sizeof maskclear_uint_frag_spv; fi.pCode = maskclear_uint_frag_spv;
+        if (vkCreateShaderModule(V.dev, &fi, NULL, &g_mc.fs[1])) { g_mc.bad = 1; return VK_NULL_HANDLE; }
+        fi.codeSize = sizeof maskclear_sint_frag_spv; fi.pCode = maskclear_sint_frag_spv;
+        if (vkCreateShaderModule(V.dev, &fi, NULL, &g_mc.fs[2])) { g_mc.bad = 1; return VK_NULL_HANDLE; }""",
+     """        if (vkCreatePipelineLayout(V.dev, &li, NULL, &g_mc.pl) || vkCreateShaderModule(V.dev, &vi, NULL, &g_mc.vs)) { g_mc.bad = 1; return VK_NULL_HANDLE; }
+        for (uint32_t i = 0; i < 24; i++) {
+            fi.codeSize = mc_fs_size[i]; fi.pCode = mc_fs_spv[i];
+            if (vkCreateShaderModule(V.dev, &fi, NULL, &g_mc.fs[i])) { g_mc.bad = 1; return VK_NULL_HANDLE; }
+        }"""),
+    ("""g_mc.fs[k.kind], "main", NULL}};""",
+     """g_mc.fs[k.kind * 8 + k.index], "main", NULL}}; // NX2A_MASKED_CLEAR_TYPED_SHADER_PER_ATTACHMENT""")
+]);
+
+# Generate exact location/type shader variants; build.py turns these into SPIR-V.
 _shader_dir = repo / 'nxnative/dm/android/shaders'
 _shader_dir.mkdir(parents=True, exist_ok=True)
-_float = """#version 450
-layout(push_constant) uniform P { vec4 c; } p;
-"""
-_uint = """#version 450
-layout(push_constant) uniform P { vec4 c; } p;
-"""
-_sint = """#version 450
-layout(push_constant) uniform P { vec4 c; } p;
-"""
-for _loc in range(8):
-    _float += f"layout(location = {_loc}) out vec4 o{_loc};\n"
-    _uint += f"layout(location = {_loc}) out uvec4 o{_loc};\n"
-    _sint += f"layout(location = {_loc}) out ivec4 o{_loc};\n"
-_float += "void main() {\n" + "".join(f"    o{i} = p.c;\n" for i in range(8)) + "}\n"
-_uint += "void main() {\n" + "".join(f"    o{i} = uvec4(p.c);\n" for i in range(8)) + "}\n"
-_sint += "void main() {\n" + "".join(f"    o{i} = ivec4(p.c);\n" for i in range(8)) + "}\n"
-for _name, _body in (('maskclear.frag', _float), ('maskclear_uint.frag', _uint), ('maskclear_sint.frag', _sint)):
-    (_shader_dir / _name).write_text(_body)
-print('NGR masked clear shader variants: generated 8-location FLOAT/UINT/SINT outputs')
-
+for _kind, _type, _expr in ((0, 'vec4', 'p.c'), (1, 'uvec4', 'uvec4(p.c)'), (2, 'ivec4', 'ivec4(p.c)')):
+    for _index in range(8):
+        _body = ("#version 450\\nlayout(push_constant) uniform P { vec4 c; } p;\\n"
+                 + f"layout(location = {_index}) out {_type} o;\\n"
+                 + f"void main() {{ o = {_expr}; }}\\n")
+        (_shader_dir / f'maskclear_f{_kind * 8 + _index}.frag').write_text(_body)
+print('NGR masked clear shader variants: generated 24 location/type outputs')
 sys.exit(1 if failed else 0)
