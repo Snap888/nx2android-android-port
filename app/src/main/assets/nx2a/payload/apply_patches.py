@@ -1421,3 +1421,42 @@ patch('NGR Metro hard cap every excess progressing yield', 'nxnative/dm/host/hle
 ]);
 
 sys.exit(1 if failed else 0)
+
+# 37. Metro's named PhysX/Secondary/main loops have changing registers, so the
+# progressing-yield budget does not throttle them. Hard throttle their SVC yield
+# boundary at 250 us per yield (~4k/s) to free CPU for game, audio and Android.
+patch('NGR Metro hard throttle hot-yield named workers', 'nxnative/dm/host/hle_thread.c', 'NX2A_METRO_YIELD_SITE_THROTTLE', [
+    ('''    if (!moved) yield_for(me, y0 - me->yrun_t0);''',
+     '''    // NX2A_METRO_YIELD_SITE_THROTTLE: these Metro workers repeatedly yield from a hot polling site.
+    // The progress limiter misses loops whose registers change on every pass.
+    char nx2a_yield_name[64];
+    const char *nx2a_name = thr_name(me, nx2a_yield_name, sizeof nx2a_yield_name);
+    int nx2a_metro_worker = !strcmp(nx2a_name, "uEngine :: PhysX simulator") ||
+                            !strcmp(nx2a_name, "uEngine :: Secondary") ||
+                            !strcmp(nx2a_name, "main thread");
+    if (nx2a_metro_worker) {
+        static _Atomic int nx2a_throttle_logged;
+        if (!atomic_exchange(&nx2a_throttle_logged, 1))
+            LOG("[scheduler] Metro hot-yield hard throttle: named PhysX/Secondary/main yields sleep 250 us per SVC");
+        me->nbackoff++;
+        me->sleeping = 1;
+        struct timespec nx2a_ts = {0, 250000L};
+        nanosleep(&nx2a_ts, NULL);
+        me->sleeping = 0;
+    } else if (!moved) yield_for(me, y0 - me->yrun_t0); // NX2A_METRO_YIELD_SITE_THROTTLE''')
+]);
+
+# 38. Save clone still reports EACCES. Log exactly which clonefile stage fails
+# (stat, destination existence, mkdir, opendir or recursive child copy).
+patch('NGR Android save clone failure diagnostics', 'nxnative/dm/android/compat/darwin_compat.c', 'NX2A_SAVE_CLONE_DIAGNOSTICS', [
+    ('''    struct stat st; if ((flags & CLONE_NOFOLLOW ? lstat : stat)(src, &st)) return -1;''',
+     '''    struct stat st; if ((flags & CLONE_NOFOLLOW ? lstat : stat)(src, &st)) { int e = errno; __android_log_print(ANDROID_LOG_ERROR, "NGRRuntime", "[fs] clonefile stat failed src=%s errno=%d", src, e); errno = e; return -1; } // NX2A_SAVE_CLONE_DIAGNOSTICS'''),
+    ('''    if (!access(dst, F_OK)) { errno = EEXIST; return -1; }''',
+     '''    if (!access(dst, F_OK)) { __android_log_print(ANDROID_LOG_ERROR, "NGRRuntime", "[fs] clonefile destination already exists dst=%s", dst); errno = EEXIST; return -1; }'''),
+    ('''    if (mkdir(dst, dst_mode)) return -1; // NX2A_SAVE_CLONE_OWNER_MODE: writable working tree even when committed source is read-only''',
+     '''    if (mkdir(dst, dst_mode)) { int e = errno; __android_log_print(ANDROID_LOG_ERROR, "NGRRuntime", "[fs] clonefile mkdir failed dst=%s mode=%o errno=%d", dst, dst_mode, e); errno = e; return -1; } // NX2A_SAVE_CLONE_OWNER_MODE: writable working tree even when committed source is read-only'''),
+    ('''    DIR *d = opendir(src); if (!d) return -1;''',
+     '''    DIR *d = opendir(src); if (!d) { int e = errno; __android_log_print(ANDROID_LOG_ERROR, "NGRRuntime", "[fs] clonefile opendir failed src=%s errno=%d", src, e); errno = e; return -1; }'''),
+    ('''        r = clonefile(a, b, flags);''',
+     '''        r = clonefile(a, b, flags); if (r) __android_log_print(ANDROID_LOG_ERROR, "NGRRuntime", "[fs] clonefile child failed src=%s dst=%s errno=%d", a, b, errno);''')
+]);
