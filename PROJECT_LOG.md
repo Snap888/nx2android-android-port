@@ -1012,3 +1012,8 @@
 - This diagnostic does not yet synchronize aliased images or fix the 1280x720 / 640x360 content mismatch. It is intended to determine whether the pair is MSAA/resolve reuse or a different layout reinterpretation without per-draw logging.
 - Payload version advanced to 215. `apply_patches.py` SHA-256: `0ef02b50bb796c8c9bcd50b3ba580136337db597fa3e0639ac4180cf855f0f31`.
 - CI and APK build for version 215 are pending. Version 214 artifact remains available but does not include these two follow-up patches.
+
+
+### Version 215 validation queue
+- The previous version-214 run `45899160982` completed successfully; it validates the APK pipeline before patches 50–51.
+- Patches 50–51 and manifest version 215 are now the branch head. Their own patch-application and APK build must be validated in a run whose head includes the version-215 manifest; earlier artifacts must not be substituted.
