@@ -1252,4 +1252,64 @@ patch('NGR Handheld full-screen output scaling', 'nxnative/dm/android/gfx_vk_pre
      '''extern int dm_opmode(void);
 static void present_window(vkimg_t *im, const int crop[4], double period, uint64_t ticket) {''')
 ]);
+
+# 30. Android's app-private/external RomFS is case-sensitive. Avoid enumerating
+# read-only directories under PATH_LOCK: a first lookup in a huge asset directory
+# otherwise blocks every game file operation (including audio asset opens).
+patch('NGR Android RomFS direct lookup', 'nxnative/dm/host/hle_fs.c', 'NX2A_ANDROID_ROMFS_LOOKUP', [
+    ("""static int path_component(char *parent, size_t n, const char *name, int create, int ro) {
+    if (ro && !create) {""",
+     """static int path_component(char *parent, size_t n, const char *name, int create, int ro) {
+#ifdef __ANDROID__
+    if (ro && !create) {
+        static int nx2a_fs_fast_logged;
+        if (!nx2a_fs_fast_logged++) LOG("[fs] Android RomFS lookup v1: exact path lookup; serialized directory scans/index builds bypassed");
+        char exact[1280];
+        int written = snprintf(exact, sizeof exact, "%s/%s", parent, name);
+        if (written < 0 || (size_t)written >= sizeof exact) { errno = ENAMETOOLONG; return 0; }
+        struct stat st;
+        if (lstat(exact, &st)) return 0;
+        size_t len = strlen(parent), k = strlen(name);
+        if (len + k + 2 > n) { errno = ENAMETOOLONG; return 0; }
+        parent[len] = '/'; memcpy(parent + len + 1, name, k + 1);
+        return 1;
+    }
+#endif
+    if (ro && !create) {  // NX2A_ANDROID_ROMFS_LOOKUP""")
+]);
+
+
+# 31. Apply Handheld's full-surface destination AFTER the gamepad-band calculation.
+# The previous patch set it before ov_band(), which could overwrite it again.
+patch('NGR Handheld final full-screen destination v2', 'nxnative/dm/android/gfx_vk_present.c', 'NX2A_HANDHELD_FULLSCREEN_SCALE_V2', [
+    ("""    static int nx2a_last_geom[10] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
+    int nx2a_geom[10] = {(int)im->w, (int)im->h, cx, cy, cw, ch,
+                         (int)g_sext.width, (int)g_sext.height, dx, dy};
+    int nx2a_changed = 0;
+    for (int i = 0; i < 10; i++) if (nx2a_geom[i] != nx2a_last_geom[i]) { nx2a_changed = 1; break; }
+    if (nx2a_changed) {
+        VKLOG("[display] guest=%ux%u crop=%d,%d %dx%d window=%ux%u target=%ux%u destination=%d,%d %dx%d mode-aware",
+              im->w, im->h, cx, cy, cw, ch, g_sext.width, g_sext.height,
+              g_next.width, g_next.height, dx, dy, dw, dh);
+        memcpy(nx2a_last_geom, nx2a_geom, sizeof nx2a_geom);
+    }
+    vk_pic_set((float)dx / g_sext.width, (float)dy / g_sext.height, (float)dw / g_sext.width, (float)dh / g_sext.height); // NX2A_DISPLAY_GEOMETRY_LOG""",
+     """    int nx2a_mode = dm_opmode();
+    if (nx2a_mode == 0) { dx = 0; dy = 0; dw = (int)g_sext.width; dh = (int)g_sext.height; } // NX2A_HANDHELD_FULLSCREEN_SCALE_V2: final override after ov_band()
+    static int nx2a_last_geom[15] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
+    int nx2a_geom[15] = {(int)im->w, (int)im->h, cx, cy, cw, ch,
+                         (int)g_sext.width, (int)g_sext.height, (int)g_next.width, (int)g_next.height,
+                         dx, dy, dw, dh, nx2a_mode};
+    int nx2a_changed = 0;
+    for (int i = 0; i < 15; i++) if (nx2a_geom[i] != nx2a_last_geom[i]) { nx2a_changed = 1; break; }
+    if (nx2a_changed) {
+        VKLOG("[display] guest=%ux%u crop=%d,%d %dx%d window=%ux%u target=%ux%u mode=%s destination=%d,%d %dx%d overlay=%d",
+              im->w, im->h, cx, cy, cw, ch, g_sext.width, g_sext.height,
+              g_next.width, g_next.height, nx2a_mode ? "docked" : "handheld",
+              dx, dy, dw, dh, dm_overlay_visible());
+        memcpy(nx2a_last_geom, nx2a_geom, sizeof nx2a_geom);
+    }
+    vk_pic_set((float)dx / g_sext.width, (float)dy / g_sext.height, (float)dw / g_sext.width, (float)dh / g_sext.height); // NX2A_DISPLAY_GEOMETRY_LOG""")
+]);
+
 sys.exit(1 if failed else 0)
