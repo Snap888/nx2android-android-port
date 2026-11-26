@@ -178,5 +178,38 @@ class ApplyPatchesTests(unittest.TestCase):
             self.assertEqual(pipeline.read_text(encoding="utf-8"), original)
 
 
+
+    def test_cpu_decoded_bc_first_use_upload_patch_is_applied_and_idempotent(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "nxnative/dm/android/gfx_vk_tex.c"
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "static int cpu_content_tex(const tex_t *t, const vkfmt_t *f) {\\n"
+                "    static int on = -1; if (on < 0) { const char *e = getenv(\\\"DM_NVN_STORAGE_FIRST_USE\\\"); on = !e || atoi(e) != 0; }\\n"
+                "    if (!on || !t->pool || t->has_layout || !(f->compressed || t->d.target == 2) || t->d.samples > 1) return 0;\\n"
+                "    if (t->pool->flags & NVN_MEMORY_POOL_FLAGS_VIRTUAL) return 0;\\n"
+                "    if (t->d.flags & (NVN_TEXTURE_FLAGS_IMAGE | NVN_TEXTURE_FLAGS_COMPRESSIBLE | NVN_TEXTURE_FLAGS_LINEAR | NVN_TEXTURE_FLAGS_LINEAR_RENDER_TARGET | NVN_TEXTURE_FLAGS_SPARSE)) return 0;\\n"
+                "}\\n",
+                encoding="utf-8",
+            )
+            env = dict(os.environ, NX2A_PATCH_ONLY="NGR CPU-decoded BC texture first-use upload")
+            first = subprocess.run(
+                [sys.executable, str(PATCHER), tmp],
+                capture_output=True, text=True, env=env, check=False,
+            )
+            self.assertEqual(first.returncode, 0, first.stdout + first.stderr)
+            patched = source.read_text(encoding="utf-8")
+            self.assertIn("NX2A_CPU_DECODED_BC_FIRST_USE", patched)
+            self.assertIn("int guest_comp = f->compressed || f->dec;", patched)
+            self.assertIn("!(guest_comp || t->d.target == 2)", patched)
+            self.assertIn("(guest_comp ? 0 : (NVN_TEXTURE_FLAGS_IMAGE | NVN_TEXTURE_FLAGS_COMPRESSIBLE))", patched)
+
+            second = subprocess.run(
+                [sys.executable, str(PATCHER), tmp],
+                capture_output=True, text=True, env=env, check=False,
+            )
+            self.assertEqual(second.returncode, 0, second.stdout + second.stderr)
+            self.assertIn("already", second.stdout)
+
 if __name__ == "__main__":
     unittest.main()
