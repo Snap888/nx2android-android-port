@@ -683,7 +683,7 @@ public class MainActivity extends Activity {
         File root = new File(new File(new File(downloads, "NX2A"), "Saves"), gameId);
         if (!root.isDirectory() && !root.mkdirs()) throw new java.io.IOException("Cannot create " + root);
         File legacy = new File(new File(new File(getFilesDir(), "games"), gameId), "save");
-        File marker = new File(root, ".nx2a-private-import-v1");
+        File marker = new File(root.getParentFile(), gameId + ".private-import-v1");
         if (!marker.isFile() && legacy.isDirectory()) {
             copyMissingSaveFiles(legacy, root);
             try (java.io.FileOutputStream out = new java.io.FileOutputStream(marker, false)) {
@@ -822,6 +822,7 @@ public class MainActivity extends Activity {
                 }
                 Toast.makeText(MainActivity.this, "Preparing game saves…", Toast.LENGTH_SHORT).show();
                 new Thread(() -> {
+                    android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
                     String saveRoot = null;
                     String saveError = null;
                     try { saveRoot = preparePublicSaveRoot(gameId); }
