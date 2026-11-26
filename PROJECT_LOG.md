@@ -687,3 +687,12 @@
 1. Validate patcher anchors and compile/CI build; correct any patch application or NDK errors.
 2. Install APK, rebuild Metro data pack, verify save mount is transactional and writable.
 3. Re-test the same gameplay path; compare long-frame CPU/GPU split, watchdog yields/s and audio underruns.
+
+
+### CI correction — 2026-11-26
+- First validation run for commit 6aaeee8 (Actions run 45855256664, job apk) failed in "Verify NGR patch set against the pinned porter", before native compilation. It identified two patch-anchor issues in the new save-permission and yield-cap edits.
+- The yield-cap patch was subsequently simplified to a condition-only replacement after patch 25's named-worker wrapper; the superseded incompatible patch block was removed.
+- The save-permission patch anchor was corrected to match the exact post-FICLONE copy_file tail (the close/read errno handling is on one source line).
+- Latest patcher correction commit: 4a536f052e8792e9f7f4b3399bd84d7c5cd7e97c.
+- Payload manifest correction commit: 85b02a755829d0d5f9da35aff314f58cd4e5ed74; payload version 202; apply_patches.py SHA-256 7e3769f7ba5a9e668fbdbe903771ee2ebde0bd40bc74e402f96b2a1a1cae3bba.
+- Latest CI status must be checked on the version-202 manifest commit. Do not use earlier failed/cancelled runs as proof of build success.
