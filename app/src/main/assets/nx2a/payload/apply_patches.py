@@ -1312,4 +1312,82 @@ patch('NGR Handheld final full-screen destination v2', 'nxnative/dm/android/gfx_
     vk_pic_set((float)dx / g_sext.width, (float)dy / g_sext.height, (float)dw / g_sext.width, (float)dh / g_sext.height); // NX2A_DISPLAY_GEOMETRY_LOG""")
 ]);
 
+
+# 32. Android's clonefile compatibility layer previously copied every byte of
+# every save file. Commit() invokes it synchronously while holding PATH_LOCK,
+# so checkpoint commits could stall unrelated game I/O. Try Linux FICLONE first:
+# on filesystems with reflink support this is a metadata-only COW clone. Retain
+# the byte-copy fallback for ext4/f2fs variants that do not implement it.
+patch('NGR Android reflink save cloning', 'nxnative/dm/android/compat/darwin_compat.c', 'NX2A_ANDROID_REFLINK_CLONE', [
+    ("""#include <linux/futex.h>
+""", """#include <linux/futex.h>
+#include <linux/fs.h>
+#include <sys/ioctl.h>
+#include <android/log.h>
+"""),
+    ("""static int copy_file(const char *src, const char *dst, mode_t mode) {
+    int in = open(src, O_RDONLY | O_CLOEXEC); if (in < 0) return -1;
+    int out = open(dst, O_WRONLY | O_CREAT | O_EXCL | O_CLOEXEC, mode & 07777);
+    if (out < 0) { int e = errno; close(in); errno = e; return -1; }
+    char buf[1 << 16]; ssize_t n; int r = 0;
+    while ((n = read(in, buf, sizeof buf)) > 0) for (ssize_t o = 0; o < n;) { ssize_t w = write(out, buf + o, (size_t)(n - o)); if (w < 0) { r = -1; break; } o += w; }
+    if (n < 0) r = -1;
+    int e = errno; close(in); if (close(out)) r = -1; errno = e; return r;
+}""",
+     """static int copy_file(const char *src, const char *dst, mode_t mode) {
+    int in = open(src, O_RDONLY | O_CLOEXEC); if (in < 0) return -1;
+    int out = open(dst, O_WRONLY | O_CREAT | O_EXCL | O_CLOEXEC, mode & 07777);
+    if (out < 0) { int e = errno; close(in); errno = e; return -1; }
+    static _Atomic int clone_mode_logged;
+    if (ioctl(out, FICLONE, in) == 0) {
+        if (!atomic_exchange(&clone_mode_logged, 1))
+            __android_log_print(ANDROID_LOG_INFO, "NGRRuntime", "[fs] Android save clone: FICLONE copy-on-write enabled");
+        int e = errno; close(in); if (close(out)) return -1; errno = e; return 0;
+    }
+    int ce = errno;
+    if (ce != EOPNOTSUPP && ce != ENOTTY && ce != EXDEV && ce != EINVAL && ce != ENOSYS && ce != EPERM) {
+        close(in); close(out); unlink(dst); errno = ce; return -1;
+    }
+    close(out); unlink(dst);
+    out = open(dst, O_WRONLY | O_CREAT | O_EXCL | O_CLOEXEC, mode & 07777);
+    if (out < 0) { int e = errno; close(in); errno = e; return -1; }
+    if (!atomic_exchange(&clone_mode_logged, 1))
+        __android_log_print(ANDROID_LOG_WARN, "NGRRuntime", "[fs] Android save clone: FICLONE unsupported (errno=%d); byte-copy fallback active", ce);
+    char buf[1 << 16]; ssize_t n; int r = 0;
+    while ((n = read(in, buf, sizeof buf)) > 0) for (ssize_t o = 0; o < n;) {
+        ssize_t w = write(out, buf + o, (size_t)(n - o));
+        if (w <= 0) { if (!w) errno = EIO; r = -1; break; }
+        o += w;
+    }
+    if (n < 0) r = -1;
+    int e = errno; close(in); if (close(out)) r = -1; errno = e; return r;
+}""")
+]);
+
+# 33. Make Handheld scaling the final source of truth for the actual Vulkan blit,
+# not just the bookkeeping rectangle. This is intentionally placed after the
+# VkImageBlit is initialized and immediately before vkCmdBlitImage.
+patch('NGR Handheld final Vulkan blit destination', 'nxnative/dm/android/gfx_vk_present.c', 'NX2A_HANDHELD_BLIT_FINAL', [
+    ("""    VkImageBlit b = {{VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1}, {{cx, cy, 0}, {cx + cw, cy + ch, 1}}, {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1}, {{dx, dy, 0}, {dx + dw, dy + dh, 1}}};
+    if (vk_window_bottom_up())""",
+     """    VkImageBlit b = {{VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1}, {{cx, cy, 0}, {cx + cw, cy + ch, 1}}, {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1}, {{dx, dy, 0}, {dx + dw, dy + dh, 1}}};
+    int nx2a_blit_mode = dm_opmode();
+    if (nx2a_blit_mode == 0) {
+        b.dstOffsets[0] = (VkOffset3D){0, 0, 0};
+        b.dstOffsets[1] = (VkOffset3D){(int32_t)g_sext.width, (int32_t)g_sext.height, 1};
+    } // NX2A_HANDHELD_BLIT_FINAL: enforce full-window destination on the actual blit every frame
+    static int nx2a_last_blit[7] = {-1,-1,-1,-1,-1,-1,-1};
+    int nx2a_blit[7] = {nx2a_blit_mode, (int)g_sext.width, (int)g_sext.height,
+                        b.dstOffsets[0].x, b.dstOffsets[0].y, b.dstOffsets[1].x, b.dstOffsets[1].y};
+    int nx2a_blit_changed = 0;
+    for (int i = 0; i < 7; i++) if (nx2a_blit[i] != nx2a_last_blit[i]) { nx2a_blit_changed = 1; break; }
+    if (nx2a_blit_changed) {
+        VKLOG("[display-blit] mode=%s window=%ux%u dst=%d,%d-%d,%d",
+              nx2a_blit_mode ? "docked" : "handheld", g_sext.width, g_sext.height,
+              b.dstOffsets[0].x, b.dstOffsets[0].y, b.dstOffsets[1].x, b.dstOffsets[1].y);
+        memcpy(nx2a_last_blit, nx2a_blit, sizeof nx2a_blit);
+    }
+    if (vk_window_bottom_up())""")
+]);
+
 sys.exit(1 if failed else 0)
