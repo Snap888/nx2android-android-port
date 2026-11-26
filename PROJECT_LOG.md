@@ -955,7 +955,7 @@
 - Pipeline selection uses `kind * 8 + attachmentIndex`; only the selected attachment has a nonzero `colorWriteMask`.
 - Patch 48 increases the masked-clear pipeline cache from 32/64 entries to 512, enough for the practical combinations of 8 attachment locations, 3 numeric classes and 15 nonzero channel masks.
 - Pipeline cache key includes attachment index and numeric class in addition to the existing render-target formats, depth format, sample count and channel mask.
-- Payload version advanced to 213. `apply_patches.py` SHA-256: `a981f298404e7f8d3e77c62a0798ad800f044887c8f3f74380d453c61d401e08`.
+- Payload version advanced to 214. `apply_patches.py` SHA-256: `a5d5cf58bd54dd5c4be95549217a92e6c102bf6d065a2f358edb1d7229112b6d`.
 
 ### Validation status
 - GitHub branch commits:
@@ -967,3 +967,10 @@
 - CI run `45898531356` was created for the first version; it predates the final 24-shader refinement and is not a valid final-build result. A new run for the final manifest/log commits must be inspected.
 - No APK is declared ready until final CI patch application, double-application idempotence, manifest check, shader compilation and APK build pass.
 - Device test still required on Turnip Adreno 740. Masked clear is a targeted renderer correctness fix; it is not proof that fire, reticle, distant textures or shadows are all restored.
+
+
+### Follow-up correctness refinement
+- Replaced the three broad MRT shader variants with 24 variants, one output location and one numeric class per shader. This is necessary because unrelated MRT slots can use different float/integer formats; even masked-off outputs should not rely on mismatched shader output types.
+- UINT clear conversion now clamps negative input components to zero before conversion, matching the existing full-clear path's unsigned conversion rule.
+- Pipeline cache capacity is 512 entries (up to 8 attachment locations × 3 numeric classes × 15 nonzero channel masks, with room for multiple pass layouts).
+- Latest manifest commit: `2c301cce1947b73f9ea1cd5e5b3d64ff73ce96dc`; current branch head must be checked before final CI validation.
