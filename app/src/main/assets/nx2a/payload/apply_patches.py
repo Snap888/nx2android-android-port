@@ -403,7 +403,7 @@ patch('NGR per-game overlay assets', 'nxnative/dm/android/overlay_theme.c', 'NX2
 # 8. Keep game saves and temporary files isolated in NGR's private storage per game.
 patch('NGR per-game save roots', 'nxnative/dm/android/front_android.c', 'NX2A_GAME_SAVE_ROOT', [
 ("    snprintf(p, sizeof p, \"%s/save\", act->internalDataPath); mkdir(p, 0700); setenv(\"DM_SAVE\", p, 0);\n    snprintf(p, sizeof p, \"%s/temp\", act->internalDataPath); mkdir(p, 0700); setenv(\"DM_TEMP\", p, 0);",
- "    const char *ngr_private_root = getenv(\"NGR_PRIVATE_GAME_DIR\"); if (!ngr_private_root || !*ngr_private_root) ngr_private_root = act->internalDataPath;\n    snprintf(p, sizeof p, \"%s/save\", ngr_private_root); mkdir(p, 0700); setenv(\"DM_SAVE\", p, 0);\n    snprintf(p, sizeof p, \"%s/temp\", ngr_private_root); mkdir(p, 0700); setenv(\"DM_TEMP\", p, 0); // NX2A_GAME_SAVE_ROOT"),
+ "    const char *ngr_private_root = getenv(\"NGR_PRIVATE_GAME_DIR\"); if (!ngr_private_root || !*ngr_private_root) ngr_private_root = act->internalDataPath;\n    const char *ngr_public_save_root = getenv(\"NGR_PUBLIC_SAVE_DIR\");\n    if (ngr_public_save_root && *ngr_public_save_root) snprintf(p, sizeof p, \"%s\", ngr_public_save_root);\n    else snprintf(p, sizeof p, \"%s/save\", ngr_private_root);\n    if (mkdir(p, 0700) && errno != EEXIST) LOG(\"[save] cannot create selected save root %s: errno=%d\", p, errno);\n    setenv(\"DM_SAVE\", p, 1);\n    snprintf(p, sizeof p, \"%s/temp\", ngr_private_root); mkdir(p, 0700); setenv(\"DM_TEMP\", p, 0); // NX2A_GAME_SAVE_ROOT"),
 ])
 
 # 9. NGR writes the compiled native host, optional driver libraries and UI assets directly into the data pack.
