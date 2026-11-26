@@ -1724,7 +1724,7 @@ static int vk_index_range_scratch(uint64_t addr, uint64_t size, VkBuffer *out, V
     uint64_t end = (raw_end + 3) & ~3ull;
     vkpool_t *first = vk_pool_of(addr, 1);
     if (!first || start < first->base || end > first->end || end <= start) return 0;
-    // Validate the entire source before ending the pass or recording any copies.
+    // Validate the entire source before recording any copies.
     for (uint64_t cur = start; cur < end;) {
         vkpool_t *p = vk_pool_of(cur, 1);
         if (!p || p->base != first->base || p->end != first->end || p->hi <= cur) return 0;
@@ -1736,27 +1736,31 @@ static int vk_index_range_scratch(uint64_t addr, uint64_t size, VkBuffer *out, V
     VkBuffer dst; VkDeviceSize dst_off;
     (void)vk_scratch(end - start, 4, &dst, &dst_off);
     VkCommandBuffer cb = vk_cmd();
-    vk_img_barrier_all(cb);   // include earlier shader/storage writes to the index pool
+    vk_img_barrier_all(cb);   // order earlier shader/storage writes before the transfer
     for (uint64_t cur = start; cur < end;) {
         vkpool_t *p = vk_pool_of(cur, 1);
         uint64_t n = p->hi - cur; if (n > end - cur) n = end - cur;
         VkBuffer src; VkDeviceSize src_off;
-        if (!vk_buf_at(cur, n, &src, &src_off)) return 0;   // validated above; guard pool teardown
+        if (!vk_buf_at(cur, n, &src, &src_off)) return 0;   // guard concurrent pool teardown
         VkBufferCopy r = {src_off, dst_off + (cur - start), n};
         vkCmdCopyBuffer(cb, src, dst, 1, &r);
         cur += n;
     }
-    vk_img_barrier_all(cb);   // transfer writes become index-input reads
-    if (!begin_pass()) return 0;
-    cb = vk_cmd();
-    set_dynamic(cb);          // begin_pass starts a new dynamic-state generation
+    vk_img_barrier_all(cb);   // transfer writes precede the next pass's index reads
     *out = dst;
     *out_off = dst_off + (addr - start);   // preserve an unaligned UINT8/UINT16 index start
     return 1;
 }
 static void draw_idx(const p_draw_idx *d) {"""),
-    ("""    if (!d->ind) { vkpool_t *ip = vk_pool_of(d->ibuf, 1); uint64_t in = (uint64_t)d->count * isz; if (ip && d->ibuf + in > ip->hi && ip->hi < ip->end) vk_cross(3, d->ibuf, in, ip); }""",
-     """    if (!d->ind && d->count > 0) {
+    ("""    g_draw_binst = d->ind ? 0 : (uint32_t)d->base_instance;   // before prepare_draw (see draw)
+    if (!prepare_draw(prim == 7 ? 4 : prim, 1)) return;
+    VkCommandBuffer cb = vk_cmd();""",
+     """    g_draw_binst = d->ind ? 0 : (uint32_t)d->base_instance;   // before prepare_draw (see draw)
+    VkIndexType it = d->itype == 0 ? VK_INDEX_TYPE_UINT8_EXT : d->itype == 1 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32;
+    uint32_t isz = d->itype == 0 ? 1 : d->itype == 1 ? 2 : 4;
+    VkBuffer ib; VkDeviceSize io;
+    if (!vk_buf_at(d->ibuf, 1, &ib, &io)) { VKRED_ONCE(56, "index buffer outside the memory pools"); return; }
+    if (!d->ind && d->count > 0) {
         vkpool_t *ip = vk_pool_of(d->ibuf, 1);
         uint64_t in = (uint64_t)(uint32_t)d->count * isz;
         if (ip && in <= UINT64_MAX - d->ibuf && d->ibuf + in > ip->hi && ip->hi < ip->end) {
@@ -1765,21 +1769,30 @@ static void draw_idx(const p_draw_idx *d) {"""),
             if (trace < 0) { const char *e = getenv("DM_VK_INDEX_TRACE"); trace = e && atoi(e) > 0; }
             if (trace && traced < 16) {
                 traced++;
-                VKLOG("[index-cross] draw %u addr %#llx bytes %#llx count %d type %d prim %d instances %u base_vertex %d chunk_end %#llx pool %llu shaders %016llx/%016llx",
+                VKLOG("[index-cross] draw %u addr %#llx bytes %#llx count %d type %d prim %d instances %u base_vertex %d chunk_end %#llx pool %llu shaders %016llx/%016llx path %s",
                     traced, (unsigned long long)d->ibuf, (unsigned long long)in, d->count, d->itype, prim,
                     (unsigned)(d->instances ? d->instances : 1), d->base_vertex, (unsigned long long)ip->hi,
                     (unsigned long long)ip->serial, (unsigned long long)(S.sh[0] ? S.sh[0]->key : 0),
-                    (unsigned long long)(S.sh[1] ? S.sh[1]->key : 0));
+                    (unsigned long long)(S.sh[1] ? S.sh[1]->key : 0), prim == 7 ? "quad-cpu" : "gpu-copy");
             }
-            // NVN quads are converted by CPU-reading the original index data below;
-            // keep that special path separate until its GPU readback semantics are handled.
-            if (prim != 7 && g_ok && !(dbg_draw() & 1) && !vk_index_range_scratch(d->ibuf, in, &ib, &io)) {
+            // NVN quads are CPU-converted from the original index pointer below;
+            // leave that special path separate until its GPU readback is handled.
+            if (prim != 7 && !(dbg_draw() & 1) && !vk_index_range_scratch(d->ibuf, in, &ib, &io)) {
                 VKRED_ONCE(98, "cross-chunk index range could not be copied safely; draw skipped");
                 return;
             }
         }
-    }""")
+    }
+    if (!prepare_draw(prim == 7 ? 4 : prim, 1)) return;
+    VkCommandBuffer cb = vk_cmd();"""),
+    ("""    VkIndexType it = d->itype == 0 ? VK_INDEX_TYPE_UINT8_EXT : d->itype == 1 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32;
+    uint32_t isz = d->itype == 0 ? 1 : d->itype == 1 ? 2 : 4;
+    VkBuffer ib; VkDeviceSize io;
+    if (!vk_buf_at(d->ibuf, 1, &ib, &io)) { VKRED_ONCE(56, "index buffer outside the memory pools"); return; }
+    if (!d->ind) { vkpool_t *ip = vk_pool_of(d->ibuf, 1); uint64_t in = (uint64_t)d->count * isz; if (ip && d->ibuf + in > ip->hi && ip->hi < ip->end) vk_cross(3, d->ibuf, in, ip); }""",
+     """    /* NX2A_INDEX_CHUNK_COPY: ib/io were resolved and, for a crossing direct draw, copied before prepare_draw. */""")
 ]);
+
 
 patch('NGR opt-in texture swizzle-to-view trace', 'nxnative/dm/android/gfx_vk_tex.c', 'NX2A_SWIZZLE_VIEW_TRACE', [
     ("""    VkComponentMapping swz = sample_swizzle(&f->swz,t,vw,as_attachment);
