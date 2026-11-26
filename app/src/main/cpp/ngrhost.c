@@ -958,7 +958,7 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
         size_t public_len = strlen(public_save), suffix_size = suffix_len > 0 ? (size_t)suffix_len : 0;
         if (suffix_size && public_len >= suffix_size
                 && !strcmp(public_save + public_len - suffix_size, expected_suffix)
-                && !mkdirs((char *)public_save)) {
+                && !mkdirs(public_save)) {
             setenv("NGR_PUBLIC_SAVE_DIR", public_save, 1);
             LOGI("[NGR save] using user-visible save directory: %s", public_save);
         } else {
