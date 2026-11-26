@@ -52,7 +52,7 @@ jobs:
           if [ "${{ github.event_name }}" = "push" ] && git cat-file -e "${{ github.event.before }}^{commit}" 2>/dev/null; then
             other=$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" | grep -Ev '^(app/src/main/assets/nx2a/payload/|docs/|tests/|README\.md$|tools/make_prebuilt\.sh$|\.github/workflows/)' || true)
             [ -z "$other" ] && build=false
-            if [ "${{ github.ref }}" = "refs/heads/feature/ngr-universal-library" ]; then build=true; fi
+            if [ "${{ github.ref }}" = "refs/heads/feature/ngr-universal-library" ] || [ "${{ github.ref }}" = "refs/heads/feature/metro-save-manager" ]; then build=true; fi
             echo "changed outside the payload: ${other:-nothing}"
           fi
           echo "build=$build" >> "$GITHUB_OUTPUT"
