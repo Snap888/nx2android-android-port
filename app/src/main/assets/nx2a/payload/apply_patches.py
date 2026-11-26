@@ -1390,4 +1390,62 @@ patch('NGR Handheld final Vulkan blit destination', 'nxnative/dm/android/gfx_vk_
     if (vk_window_bottom_up())""")
 ]);
 
+
+# 34. Save directories may inherit read-only permissions from a copied/imported
+# save tree. clonefile() used those exact permissions for the new destination,
+# then failed with EACCES when creating its first child. Keep source modes, but
+# always grant the app owner rwx on cloned directories and rw on cloned files.
+patch('NGR Android save clone writable owner permissions', 'nxnative/dm/android/compat/darwin_compat.c', 'NX2A_SAVE_CLONE_OWNER_MODE', [
+    ("""    if (close(out)) r = -1; errno = e; return r;
+}
+int clonefile(const char *src, const char *dst, uint32_t flags) {""",
+     """    if (fchmod(out, (mode & 07777) | S_IRUSR | S_IWUSR)) r = -1; // NX2A_SAVE_CLONE_OWNER_MODE
+    if (close(out)) r = -1; errno = e; return r;
+}
+int clonefile(const char *src, const char *dst, uint32_t flags) {"""),
+    ("""    if (mkdir(dst, st.st_mode & 07777)) return -1;""",
+     """    mode_t dst_mode = (st.st_mode & 07777) | S_IRUSR | S_IWUSR | S_IXUSR;
+    if (mkdir(dst, dst_mode)) return -1; // NX2A_SAVE_CLONE_OWNER_MODE: writable working tree even when committed source is read-only"""),
+    ("""    if (ioctl(out, FICLONE, in) == 0) {
+        if (!atomic_exchange(&clone_mode_logged, 1))""",
+     """    if (ioctl(out, FICLONE, in) == 0) {
+        if (fchmod(out, (mode & 07777) | S_IRUSR | S_IWUSR)) { int e = errno; close(in); close(out); unlink(dst); errno = e; return -1; }
+        if (!atomic_exchange(&clone_mode_logged, 1))""")
+]);
+
+# 35. The v2 limiter only called sched_yield once per 256 excess yields. On
+# Android a pinned guest worker can immediately reacquire its core, so the
+# watchdog still measured 700k+ yields/s. Once a named Metro worker exceeds its
+# per-thread budget, sleep on every further progressing yield; this bounds the
+# polling loop and gives audio/main/lock owners real CPU time.
+patch('NGR Metro hard progressing-yield cap', 'nxnative/dm/host/hle_thread.c', 'NX2A_METRO_HARD_YIELD_CAP', [
+    ("""    if (++count > (unsigned)limit && ++excess >= (unsigned)handoff_every) {
+        excess = 0;
+        sched_yield();
+    }""",
+     """    if (++count > (unsigned)limit) {
+        if (sleep_us > 0 && me) {
+            if (sleep_target < 0) {
+                sleep_target = 0;
+                const char *names = getenv("DM_YIELD_PROGRESS_SLEEP_NAMES");
+                if (names && *names) {
+                    char name[64]; const char *n = thr_name(me, name, sizeof name);
+                    size_t nl = strlen(n);
+                    for (const char *p = names; *p;) {
+                        const char *end = strchr(p, ';');
+                        size_t len = end ? (size_t)(end - p) : strlen(p);
+                        if (len == nl && nl && !memcmp(p, n, len)) { sleep_target = 1; break; }
+                        if (!end) break;
+                        p = end + 1;
+                    }
+                }
+            }
+            if (sleep_target) {
+                struct timespec ts = { sleep_us / 1000000, (long)(sleep_us % 1000000) * 1000L };
+                nanosleep(&ts, NULL);
+            } else sched_yield();
+        } else sched_yield();
+    }""")
+]);
+
 sys.exit(1 if failed else 0)
