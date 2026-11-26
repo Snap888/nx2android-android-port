@@ -186,18 +186,18 @@ class ApplyPatchesTests(unittest.TestCase):
             tex.parent.mkdir(parents=True, exist_ok=True)
             exe.parent.mkdir(parents=True, exist_ok=True)
             tex.write_text(
-                "    int nvn_ft_written(const tex_t *);\\n"
-                "    if (t->mem && lin_copy(im, t, f)) {}\\n"
-                "    else if (t->mem && (packaged_tex(t) || (first && (nvn_ft_written(t) || cpu_content_tex(t, f))))) {\\n",
+                "    int nvn_ft_written(const tex_t *);\n"
+                "    if (t->mem && lin_copy(im, t, f)) {}\n"
+                "    else if (t->mem && (packaged_tex(t) || (first && (nvn_ft_written(t) || cpu_content_tex(t, f))))) {\n",
                 encoding="utf-8",
             )
             exe.write_text(
-                "    int num = 0;\\n"
-                "    if (tid && g_var_now != 3 && vk_tex_by_id(tid, &v, &t) && t) {\\n"
-                "        vkimg_t *im = NULL; ii->imageView = vk_tex_view(t, v, b->dim, b->flags & 1, 0, &im); if (storage && im) im->gpu_w = 1;\\n"
-                "    }\\n"
-                "    if (num && !storage) ii->sampler = samp_for(st, b, h, 1);\\n"
-                "    if (!ii->imageView) {\\n",
+                "    int num = 0;\n"
+                "    if (tid && g_var_now != 3 && vk_tex_by_id(tid, &v, &t) && t) {\n"
+                "        vkimg_t *im = NULL; ii->imageView = vk_tex_view(t, v, b->dim, b->flags & 1, 0, &im); if (storage && im) im->gpu_w = 1;\n"
+                "    }\n"
+                "    if (num && !storage) ii->sampler = samp_for(st, b, h, 1);\n"
+                "    if (!ii->imageView) {\n",
                 encoding="utf-8",
             )
             env = dict(
