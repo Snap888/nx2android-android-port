@@ -1826,20 +1826,6 @@ patch('NGR opt-in texture swizzle-to-view trace', 'nxnative/dm/android/gfx_vk_te
 ]);
 
 
-# 54. A CPU-decoded BC format has f->compressed == 0 because its Vulkan image
-# is RGBA/R8/etc, but its guest storage is still BC blocks. Treat f->dec as
-# compressed for first-use content detection, including IMAGE/COMPRESSIBLE
-# flags: BC/ASTC storage cannot be rendered into, so the guest bytes are CPU data.
-patch('NGR CPU-decoded BC texture first-use upload', 'nxnative/dm/android/gfx_vk_tex.c', 'NX2A_CPU_DECODED_BC_FIRST_USE', [
-    ("""    if (!on || !t->pool || t->has_layout || !(f->compressed || t->d.target == 2) || t->d.samples > 1) return 0;""",
-     """    // NX2A_CPU_DECODED_BC_FIRST_USE: decoded BC keeps block-compressed guest storage.
-    int guest_comp = f->compressed || f->dec;
-    if (!on || !t->pool || t->has_layout || !(guest_comp || t->d.target == 2) || t->d.samples > 1) return 0;"""),
-    ("""    if (t->d.flags & (NVN_TEXTURE_FLAGS_IMAGE | NVN_TEXTURE_FLAGS_COMPRESSIBLE | NVN_TEXTURE_FLAGS_LINEAR | NVN_TEXTURE_FLAGS_LINEAR_RENDER_TARGET | NVN_TEXTURE_FLAGS_SPARSE)) return 0;""",
-     """    if (t->d.flags & ((guest_comp ? 0 : (NVN_TEXTURE_FLAGS_IMAGE | NVN_TEXTURE_FLAGS_COMPRESSIBLE)) | NVN_TEXTURE_FLAGS_LINEAR | NVN_TEXTURE_FLAGS_LINEAR_RENDER_TARGET | NVN_TEXTURE_FLAGS_SPARSE)) return 0;""")
-]);
-
-
 # 55. Bounded, opt-in tracing of first-use texture contents and descriptor binds.
 # It records the decision path without changing texture uploads or view semantics.
 patch('NGR bounded texture first-use trace', 'nxnative/dm/android/gfx_vk_tex.c', 'NX2A_TEX_FIRST_TRACE', [
