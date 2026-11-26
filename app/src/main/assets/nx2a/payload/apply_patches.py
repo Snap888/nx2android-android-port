@@ -1672,4 +1672,39 @@ patch('NGR masked clear pipeline cache capacity', 'nxnative/dm/android/gfx_vk_ex
      """if (g_mc.bad || g_mc.n == 512) return VK_NULL_HANDLE; // NX2A_MASKED_CLEAR_CACHE_512""")
 ]);
 
+
+# 50. The builder's raw storage-class query is distinct from GetStorageClass.
+# The host has no separate raw storage class; the matching texture getter in
+# this porter returns 1, which NVN callers test as a boolean-like capability.
+patch('NGR NVN texture builder raw storage class getter', 'nxnative/dm/gfx/nvn/hle_nvn.c', 'NX2A_TEXTURE_BUILDER_RAW_STORAGE_CLASS', [
+    ("""NVN(nvnTextureBuilderGetStorageClass, NVNstorageClass, const NVNtextureBuilder *b) { (void)b; return 0; }""",
+     """NVN(nvnTextureBuilderGetStorageClass, NVNstorageClass, const NVNtextureBuilder *b) { (void)b; return 0; }
+NVN_NOPROTO(nvnTextureBuilderGetRawStorageClass, int, const NVNtextureBuilder *b) { (void)b; return 1; } // NX2A_TEXTURE_BUILDER_RAW_STORAGE_CLASS""")
+]);
+
+# 51. Alias warnings are opt-in and rate-limited. Keep the stale-read watermark
+# updated even when tracing is off; when enabled, include sample count and target
+# so an MSAA/resolve alias can be distinguished from a layout reinterpretation.
+patch('NGR opt-in texture alias metadata trace', 'nxnative/dm/android/gfx_vk_tex.c', 'NX2A_ALIAS_TRACE_METADATA', [
+    ("""static void alias_check(vkimg_t *im) {   // im is about to be sampled
+    for (int i = 0; i < im->novl; i++) {
+        vkimg_t *o = im->ovl[i]; if (o->wseq <= im->wseq || o->wseq <= im->rseen) continue;
+        im->rseen = o->wseq;
+        static int n; if (n++ < 200) VKLOG("[alias] stale read: %ux%u fmt %#x levels %u at %+lld..%+lld sampled, but %ux%u fmt %#x levels %u at %+lld..%+lld rendered over its memory later",
+            im->w, im->h, im->nvn_format, im->levels, (long long)im->off, (long long)(im->off + im->size), o->w, o->h, o->nvn_format, o->levels, (long long)o->off, (long long)(o->off + o->size));
+    }
+}""",
+     """static void alias_check(vkimg_t *im) {   // im is about to be sampled
+    static int trace = -1, n;
+    if (trace < 0) { const char *e = getenv("DM_VK_ALIAS_TRACE"); trace = e && atoi(e) > 0; }
+    for (int i = 0; i < im->novl; i++) {
+        vkimg_t *o = im->ovl[i]; if (o->wseq <= im->wseq || o->wseq <= im->rseen) continue;
+        im->rseen = o->wseq;
+        if (trace && n++ < 16) VKLOG("[alias] stale read: %ux%u fmt %#x samples %u target %u flags %#x levels %u at %+lld..%+lld sampled; %ux%u fmt %#x samples %u target %u flags %#x levels %u at %+lld..%+lld rendered later",
+            im->w, im->h, im->nvn_format, im->samples, im->target, im->flags, im->levels, (long long)im->off, (long long)(im->off + im->size),
+            o->w, o->h, o->nvn_format, o->samples, o->target, o->flags, o->levels, (long long)o->off, (long long)(o->off + o->size));
+    }
+} // NX2A_ALIAS_TRACE_METADATA""")
+]);
+
 sys.exit(1 if failed else 0)
