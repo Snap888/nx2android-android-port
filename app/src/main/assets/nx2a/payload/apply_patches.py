@@ -1566,4 +1566,77 @@ patch('NGR recover owner-readable committed save entries', 'nxnative/dm/android/
     if (!d) { int e = errno; __android_log_print(ANDROID_LOG_ERROR, "NGRRuntime", "[fs] clonefile opendir failed src=%s errno=%d", src, e); errno = e; return -1; }''')
 ]);
 
+
+# 46. Correct masked colour clears for every bound attachment and numeric class.
+# Vulkan fragment outputs are statically typed and statically located. Each
+# shader variant writes all eight locations; the pipeline write mask enables
+# only the requested attachment. This keeps mixed float/UINT/SINT MRTs valid.
+# build.py compiles every maskclear_*.frag into the matching SPIR-V header.
+patch('NGR masked clear all attachments and numeric formats', 'nxnative/dm/android/gfx_vk_exec.c', 'NX2A_MASKED_CLEAR_ALL_ATTACHMENTS', [
+    ("""#include "maskclear_frag.spv.h"
+#include "flatdbg_frag.spv.h"
+typedef struct { uint32_t ncol, cfmt[8], dfmt, samples, mask; } mckey;
+static struct { VkPipelineLayout pl; VkShaderModule vs, fs; int bad; mckey k[32]; VkPipeline p[32]; int n; } g_mc;
+static VkPipeline mc_pipeline(uint32_t mask) {
+    mckey k; memset(&k, 0, sizeof k); k.ncol = (uint32_t)S.ncol; for (int i = 0; i < S.ncol && i < 8; i++) k.cfmt[i] = (uint32_t)S.cfmt[i];
+    k.dfmt = (uint32_t)S.dfmt; k.samples = S.samples ? S.samples : 1; k.mask = mask;""",
+     """#include "maskclear_frag.spv.h"
+#include "maskclear_uint_frag.spv.h"
+#include "maskclear_sint_frag.spv.h"
+#include "flatdbg_frag.spv.h"
+typedef struct { uint32_t ncol, cfmt[8], dfmt, samples, mask, index, kind; } mckey;
+static struct { VkPipelineLayout pl; VkShaderModule vs, fs[3]; int bad; mckey k[64]; VkPipeline p[64]; int n; } g_mc;
+static VkPipeline mc_pipeline(uint32_t mask, uint32_t index, uint32_t kind) {
+    mckey k; memset(&k, 0, sizeof k); k.ncol = (uint32_t)S.ncol; for (int i = 0; i < S.ncol && i < 8; i++) k.cfmt[i] = (uint32_t)S.cfmt[i];
+    k.dfmt = (uint32_t)S.dfmt; k.samples = S.samples ? S.samples : 1; k.mask = mask; k.index = index; k.kind = kind; // NX2A_MASKED_CLEAR_ALL_ATTACHMENTS"""),
+    ("""        fi.codeSize = sizeof maskclear_frag_spv; fi.pCode = maskclear_frag_spv;
+        if (vkCreatePipelineLayout(V.dev, &li, NULL, &g_mc.pl) || vkCreateShaderModule(V.dev, &vi, NULL, &g_mc.vs) || vkCreateShaderModule(V.dev, &fi, NULL, &g_mc.fs)) { g_mc.bad = 1; return VK_NULL_HANDLE; }
+    }
+    VkPipelineShaderStageCreateInfo ss[2] = {{VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO, NULL, 0, VK_SHADER_STAGE_VERTEX_BIT, g_mc.vs, "main", NULL},
+                                             {VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO, NULL, 0, VK_SHADER_STAGE_FRAGMENT_BIT, g_mc.fs, "main", NULL}};""",
+     """        fi.codeSize = sizeof maskclear_frag_spv; fi.pCode = maskclear_frag_spv;
+        if (vkCreatePipelineLayout(V.dev, &li, NULL, &g_mc.pl) || vkCreateShaderModule(V.dev, &vi, NULL, &g_mc.vs) ||
+            vkCreateShaderModule(V.dev, &fi, NULL, &g_mc.fs[0])) { g_mc.bad = 1; return VK_NULL_HANDLE; }
+        fi.codeSize = sizeof maskclear_uint_frag_spv; fi.pCode = maskclear_uint_frag_spv;
+        if (vkCreateShaderModule(V.dev, &fi, NULL, &g_mc.fs[1])) { g_mc.bad = 1; return VK_NULL_HANDLE; }
+        fi.codeSize = sizeof maskclear_sint_frag_spv; fi.pCode = maskclear_sint_frag_spv;
+        if (vkCreateShaderModule(V.dev, &fi, NULL, &g_mc.fs[2])) { g_mc.bad = 1; return VK_NULL_HANDLE; }
+    }
+    VkPipelineShaderStageCreateInfo ss[2] = {{VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO, NULL, 0, VK_SHADER_STAGE_VERTEX_BIT, g_mc.vs, "main", NULL},
+                                             {VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO, NULL, 0, VK_SHADER_STAGE_FRAGMENT_BIT, g_mc.fs[k.kind], "main", NULL}};"""),
+    ("""    cba[0].colorWriteMask = mask & 0xf;   // NVN's mask bits R G B A are Vulkan's""",
+     """    cba[index].colorWriteMask = mask & 0xf;   // NX2A_MASKED_CLEAR_ALL_ATTACHMENTS: write only the selected NVN attachment"""),
+    ("""    const vkfmt_t *f = vk_fmt(S.rt_col[c->index].d.format);
+    if (c->index != 0 || (f && f->is_int)) return 0;
+    VkPipeline p = mc_pipeline(c->mask); if (!p) return 0;""",
+     """    if (c->index < 0 || c->index >= 8) return 0;
+    const vkfmt_t *f = vk_fmt(S.rt_col[c->index].d.format);
+    uint32_t kind = f && f->is_int ? (f->is_sint ? 2u : 1u) : 0u;
+    VkPipeline p = mc_pipeline(c->mask, (uint32_t)c->index, kind); if (!p) return 0; // NX2A_MASKED_CLEAR_ALL_ATTACHMENTS""")
+]);
+
+# Generate three statically typed MRT fragment shaders. Every location is
+# declared so any of the eight NVN colour attachments can be selected by mask.
+_shader_dir = repo / 'nxnative/dm/android/shaders'
+_shader_dir.mkdir(parents=True, exist_ok=True)
+_float = """#version 450
+layout(push_constant) uniform P { vec4 c; } p;
+"""
+_uint = """#version 450
+layout(push_constant) uniform P { vec4 c; } p;
+"""
+_sint = """#version 450
+layout(push_constant) uniform P { vec4 c; } p;
+"""
+for _loc in range(8):
+    _float += f"layout(location = {_loc}) out vec4 o{_loc};\\n"
+    _uint += f"layout(location = {_loc}) out uvec4 o{_loc};\\n"
+    _sint += f"layout(location = {_loc}) out ivec4 o{_loc};\\n"
+_float += "void main() {\\n" + "".join(f"    o{i} = p.c;\\n" for i in range(8)) + "}\\n"
+_uint += "void main() {\\n" + "".join(f"    o{i} = uvec4(p.c);\\n" for i in range(8)) + "}\\n"
+_sint += "void main() {\\n" + "".join(f"    o{i} = ivec4(p.c);\\n" for i in range(8)) + "}\\n"
+for _name, _body in (('maskclear.frag', _float), ('maskclear_uint.frag', _uint), ('maskclear_sint.frag', _sint)):
+    (_shader_dir / _name).write_text(_body)
+print('NGR masked clear shader variants: generated 8-location FLOAT/UINT/SINT outputs')
+
 sys.exit(1 if failed else 0)
