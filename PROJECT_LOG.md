@@ -722,3 +722,5 @@
 - Patch 38 adds stage-specific clonefile diagnostics for stat/access/mkdir/opendir/recursive child failures. It is diagnostic, not another guessed permission change; the next run should expose the exact operation/path/mode.
 - Payload manifest bumped to version 203 and apply_patches.py SHA-256 refreshed to 7e40347d2ebcc1f444a943e1e9b298181b0e9b021014e136e9f6071bfe76a222.
 - CI patch validation/NDK build and on-device validation are pending. No APK is available yet. Install the next APK and recompile/update Metro data pack to regenerate libdmhost.so; verify the one-time hard-throttle message, named yield rates reduced to thousands/s, and the precise clonefile failure diagnostic.
+
+- CI run 45862916716 validated patch-set application successfully, then stopped at payload-manifest verification. Its authoritative generator reported apply_patches.py SHA-256 `e5fbfe281cabc8144c4c5c549e50ea1eede99db25138135a2153980ffa00cbff`; manifest corrected in commit 6019b38, version 203. Fresh CI is pending.
