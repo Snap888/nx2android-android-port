@@ -1040,3 +1040,30 @@
 - Install APK, rebuild Metro 2033 Redux Data Pack so the updated patched `libdmhost.so` is used, then test fire, reticle, distant textures and shadows on Turnip Adreno 740.
 - If the 1280x720 / 640x360 alias needs further classification, add `DM_VK_ALIAS_TRACE=1` to the game's `env.txt` for one test run. It emits at most 16 alias records and is disabled by default.
 - Saves remain untouched by the graphics patches. User's last verified state: saves work and gameplay does not hang with verbose logging disabled.
+
+
+## 2026-11-27 — Metro gameplay log 9383b4fd4e8540ed5d6e: index-buffer chunk crossing
+
+### Новые данные игрового прогона
+- Файлы: `Logs/ngr-gameplay-9383b4fd4e8540ed5d6e.log.txt` (blob `8c76459ccf97bdf0c7c9305ff904e307874fa14f`) и `Logs/ngr-runtime-9383b4fd4e8540ed5d6e.log.txt` (blob `6e5696d97484fb338b1c4041dfe379927d3d0910`).
+- Сессия 2026-11-27 01:05:58–01:07:15; Turnip Adreno 740, Vulkan 1.4.362, driver 26.2.99.
+- Shader bundle: 854/854 shaders загружены. NVN init: 1,718 texture builder calls, 1,719 texture initializations, 1,687 mip-level calls, 197 texture views, 30 sampler registrations, 197 CopyBufferToTexture calls.
+- Packaged textures: 0 missed, 0 first uploads / reuploads during tracked intervals, 0 write-protection faults. This rules against a broad texture-upload failure but does not prove sampled image contents/LOD are correct.
+- At present 3000: 1,520,460 draws replayed, skipped due to no program/target = 0, pipeline skips = 5; 1,667 live images, 427 MB, 61 evicted images. 61 evictions are not by themselves proof of a bug.
+- **New strongest direct lead:** repeated `[vk] [RED] index ranges across a memory pool chunk's end` for the same range `0x718fa89afc + 0x63c`, chunk end `0x718fa8a000`. The range crosses the VkBuffer boundary by `0x138` bytes. Counter reaches 4096 (power-of-two rate-limited reports). In pinned `gfx_vk_exec.c`, `draw_idx()` only resolves the first VkBuffer with `vk_buf_at(d->ibuf, 1, ...)`, then issues `vkCmdDrawIndexed` against it; the crossing is counted but not repaired. The source comment explicitly notes that the GPU can read past the VkBuffer and, with robustBufferAccess off, see zeros. This can drop/corrupt indexed geometry and is a plausible contributor to missing particle meshes, distant geometry and shadow casters. Need capture the affected draw's count/index type/base vertex before choosing a safe fix.
+- No `partial channel clear` / `clear_masked` warning appears in this current gameplay log. Do not attribute this run's missing effects to masked clear without a new reproduction.
+- `nvnProgramSetSampleShading` has 898 registrations; the four unimplemented runtime calls show enable argument 0. `nvnCommandBufferSetStencilCullCriteria` remains a ZCull hint, not depth/stencil state.
+- 27 texture swizzle builder calls; one logged non-identity swizzle `(2,3,4,0)`. Current `sample_swizzle()` composes NVN selectors with format swizzle and view selectors; needs targeted validation for the actual fire/reticle texture rather than global changes.
+- The current run has no active alias trace because `DM_VK_ALIAS_TRACE` defaults off. Prior run documented 200 stale-read alias warnings for overlapping 1280x720 and 640x360 views over the same pool range. Keep that as a separate candidate and use the bounded 16-event trace only in a controlled follow-up.
+
+### Отдельный старый build log
+- `Logs/1` (blob `6358b361837c37915b14e40064b1ec4441380fad`) is from 2026-11-24 17:39 UTC, not the 2026-11-27 gameplay session.
+- Its shader translation completed (854/854), but data-pack stage failed with Python `NameError: name 'ui_font_assets' is not defined` in `porter/pipeline.py:858`, called by `Port.data()` at line 870. This is a Python packaging/name-resolution failure, not an NDK/C++ or Vulkan shader compile failure. Later payload 215 CI run `45899795144` passed native Vulkan backend and SPIR-V compilation, so do not conflate the stale log with current graphics runtime.
+
+### Next actions
+1. Add opt-in, capped metadata for crossing indexed draws (address, count, index type, base vertex, indirect flag); default off.
+2. Implement a correct cross-chunk index read path. Prefer a GPU-side two-buffer-to-contiguous scratch copy with required barriers if source data can be GPU-written; use CPU shadow copy only after proving the index buffer is CPU-owned for this workload.
+3. Correlate affected draw/shader/pipeline with fire, reticle, distant meshes and shadow casters. Do not assume all symptoms share one cause.
+4. In a separate controlled run enable `DM_VK_ALIAS_TRACE=1` (max 16 events) and inspect the known 1280x720 / 640x360 overlapping image pair.
+5. Keep saves unchanged and heavy per-frame logging disabled.
+
