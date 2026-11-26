@@ -946,9 +946,9 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
 
     setenv("DM_GAME_DIR", game_dir, 1);
     setenv("NGR_PRIVATE_GAME_DIR", private_dir, 1);
-    /* Save files are user data, not executable payload. Prefer the app-created
-       public Download/NX2A/Saves/<game-id> directory; retain private fallback
-       when storage permission/provider access is unavailable. */
+    /* NX2A_PUBLIC_SAVE_ROOT_V1: saves are user data, not executable payload.
+       Prefer the app-created Download/NX2A/Saves/<game-id> directory; retain
+       private fallback when shared-storage access is unavailable. */
     jstring jpublic_save = intent_string_extra(activity, "ngr_public_save_path");
     const char *public_save = jpublic_save
         ? (*activity->env)->GetStringUTFChars(activity->env, jpublic_save, NULL) : NULL;
