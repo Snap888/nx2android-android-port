@@ -1023,3 +1023,20 @@
 - CI run `45899368099` correctly rejected the hand-computed hash for patcher version 215. The source patch and Python syntax checks passed; failure was isolated to `payload.json` SHA-256.
 - Recomputed SHA-256 against the exact branch file and confirmed it matches CI's `tools/make_manifest.py`: `ddebc883fba3fcd0ef79d7eb9523b29aa836ff73203b378c5653ed27096794c6`.
 - Corrected `payload.json` at commit `c4a5da43f66cde7aa28f9453c3e651601d101553`. Version remains 215. Final CI must be rerun; do not use the rejected run's result.
+
+
+## 2026-11-27 — Payload 215 final native build passed
+
+### CI / native validation
+- Final run: `45899795144`, source commit `9b269aa11497a77e96f5eaa4d44fef57b14be892`, conclusion SUCCESS.
+- Passed: Python syntax and tests; patch set applied twice to pinned Porter; WebView syntax; payload manifest hash; signed APK build; native Vulkan backend compile and SPIR-V shader compile.
+- New CI native compile step runs:
+  `python3 nxnative/dm/android/build.py --game 0100CD701434C000 --ndk "$ANDROID_SDK_ROOT/ndk/27.2.12479018" --lib --release --jobs 4`
+  against the patched pinned Porter. It successfully produced `libdmhost.so`; all 24 generated masked-clear GLSL variants compiled to SPIR-V.
+- Artifact: `nx2android-apk`, ID `15154829303`, 35,874,265 bytes. Link: `https://github.com/Snap888/nx2android-android-port/actions/runs/45899795144/artifacts/15154829303`.
+- Payload version: 215. Patcher SHA-256: `ddebc883fba3fcd0ef79d7eb9523b29aa836ff73203b378c5653ed27096794c6`.
+
+### Runtime test still required
+- Install APK, rebuild Metro 2033 Redux Data Pack so the updated patched `libdmhost.so` is used, then test fire, reticle, distant textures and shadows on Turnip Adreno 740.
+- If the 1280x720 / 640x360 alias needs further classification, add `DM_VK_ALIAS_TRACE=1` to the game's `env.txt` for one test run. It emits at most 16 alias records and is disabled by default.
+- Saves remain untouched by the graphics patches. User's last verified state: saves work and gameplay does not hang with verbose logging disabled.
