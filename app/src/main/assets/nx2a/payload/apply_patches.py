@@ -1545,7 +1545,7 @@ patch('NGR restore writable private save roots', 'nxnative/dm/android/front_andr
         LOG("[save] cannot restore private save root permissions %s: errno=%d", p, errno);
     if (access(p, R_OK | W_OK | X_OK))
         LOG("[RED] private save root is not readable/writable/traversable %s: errno=%d", p, errno);
-    setenv("DM_SAVE", p, 1); // NX2A_PRIVATE_SAVE_ROOT_PERMISSIONS''')
+    setenv("DM_SAVE", p, 1); // NX2A_PRIVATE_TRANSACTIONAL_SAVE_ROOT NX2A_PRIVATE_SAVE_ROOT_PERMISSIONS''')
 ]);
 
 # 45. Imported/older committed saves can contain owner-unreadable entries.
