@@ -981,3 +981,25 @@
 - Passed: Python syntax/unit checks, patch application twice against pinned Porter, WebView syntax, payload manifest verification, release APK build.
 - Artifact: `nx2android-apk`, ID `15154972411`, 35,873,460 bytes. This artifact contains payload version 213 and predates the final unsigned-value clamp/hash update; do not use it as the final test APK.
 - Final source now has payload version 214 and the unsigned clear conversion clamp. A new CI run is required for the final artifact.
+
+
+## 2026-11-27 — Final APK for masked-clear patch (payload 214)
+
+### CI
+- Final payload source (version 214, including the per-location/type shader variants and UINT clamp) passed workflow run `45898925959`, commit `a5c3903a4c543c09d4377fe8a96d3527a2cfac87`.
+- Passed: Python syntax/unit checks, patcher applied twice against pinned Porter, WebView syntax, manifest hash check, signed release APK build and artifact upload.
+- Artifact: `nx2android-apk`, ID `15155250643`, 35,873,495 bytes. Link: `https://github.com/Snap888/nx2android-android-port/actions/runs/45898925959/artifacts/15155250643`.
+- CI does not compile the native Porter Data Pack. The device-side native rebuild and visual regression test remain mandatory.
+
+### Additional findings from Metro gameplay log 9383b4fd4e8540ed5d6e
+- The log contains exactly 200 repeated `[alias] stale read` events for one overlapping storage range `+73793536..+77725696`: sampled image 1280x720, NVN format `0x38`, while a 640x360 image of the same format and exact same pool range was rendered later. The current `alias_check()` only reports this condition; it does not synchronize the two independent VkImages. This is a strong, separate candidate for textures that disappear or become stale when the game reuses texture-pool storage with another description. Do not blindly copy/scale until the sample counts and texture usage are confirmed.
+- No buffer-texture alignment warnings, `vkCreateImageView` failures, unsupported texture formats, or deswizzle errors were present in this gameplay log.
+- NVN counters: 1,718 texture builder calls, 1,719 texture initializations, 1,687 mip-level settings, 197 texture views, 30 sampler registrations, 197 buffer-to-texture copies.
+- `nvnTextureBuilderGetRawStorageClass` was called 3 times but is missing. Pinned `hle_nvn.c` has `nvnTextureBuilderGetStorageClass` returning 0 and a separate `nvnTextureGetRawStorageClass` returning 1; the builder raw variant needs its own ABI-safe stub, with return semantics verified before merging.
+- `nvnProgramSetSampleShading` was called 898 times; the observed unimplemented calls had enable argument 0, so it is not currently the leading cause. `nvnCommandBufferSetStencilCullCriteria` is a ZCull hint, not actual depth/stencil state.
+- Next graphics work: add opt-in low-volume alias metadata (include sample count/target/flags) and implement the builder raw-storage getter; then determine whether the 640x360/1280x720 alias is MSAA/resolve reuse or another pool-layout reinterpretation before changing image storage semantics.
+
+### Current status
+- Masked-clear fix is implemented and packaged in APK; not yet device-verified.
+- Missing fire/reticle/distant textures/shadows are not declared fixed. Alias stale-read behavior is now the strongest remaining evidence-backed lead.
+- Preserve the current save implementation and keep high-frequency diagnostics disabled by default.
