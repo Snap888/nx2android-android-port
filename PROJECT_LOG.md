@@ -1067,3 +1067,35 @@
 4. In a separate controlled run enable `DM_VK_ALIAS_TRACE=1` (max 16 events) and inspect the known 1280x720 / 640x360 overlapping image pair.
 5. Keep saves unchanged and heavy per-frame logging disabled.
 
+
+
+## 2026-11-27 — Payload 217: GPU repair for direct indexed draws crossing pool chunks
+
+### Implemented
+- apply_patches.py patch 52 adds vk_index_range_scratch() to the pinned NVN Vulkan backend.
+- For a direct, non-quad indexed draw whose index range crosses a zero-copy memory-pool chunk, the backend now:
+  1. validates the complete range belongs to the same guest pool and stays inside its bounds;
+  2. rounds the copy range to Vulkan's 4-byte buffer-copy alignment;
+  3. ends the current render pass and lands deferred uniform updates;
+  4. copies each source chunk GPU-to-GPU into the submission scratch buffer, with global memory barriers before and after;
+  5. binds the scratch index buffer for the draw. The copy is recorded before prepare_draw() so pipeline, descriptors, vertex buffers and render-pass state are set up normally afterward.
+- Copy size is capped at 64 MiB; an invalid/unresolvable crossing is skipped with one bounded error instead of issuing an out-of-bounds indexed draw.
+- No CPU shadow copy is used: index data may have been written by GPU work earlier in the submission.
+- NVN quad conversion (prim == 7) and indexed-indirect draws are deliberately not changed; their source ranges are handled differently and need separate work.
+- Patch 53 adds DM_VK_SWIZZLE_TRACE=1 (maximum 64 records) with texture pool/offset, serial, dimensions, format, levels, texture/view selectors and final Vulkan component mapping. It does not override game-requested swizzles.
+- Patch 51's DM_VK_ALIAS_TRACE=1 remains opt-in and capped at 16 events. New DM_VK_INDEX_TRACE=1 is capped at 16 crossing draws. All are off by default.
+
+### Validation
+- Payload version: 217.
+- apply_patches.py SHA-256: c7ac0571c4107d2e615ed79746c9d0d1ea7ed4a348d958ec2fdf2a250a7f7c9b.
+- Workflow run 45904299239 passed: Python syntax/tests, patch application twice against the workflow's pinned Porter, payload manifest check, signed APK build, patched Vulkan backend compilation and SPIR-V shader compilation.
+- Successful run artifact (same code patcher; manifest was version 216, before the version-only 217 bump): 15157655920, 35,876,705 bytes. Exact version-217 workflow run 45904370735 was queued/in progress when this entry was written.
+- Native compilation proves the patched backend builds; it does not prove the visual defects are fixed on the Adreno 740 device.
+
+### Device test / remaining work
+1. Install the test APK and rebuild Metro 2033 Redux's Data Pack so the game uses the newly patched libdmhost.so.
+2. First test with diagnostic variables unset: fire textures, reticle, distant textures, shadows, FPS and stability.
+3. If symptoms remain, enable only one bounded trace per short run: DM_VK_INDEX_TRACE=1, DM_VK_SWIZZLE_TRACE=1, or DM_VK_ALIAS_TRACE=1. Do not enable verbose per-frame logging.
+4. The (2,3,4,0) texture swizzle explicitly requests RGB with alpha ZERO; no global semantic change is justified until the affected texture and its draw are identified.
+5. Distant-texture sampler LOD and the earlier 1280x720 / 640x360 overlapping-image alias remain unresolved. No global maxLod change or image-storage rewrite was made.
+6. Shadows may share the indexed-geometry defect, but must be checked against shadow-caster draws and depth attachments separately.
