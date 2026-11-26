@@ -1839,4 +1839,73 @@ patch('NGR CPU-decoded BC texture first-use upload', 'nxnative/dm/android/gfx_vk
      """    if (t->d.flags & ((guest_comp ? 0 : (NVN_TEXTURE_FLAGS_IMAGE | NVN_TEXTURE_FLAGS_COMPRESSIBLE)) | NVN_TEXTURE_FLAGS_LINEAR | NVN_TEXTURE_FLAGS_LINEAR_RENDER_TARGET | NVN_TEXTURE_FLAGS_SPARSE)) return 0;""")
 ]);
 
+
+# 55. Bounded, opt-in tracing of first-use texture contents and descriptor binds.
+# It records the decision path without changing texture uploads or view semantics.
+patch('NGR bounded texture first-use trace', 'nxnative/dm/android/gfx_vk_tex.c', 'NX2A_TEX_FIRST_TRACE', [
+    ("""    int nvn_ft_written(const tex_t *);
+    if (t->mem && lin_copy(im, t, f)) {}
+    else if (t->mem && (packaged_tex(t) || (first && (nvn_ft_written(t) || cpu_content_tex(t, f))))) {
+""",
+     """    int nvn_ft_written(const tex_t *);
+    int linear_upload = t->mem && lin_copy(im, t, f);
+    int is_packaged = 0, ft_written = 0, cpu_written = 0;
+    if (!linear_upload && t->mem) {
+        is_packaged = packaged_tex(t);
+        if (!is_packaged && first) {
+            ft_written = nvn_ft_written(t);
+            if (!ft_written) cpu_written = cpu_content_tex(t, f);
+        }
+    }
+    static int tex_trace = -1; if (tex_trace < 0) { const char *e = getenv("DM_VK_TEX_TRACE"); tex_trace = e && atoi(e) != 0; }
+    static unsigned tex_trace_n;
+    if (first && tex_trace && tex_trace_n < 96) {
+        const char *src = linear_upload ? "linear" : is_packaged ? "packaged" : ft_written ? "ft-written" : cpu_written ? "cpu-content" : "no-upload";
+        tex_trace_n++;
+        VKLOG("[tex-first] serial=%llu pool=%p off=%#llx mem=%p size=%#llx fmt=%#x vk=%d target=%u dims=%ux%u levels=%u flags=%#x pool_flags=%#x layout=%d mem_present=%d compressed=%d dec=%d source=%s",
+              (unsigned long long)t->serial, (const void *)t->pool, (unsigned long long)t->off, (const void *)t->mem,
+              (unsigned long long)t->L.size, t->d.format, f->vk, t->d.target, t->d.width, t->d.height, t->d.levels,
+              t->d.flags, t->pool ? t->pool->flags : 0, t->has_layout, t->mem != NULL, f->compressed, f->dec, src);
+    }
+    if (linear_upload) {}
+    else if (t->mem && (is_packaged || (first && (ft_written || cpu_written)))) {
+""")
+]);
+
+patch('NGR bounded texture descriptor trace', 'nxnative/dm/android/gfx_vk_exec.c', 'NX2A_TEX_BIND_TRACE', [
+    ("""    int num = 0;
+    if (tid && g_var_now != 3 && vk_tex_by_id(tid, &v, &t) && t) {
+        vkimg_t *im = NULL; ii->imageView = vk_tex_view(t, v, b->dim, b->flags & 1, 0, &im); if (storage && im) im->gpu_w = 1;
+""",
+     """    int num = 0;
+    static int ngr_tex_trace = -1; if (ngr_tex_trace < 0) { const char *e = getenv("DM_VK_TEX_TRACE"); ngr_tex_trace = e && atoi(e) != 0; }
+    int found_tex = tid && g_var_now != 3 && vk_tex_by_id(tid, &v, &t) && t;
+    if (found_tex) {
+        vkimg_t *im = NULL; ii->imageView = vk_tex_view(t, v, b->dim, b->flags & 1, 0, &im); if (storage && im) im->gpu_w = 1;
+        static unsigned ngr_tex_bind_n;
+        if (ngr_tex_trace && t->d.width >= 16 && t->d.height >= 16 && ngr_tex_bind_n < 96) {
+            ngr_tex_bind_n++;
+            VKLOG("[tex-bind] stage=%d shader=%#llx binding=%u handle=%#llx id=%d serial=%llu pool=%p off=%#llx size=%#llx fmt=%#x target=%d dims=%ux%u levels=%u flags=%#x tex_swz=%#x view_swz=%d/%d,%d,%d,%d image=%p vkfmt=%d gpu_w=%d view=%p storage=%d",
+                  st, (unsigned long long)(S.sh[st] ? S.sh[st]->key : 0), b->binding, (unsigned long long)h, tid,
+                  (unsigned long long)t->serial, (const void *)t->pool, (unsigned long long)t->off, (unsigned long long)t->L.size,
+                  t->d.format, t->d.target, t->d.width, t->d.height, t->d.levels, t->d.flags,
+                  t->set_swz ? t->swz : 0xffffffffu, v && v->set_swizzle,
+                  v ? v->swz[0] : -1, v ? v->swz[1] : -1, v ? v->swz[2] : -1, v ? v->swz[3] : -1,
+                  (void *)im, im ? im->fmt : 0, im ? (int)im->gpu_w : -1, (void *)ii->imageView, storage);
+        }
+"""),
+    ("""    if (num && !storage) ii->sampler = samp_for(st, b, h, 1);
+    if (!ii->imageView) {
+""",
+     """    if (!found_tex && tid && g_var_now != 3 && ngr_tex_trace) {
+        static unsigned ngr_tex_miss_n;
+        if (ngr_tex_miss_n < 32) { ngr_tex_miss_n++; VKLOG("[tex-bind-miss] stage=%d shader=%#llx binding=%u handle=%#llx id=%d dim=%u flags=%#x storage=%d",
+            st, (unsigned long long)(S.sh[st] ? S.sh[st]->key : 0), b->binding, (unsigned long long)h, tid, b->dim, b->flags, storage); }
+    }
+    if (num && !storage) ii->sampler = samp_for(st, b, h, 1);
+    if (!ii->imageView) {
+""")
+]);
+
+sys.exit(1 if failed else 0)
 sys.exit(1 if failed else 0)
