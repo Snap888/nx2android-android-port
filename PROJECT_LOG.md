@@ -624,3 +624,34 @@
 - After installing the APK, Metro's data pack must be recompiled/updated so its libdmhost.so contains the new filesystem and display patches.
 - Expected Handheld log: mode=handheld destination=0,0 <full-window-width>x<full-window-height>; Docked should report mode=docked and centered aspect-fit.
 - Expected Metro marker: [fs] Android RomFS lookup v1. Compare long-frame duration, file-open/read timing, yield rates and audio underruns against the previous build. Audio code was not changed.
+
+
+## 2026-11-26 — Handheld final blit and Android save-clone optimization
+
+### Handheld output: final Vulkan blit guard
+- The previous v2 patch forced dx/dy/dw/dh before constructing VkImageBlit. Added a second guard directly on the actual blit's dstOffsets, immediately before vkCmdBlitImage.
+- In Handheld (dm_opmode()==0), the actual transfer destination is explicitly (0,0) → (g_sext.width,g_sext.height) on every present. Docked keeps the original aspect-fit destination.
+- Added change-triggered [display-blit] diagnostics with mode, window extent and final Vulkan destination. This distinguishes a wrong calculated rect from a later surface/rotation issue.
+- Guest crop/source resolution is not changed.
+
+### Metro 2033 Redux: checkpoint commit stalls
+- Audited pinned upstream darwin_compat.c: Android's clonefile() recursively walks directories and copy_file() copies every file through a 64 KiB read/write loop. It does not use copy-on-write.
+- Audited hle_fs.c: nn::fs::Commit invokes clonefile(work, .new) synchronously inside commit_mount_locked() while the caller holds both global PATH_LOCK and the mount lock. The operation can therefore block unrelated game file operations during a checkpoint.
+- Added Android FICLONE attempt per file. Filesystems that support reflinks get a copy-on-write clone; unsupported filesystems keep the existing byte-copy fallback. The first attempt logs one of:
+  - [fs] Android save clone: FICLONE copy-on-write enabled
+  - [fs] Android save clone: FICLONE unsupported (errno=...); byte-copy fallback active
+- Existing save commit #... (clone + swap ... us) timing remains the authoritative duration measurement. This change does not add threads or weaken save atomicity.
+- Limitation: if the device's /data filesystem rejects FICLONE, the fallback still copies bytes while Commit holds the global locks. A per-mount lock/snapshot redesign would then be the next step; do not make it without measuring correctness and lock ordering.
+
+### Validation / status
+- Exact patch anchors were checked against pinned Porter 468937822219a56eb81da1aa2e40f05e8c453af2: compat include, copy_file() and Vulkan VkImageBlit anchors each occur exactly once.
+- Payload patcher updated; payload version bumped to 198 and apply_patches.py SHA-256 refreshed.
+- CI build and on-device test are still pending. No APK from these changes is confirmed yet.
+- After installing a new APK, recompile/update Metro's data pack so the newly patched libdmhost.so is actually used.
+- Compare save commit duration and FICLONE marker against the previous build; also verify Handheld [display-blit] mode=handheld ... dst=0,0-<window width>,<window height> over multiple consecutive frames. Confirm Docked remains aspect-fit.
+- Audio pipeline remains untouched.
+
+### Next actions
+1. Wait for/inspect GitHub Actions build; resolve compile or patch-anchor failures before distributing an APK.
+2. Install APK and rebuild Metro data pack; test the same checkpoint transition and record save commit duration.
+3. Test Handheld over at least 30 seconds, including after overlay/menu visibility changes; if the final blit log stays full-size but the displayed image shrinks, inspect swapchain transform and Android surface lifecycle rather than repeating the destination-rectangle patch.
