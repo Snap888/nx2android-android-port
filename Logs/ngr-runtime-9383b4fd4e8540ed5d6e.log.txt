@@ -2,446 +2,285 @@ NGR runtime diagnostic export
 Game ID: 9383b4fd4e8540ed5d6e
 
 ===== Native dispatcher + game stdout/stderr =====
-2026-11-26 22:26:29.803 [I] pid=11605 ============================================================
-2026-11-26 22:26:29.803 [I] pid=11605 NGR launch session started: game_id=9383b4fd4e8540ed5d6e sdk=35 abi=arm64-v8a
-2026-11-26 22:26:29.803 [I] pid=11605 NativeActivity paths: internal=/data/user/0/unknown.none.nx2android/files external=/storage/emulated/0/Android/data/unknown.none.nx2android/files
-2026-11-26 22:26:29.803 [I] pid=11605 [NGR storage] using game data in place: /storage/emulated/0/Download/0ut/Metro2033Redux-data
-2026-11-26 22:26:29.804 [I] pid=11605 [config] env.txt: DM_PRESENT_INTERVAL=display
-2026-11-26 22:26:29.804 [I] pid=11605 [config] env.txt: DM_VK_DRIVER=libvulkan_freedreno.so
-2026-11-26 22:26:29.805 [I] pid=11605 [NGR profile] no profile.json; using the compiled game profile (legacy payload)
-2026-11-26 22:26:29.856 [I] pid=11605 staged 7 native libraries in private app storage
-2026-11-26 22:26:29.902 [I] pid=11605 [Vulkan] per-game driver selected: /storage/emulated/0/Download/GAME/Turnip_Gen8_V37/libvulkan_freedreno.so (staged as libvulkan_freedreno.so)
-2026-11-26 22:26:29.903 [I] pid=11605 [NGR save] no public save directory supplied; private fallback active
-2026-11-26 22:26:29.903 [I] pid=11605 [scheduler] Metro 2033 guard enabled (PhysX/Secondary Utility QoS, audio/main priority inheritance, 50k progressing yields/s then scheduler handoff every 256 excess yields)
-2026-11-26 22:26:29.903 [I] pid=11605 [scheduler] Metro 2033 performance profile: verbose NVN/filesystem and per-lock synchronization tracing disabled
-2026-11-26 22:26:29.903 [I] pid=11605 [stage 1/8] payload validated; game_dir=/storage/emulated/0/Download/0ut/Metro2033Redux-data private_dir=/data/user/0/unknown.none.nx2android/files/games/9383b4fd4e8540ed5d6e
-2026-11-26 22:26:29.903 [I] pid=11605 [stage 2/8] native libraries staged; runtime=/data/user/0/unknown.none.nx2android/files/games/9383b4fd4e8540ed5d6e/libdmhost.so
-2026-11-26 22:26:29.903 [I] pid=11605 [stage 3/8] preloading companion dependencies
-2026-11-26 22:26:29.903 [I] pid=11605 [stage 3/8] dlopen companion begin: libadrenotools.so flags=GLOBAL
-2026-11-26 22:26:29.904 [I] pid=11605 preloaded game dependency libadrenotools.so handle=0x8ca947cbd9cba97b
-2026-11-26 22:26:29.904 [I] pid=11605 [stage 3/8] leaving libfile_redirect_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-26 22:26:29.904 [I] pid=11605 [stage 3/8] leaving libgsl_alloc_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-26 22:26:29.904 [I] pid=11605 [stage 3/8] leaving libhook_impl.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-26 22:26:29.904 [I] pid=11605 [stage 3/8] leaving libmain_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-26 22:26:29.904 [I] pid=11605 [stage 3/8] leaving libvulkan_freedreno.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-26 22:26:29.904 [I] pid=11605 [stage 3/8] leaving libfile_redirect_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-26 22:26:29.904 [I] pid=11605 [stage 3/8] leaving libgsl_alloc_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-26 22:26:29.904 [I] pid=11605 [stage 3/8] leaving libhook_impl.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-26 22:26:29.904 [I] pid=11605 [stage 3/8] leaving libmain_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-26 22:26:29.904 [I] pid=11605 [stage 3/8] leaving libvulkan_freedreno.so for AdrenoTools isolated linker namespace; do not preload into app namespace
-2026-11-26 22:26:29.904 [I] pid=11605 preloaded 1 companion game libraries
-2026-11-26 22:26:29.904 [I] pid=11605 [stage 3/8] dependency preload finished: 1 companion libraries
-2026-11-26 22:26:29.904 [I] pid=11605 [stage 4/8] inspecting main runtime ELF before dlopen: /data/user/0/unknown.none.nx2android/files/games/9383b4fd4e8540ed5d6e/libdmhost.so
-2026-11-26 22:26:29.904 [I] pid=11605 [ELF preflight] type=3 machine=183 entry=0x0 phnum=11
-2026-11-26 22:26:29.904 [I] pid=11605 [ELF preflight] DT_INIT=0x0 INIT_ARRAY=0x1eeda8 INIT_ARRAYSZ=48
-2026-11-26 22:26:29.904 [I] pid=11605 [ELF preflight] DT_RELA=0x12720 RELASZ=134904 RELAENT=24 DT_RELR=0x0 RELRSZ=0 RELRENT=8
-2026-11-26 22:26:29.904 [I] pid=11605 [ELF preflight] DT_RELA mapped file offset=0x12720 entries=5621
-2026-11-26 22:26:29.904 [I] pid=11605 [ELF preflight] init_array[0] relocation: type=1027 symbol=0 addend=0x1e5fb4
-2026-11-26 22:26:29.904 [I] pid=11605 [ELF preflight] init_array[0] slot=0x1eeda8 raw=0x0 relocation=present
-2026-11-26 22:26:29.905 [I] pid=11605 [ELF preflight] init_array[1] relocation: type=1027 symbol=0 addend=0x1e660c
-2026-11-26 22:26:29.905 [I] pid=11605 [ELF preflight] init_array[1] slot=0x1eedb0 raw=0x0 relocation=present
-2026-11-26 22:26:29.905 [I] pid=11605 [ELF preflight] init_array[2] relocation: type=1027 symbol=0 addend=0xb4934
-2026-11-26 22:26:29.905 [I] pid=11605 [ELF preflight] init_array[2] slot=0x1eedb8 raw=0x0 relocation=present
-2026-11-26 22:26:29.905 [I] pid=11605 [ELF preflight] init_array[3] relocation: type=1027 symbol=0 addend=0xcc260
-2026-11-26 22:26:29.905 [I] pid=11605 [ELF preflight] init_array[3] slot=0x1eedc0 raw=0x0 relocation=present
-2026-11-26 22:26:29.906 [I] pid=11605 [ELF preflight] init_array[4] relocation: type=1027 symbol=0 addend=0xfb570
-2026-11-26 22:26:29.906 [I] pid=11605 [ELF preflight] init_array[4] slot=0x1eedc8 raw=0x0 relocation=present
-2026-11-26 22:26:29.906 [I] pid=11605 [ELF preflight] init_array[5] relocation: type=1027 symbol=0 addend=0x1559f0
-2026-11-26 22:26:29.906 [I] pid=11605 [ELF preflight] init_array[5] slot=0x1eedd0 raw=0x0 relocation=present
-2026-11-26 22:26:29.906 [I] pid=11605 [stage 4/8] main runtime dlopen begin: /data/user/0/unknown.none.nx2android/files/games/9383b4fd4e8540ed5d6e/libdmhost.so (RTLD_LAZY|RTLD_LOCAL)
-2026-11-26 22:26:29.908 [I] pid=11605 [stage 4/8] main runtime dlopen succeeded: handle=0x2c858907e5994357
-2026-11-26 22:26:29.908 [I] pid=11605 [stage 5/8] resolved ANativeActivity_onCreate at 0x79f36448d0
-2026-11-26 22:26:29.908 [I] pid=11605 [stage 6/8] dispatching NativeActivity_onCreate to libdmhost.so; activity=0x7a8f734b50 env=0xb400007aef6da410 clazz=0x6baa assetManager=0x7a3f6fc390 internal=/data/user/0/unknown.none.nx2android/files external=/storage/emulated/0/Android/data/unknown.none.nx2android/files sdk=35
-2026-11-26 22:26:29.917 [I] pid=11605 [stage 7/8] game NativeActivity_onCreate returned; game runtime initialization continues asynchronously
-2026-11-26 22:26:29.917 [I] pid=11605 [activity] lifecycle and Surface tracing installed
-2026-11-26 22:26:29.917 [I] pid=11605 [stage 8/8] dispatcher handoff complete; window lifecycle events will be captured from this point
-2026-11-26 22:26:29.923 [I] pid=11605 [activity] onStart begin
-2026-11-26 22:26:29.923 [I] pid=11605 [activity] onStart returned
-2026-11-26 22:26:29.924 [I] pid=11605 [activity] onResume begin
-2026-11-26 22:26:29.924 [I] pid=11605 [activity] onResume returned
-2026-11-26 22:26:29.942 [I] pid=11605 [window] created window=0x7a6f752000 size=2448x1080
-2026-11-26 22:26:29.942 [I] pid=11605 [window] created callback returned
-2026-11-26 22:26:29.942 [I] pid=11605 [window] resized window=0x7a6f752000 size=2448x1080
-2026-11-26 22:26:29.942 [I] pid=11605 [window] resized callback returned
-2026-11-26 22:26:29.943 [I] pid=11605 [activity] onContentRectChanged begin rect=0,0-2448,1080
-2026-11-26 22:26:29.943 [I] pid=11605 [activity] onContentRectChanged returned
-2026-11-26 22:26:29.944 [I] pid=11605 [window] redraw requested window=0x7a6f752000
-2026-11-26 22:26:29.944 [I] pid=11605 [window] redraw callback returned
-2026-11-26 22:26:29.957 [I] pid=11605 [window] redraw requested window=0x7a6f752000
-2026-11-26 22:26:29.957 [I] pid=11605 [window] redraw callback returned
-2026-11-26 22:26:30.013 [I] pid=11605 [window] focus changed focused=1
-2026-11-26 22:26:30.013 [I] pid=11605 [window] focus callback returned
-2026-11-26 22:26:30.025 [I] pid=11605 [window] resized window=0x7a6f752000 size=2448x1080
-2026-11-26 22:26:30.025 [I] pid=11605 [window] resized callback returned
-2026-11-26 22:26:30.351 [I] pid=11605 [window] redraw requested window=0x7a6f752000
-2026-11-26 22:26:30.351 [I] pid=11605 [window] redraw callback returned
-1795721191281 [JAVA] pid=11605 Observed process: unknown.none.nx2android pid=11605 importance=100
-2026-11-26 22:28:02.027 [I] pid=11605 [window] focus changed focused=0
-2026-11-26 22:28:02.027 [I] pid=11605 [window] focus callback returned
-2026-11-26 22:28:03.590 [I] pid=11605 [window] focus changed focused=1
-2026-11-26 22:28:03.590 [I] pid=11605 [window] focus callback returned
-2026-11-26 22:28:03.599 [I] pid=11605 [window] resized window=0x7a6f752000 size=2448x1080
-2026-11-26 22:28:03.599 [I] pid=11605 [window] resized callback returned
-2026-11-26 22:29:10.136 [I] pid=11605 [window] focus changed focused=0
-2026-11-26 22:29:10.136 [I] pid=11605 [window] focus callback returned
-2026-11-26 22:29:11.418 [I] pid=11605 [window] focus changed focused=1
-2026-11-26 22:29:11.418 [I] pid=11605 [window] focus callback returned
-2026-11-26 22:29:11.431 [I] pid=11605 [window] resized window=0x7a6f752000 size=2448x1080
-2026-11-26 22:29:11.431 [I] pid=11605 [window] resized callback returned
-2026-11-26 22:29:12.684 [I] pid=11605 [activity] onPause begin
-2026-11-26 22:29:18.008 [I] pid=11605 [activity] onPause returned
-2026-11-26 22:29:18.017 [I] pid=11605 [window] destroyed window=0x7a6f752000
-2026-11-26 22:29:18.021 [I] pid=11605 [window] destroyed callback returned
-2026-11-26 22:29:18.023 [I] pid=11605 [activity] onStop begin
-2026-11-26 22:29:18.023 [I] pid=11605 [activity] onStop returned
-2026-11-26 22:29:18.023 [I] pid=11605 [activity] onSaveInstanceState begin
-2026-11-26 22:29:18.023 [I] pid=11605 [activity] onSaveInstanceState returned size=0 state=none
-2026-11-26 22:29:18.026 [I] pid=11605 [activity] onStart begin
-2026-11-26 22:29:18.026 [I] pid=11605 [activity] onStart returned
-2026-11-26 22:29:18.027 [I] pid=11605 [activity] onResume begin
-2026-11-26 22:29:18.057 [I] pid=11605 [activity] onResume returned
-2026-11-26 22:29:18.068 [I] pid=11605 [window] focus changed focused=0
-2026-11-26 22:29:18.069 [I] pid=11605 [window] focus callback returned
-2026-11-26 22:29:18.083 [I] pid=11605 [window] created window=0x7a6f752000 size=2448x1080
-2026-11-26 22:29:18.084 [I] pid=11605 [window] created callback returned
-2026-11-26 22:29:18.084 [I] pid=11605 [window] resized window=0x7a6f752000 size=2448x1080
-2026-11-26 22:29:18.084 [I] pid=11605 [window] resized callback returned
-2026-11-26 22:29:18.088 [I] pid=11605 [window] redraw requested window=0x7a6f752000
-2026-11-26 22:29:18.089 [I] pid=11605 [window] redraw callback returned
-2026-11-26 22:29:18.114 [I] pid=11605 [window] redraw requested window=0x7a6f752000
-2026-11-26 22:29:18.115 [I] pid=11605 [window] redraw callback returned
-2026-11-26 22:29:18.191 [I] pid=11605 [window] focus changed focused=1
-2026-11-26 22:29:18.191 [I] pid=11605 [window] focus callback returned
-2026-11-26 22:29:18.198 [I] pid=11605 [window] resized window=0x7a6f752000 size=2448x1080
-2026-11-26 22:29:18.199 [I] pid=11605 [window] resized callback returned
-2026-11-26 22:29:21.742 [I] pid=11605 [window] focus changed focused=0
-2026-11-26 22:29:21.742 [I] pid=11605 [window] focus callback returned
-2026-11-26 22:29:23.200 [I] pid=11605 [window] focus changed focused=1
-2026-11-26 22:29:23.201 [I] pid=11605 [window] focus callback returned
-2026-11-26 22:29:23.207 [I] pid=11605 [window] resized window=0x7a6f752000 size=2448x1080
-2026-11-26 22:29:23.207 [I] pid=11605 [window] resized callback returned
-2026-11-26 22:31:27.038 [I] pid=11605 [activity] onPause begin
-2026-11-26 22:31:27.044 [I] pid=11605 [activity] onPause returned
-2026-11-26 22:31:27.116 [I] pid=11605 [window] focus changed focused=0
-2026-11-26 22:31:27.116 [I] pid=11605 [window] focus callback returned
-2026-11-26 22:31:27.462 [I] pid=11605 [window] destroyed window=0x7a6f752000
-2026-11-26 22:31:27.464 [I] pid=11605 [window] destroyed callback returned
-2026-11-26 22:31:27.643 [I] pid=11605 [activity] onStop begin
-2026-11-26 22:31:27.643 [I] pid=11605 [activity] onStop returned
-2026-11-26 22:31:27.645 [I] pid=11605 [activity] onDestroy begin
+2026-11-27 00:04:38.439 [I] pid=26097 ============================================================
+2026-11-27 00:04:38.439 [I] pid=26097 NGR launch session started: game_id=9383b4fd4e8540ed5d6e sdk=35 abi=arm64-v8a
+2026-11-27 00:04:38.439 [I] pid=26097 NativeActivity paths: internal=/data/user/0/unknown.none.nx2android/files external=/storage/emulated/0/Android/data/unknown.none.nx2android/files
+2026-11-27 00:04:38.439 [I] pid=26097 [NGR storage] using game data in place: /storage/emulated/0/Download/0ut/Metro2033Redux-data
+2026-11-27 00:04:38.440 [I] pid=26097 [config] env.txt: DM_PRESENT_INTERVAL=display
+2026-11-27 00:04:38.440 [I] pid=26097 [config] env.txt: DM_VK_DRIVER=libvulkan_freedreno.so
+2026-11-27 00:04:38.440 [I] pid=26097 [NGR profile] no profile.json; using the compiled game profile (legacy payload)
+2026-11-27 00:04:38.443 [I] pid=26097 removed 7 stale staged native libraries before refreshing runtime
+2026-11-27 00:04:38.631 [I] pid=26097 staged 7 native libraries in private app storage
+2026-11-27 00:04:38.747 [I] pid=26097 [Vulkan] per-game driver selected: /storage/emulated/0/Download/0ut/libvulkan_freedreno.so (staged as libvulkan_freedreno.so)
+2026-11-27 00:04:38.748 [I] pid=26097 [NGR save] no public save directory supplied; private fallback active
+2026-11-27 00:04:38.748 [I] pid=26097 [scheduler] Metro 2033 guard enabled (PhysX/Secondary Utility QoS, audio/main priority inheritance, 50k progressing yields/s then scheduler handoff every 256 excess yields)
+2026-11-27 00:04:38.748 [I] pid=26097 [scheduler] Metro 2033 performance profile: verbose NVN/filesystem, per-lock tracing and watchdog thread dumps disabled
+2026-11-27 00:04:38.748 [I] pid=26097 [stage 1/8] payload validated; game_dir=/storage/emulated/0/Download/0ut/Metro2033Redux-data private_dir=/data/user/0/unknown.none.nx2android/files/games/9383b4fd4e8540ed5d6e
+2026-11-27 00:04:38.748 [I] pid=26097 [stage 2/8] native libraries staged; runtime=/data/user/0/unknown.none.nx2android/files/games/9383b4fd4e8540ed5d6e/libdmhost.so
+2026-11-27 00:04:38.748 [I] pid=26097 [stage 3/8] preloading companion dependencies
+2026-11-27 00:04:38.748 [I] pid=26097 [stage 3/8] dlopen companion begin: libadrenotools.so flags=GLOBAL
+2026-11-27 00:04:38.749 [I] pid=26097 preloaded game dependency libadrenotools.so handle=0x505ef0269142cda1
+2026-11-27 00:04:38.749 [I] pid=26097 [stage 3/8] leaving libfile_redirect_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-27 00:04:38.749 [I] pid=26097 [stage 3/8] leaving libgsl_alloc_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-27 00:04:38.749 [I] pid=26097 [stage 3/8] leaving libhook_impl.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-27 00:04:38.749 [I] pid=26097 [stage 3/8] leaving libmain_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-27 00:04:38.749 [I] pid=26097 [stage 3/8] leaving libvulkan_freedreno.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-27 00:04:38.749 [I] pid=26097 [stage 3/8] leaving libfile_redirect_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-27 00:04:38.749 [I] pid=26097 [stage 3/8] leaving libgsl_alloc_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-27 00:04:38.749 [I] pid=26097 [stage 3/8] leaving libhook_impl.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-27 00:04:38.749 [I] pid=26097 [stage 3/8] leaving libmain_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-27 00:04:38.749 [I] pid=26097 [stage 3/8] leaving libvulkan_freedreno.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-27 00:04:38.749 [I] pid=26097 preloaded 1 companion game libraries
+2026-11-27 00:04:38.749 [I] pid=26097 [stage 3/8] dependency preload finished: 1 companion libraries
+2026-11-27 00:04:38.749 [I] pid=26097 [stage 4/8] inspecting main runtime ELF before dlopen: /data/user/0/unknown.none.nx2android/files/games/9383b4fd4e8540ed5d6e/libdmhost.so
+2026-11-27 00:04:38.749 [I] pid=26097 [ELF preflight] type=3 machine=183 entry=0x0 phnum=11
+2026-11-27 00:04:38.749 [I] pid=26097 [ELF preflight] DT_INIT=0x0 INIT_ARRAY=0x1ef018 INIT_ARRAYSZ=48
+2026-11-27 00:04:38.749 [I] pid=26097 [ELF preflight] DT_RELA=0x12740 RELASZ=134904 RELAENT=24 DT_RELR=0x0 RELRSZ=0 RELRENT=8
+2026-11-27 00:04:38.749 [I] pid=26097 [ELF preflight] DT_RELA mapped file offset=0x12740 entries=5621
+2026-11-27 00:04:38.749 [I] pid=26097 [ELF preflight] init_array[0] relocation: type=1027 symbol=0 addend=0x1e6204
+2026-11-27 00:04:38.749 [I] pid=26097 [ELF preflight] init_array[0] slot=0x1ef018 raw=0x0 relocation=present
+2026-11-27 00:04:38.749 [I] pid=26097 [ELF preflight] init_array[1] relocation: type=1027 symbol=0 addend=0x1e685c
+2026-11-27 00:04:38.749 [I] pid=26097 [ELF preflight] init_array[1] slot=0x1ef020 raw=0x0 relocation=present
+2026-11-27 00:04:38.749 [I] pid=26097 [ELF preflight] init_array[2] relocation: type=1027 symbol=0 addend=0xb4a34
+2026-11-27 00:04:38.749 [I] pid=26097 [ELF preflight] init_array[2] slot=0x1ef028 raw=0x0 relocation=present
+2026-11-27 00:04:38.750 [I] pid=26097 [ELF preflight] init_array[3] relocation: type=1027 symbol=0 addend=0xcc360
+2026-11-27 00:04:38.750 [I] pid=26097 [ELF preflight] init_array[3] slot=0x1ef030 raw=0x0 relocation=present
+2026-11-27 00:04:38.750 [I] pid=26097 [ELF preflight] init_array[4] relocation: type=1027 symbol=0 addend=0xfb670
+2026-11-27 00:04:38.750 [I] pid=26097 [ELF preflight] init_array[4] slot=0x1ef038 raw=0x0 relocation=present
+2026-11-27 00:04:38.750 [I] pid=26097 [ELF preflight] init_array[5] relocation: type=1027 symbol=0 addend=0x155c38
+2026-11-27 00:04:38.750 [I] pid=26097 [ELF preflight] init_array[5] slot=0x1ef040 raw=0x0 relocation=present
+2026-11-27 00:04:38.750 [I] pid=26097 [stage 4/8] main runtime dlopen begin: /data/user/0/unknown.none.nx2android/files/games/9383b4fd4e8540ed5d6e/libdmhost.so (RTLD_LAZY|RTLD_LOCAL)
+2026-11-27 00:04:38.751 [I] pid=26097 [stage 4/8] main runtime dlopen succeeded: handle=0x38d723ac8aa81daf
+2026-11-27 00:04:38.751 [I] pid=26097 [stage 5/8] resolved ANativeActivity_onCreate at 0x7a0a97ca60
+2026-11-27 00:04:38.751 [I] pid=26097 [stage 6/8] dispatching NativeActivity_onCreate to libdmhost.so; activity=0x7a8f73c030 env=0xb400007aef6da410 clazz=0x69ea assetManager=0x7a3f6f65d0 internal=/data/user/0/unknown.none.nx2android/files external=/storage/emulated/0/Android/data/unknown.none.nx2android/files sdk=35
+2026-11-27 00:04:38.765 [I] pid=26097 [stage 7/8] game NativeActivity_onCreate returned; game runtime initialization continues asynchronously
+2026-11-27 00:04:38.765 [I] pid=26097 [activity] lifecycle and Surface tracing installed
+2026-11-27 00:04:38.765 [I] pid=26097 [stage 8/8] dispatcher handoff complete; window lifecycle events will be captured from this point
+2026-11-27 00:04:38.766 [I] pid=26097 [activity] onStart begin
+2026-11-27 00:04:38.766 [I] pid=26097 [activity] onStart returned
+2026-11-27 00:04:38.767 [I] pid=26097 [activity] onResume begin
+2026-11-27 00:04:38.767 [I] pid=26097 [activity] onResume returned
+2026-11-27 00:04:38.785 [I] pid=26097 [window] created window=0x7a6f743190 size=2448x1080
+2026-11-27 00:04:38.786 [I] pid=26097 [window] created callback returned
+2026-11-27 00:04:38.786 [I] pid=26097 [window] resized window=0x7a6f743190 size=2448x1080
+2026-11-27 00:04:38.786 [I] pid=26097 [window] resized callback returned
+2026-11-27 00:04:38.786 [I] pid=26097 [activity] onContentRectChanged begin rect=0,0-2448,1080
+2026-11-27 00:04:38.786 [I] pid=26097 [activity] onContentRectChanged returned
+2026-11-27 00:04:38.786 [I] pid=26097 [window] redraw requested window=0x7a6f743190
+2026-11-27 00:04:38.786 [I] pid=26097 [window] redraw callback returned
+2026-11-27 00:04:38.800 [I] pid=26097 [window] redraw requested window=0x7a6f743190
+2026-11-27 00:04:38.800 [I] pid=26097 [window] redraw callback returned
+2026-11-27 00:04:38.817 [I] pid=26097 [window] focus changed focused=1
+2026-11-27 00:04:38.818 [I] pid=26097 [window] focus callback returned
+2026-11-27 00:04:38.824 [I] pid=26097 [window] resized window=0x7a6f743190 size=2448x1080
+2026-11-27 00:04:38.824 [I] pid=26097 [window] resized callback returned
+2026-11-27 00:04:39.090 [I] pid=26097 [window] redraw requested window=0x7a6f743190
+2026-11-27 00:04:39.090 [I] pid=26097 [window] redraw callback returned
+1795727079918 [JAVA] pid=26097 Observed process: unknown.none.nx2android pid=26097 importance=100
+2026-11-27 00:06:40.723 [I] pid=26097 [activity] onPause begin
+2026-11-27 00:06:40.731 [I] pid=26097 [activity] onPause returned
+2026-11-27 00:06:40.737 [I] pid=26097 [window] focus changed focused=0
+2026-11-27 00:06:40.737 [I] pid=26097 [window] focus callback returned
+2026-11-27 00:06:41.158 [I] pid=26097 [window] destroyed window=0x7a6f743190
+2026-11-27 00:06:41.161 [I] pid=26097 [window] destroyed callback returned
+2026-11-27 00:06:41.261 [I] pid=26097 [activity] onStop begin
+2026-11-27 00:06:41.261 [I] pid=26097 [activity] onStop returned
+2026-11-27 00:06:41.261 [I] pid=26097 [activity] onDestroy begin
 
 
 ===== Persistent Android process/activity lifecycle =====
-1795721189795 [ANDROID] pid=11605 process=unknown.none.nx2android NgrGameActivity.onCreate ENTER extras=android.util.MapCollections$KeySet@ecf37846 pid=11605
-1795721189918 [ANDROID] pid=11605 process=unknown.none.nx2android NgrGameActivity.onCreate EXIT super completed
-1795721189923 [ANDROID] pid=11605 process=unknown.none.nx2android NgrGameActivity.onStart
-1795721189924 [ANDROID] pid=11605 process=unknown.none.nx2android NgrGameActivity.onResume
-1795721358026 [ANDROID] pid=11605 process=unknown.none.nx2android NgrGameActivity.onStart
-1795721358027 [ANDROID] pid=11605 process=unknown.none.nx2android NgrGameActivity.onResume
-1795721487028 [ANDROID] pid=11605 process=unknown.none.nx2android NgrGameActivity.finishFromNative requested
-1795721487643 [ANDROID] pid=11605 process=unknown.none.nx2android NgrGameActivity.onDestroy
-1795721490055 [ANDROID] pid=2272 process=unknown.none.nx2android Application.onCreate pid=2272 process=unknown.none.nx2android package=unknown.none.nx2android
+1795727078427 [ANDROID] pid=26097 process=unknown.none.nx2android NgrGameActivity.onCreate ENTER extras=android.util.MapCollections$KeySet@ecf37846 pid=26097
+1795727078765 [ANDROID] pid=26097 process=unknown.none.nx2android NgrGameActivity.onCreate EXIT super completed
+1795727078766 [ANDROID] pid=26097 process=unknown.none.nx2android NgrGameActivity.onStart
+1795727078767 [ANDROID] pid=26097 process=unknown.none.nx2android NgrGameActivity.onResume
+1795727200718 [ANDROID] pid=26097 process=unknown.none.nx2android NgrGameActivity.finishFromNative requested
+1795727201261 [ANDROID] pid=26097 process=unknown.none.nx2android NgrGameActivity.onDestroy
+1795727204334 [ANDROID] pid=27730 process=unknown.none.nx2android Application.onCreate pid=27730 process=unknown.none.nx2android package=unknown.none.nx2android
 
 
-===== Android Logcat (recent system + NGR process events; game pid=11605) =====
-11-26 22:07:40.677 21851 21851 E ActivityThread: Failed to find provider info for unknown.none.nx2android.DropDataProvider
-11-26 22:08:19.547 10732 10732 D ADPFLog : getCurrentThermalStatus(), caller:11278,[unknown.none.nx2android]
-11-26 22:08:19.548 10732 10765 D ADPFLog : addThermalStatusListener(listener), caller:11278,[unknown.none.nx2android]
-11-26 22:08:19.548 10732 10765 D ADPFLog : addThermalStatusListener(executor, listener), caller:11278,[unknown.none.nx2android]
-11-26 22:09:00.685 11605 11605 V ResourcesManager: The following library key has been added: ResourcesKey{ mHash=10f30cf4 mResDir=null mSplitDirs=[] mOverlayDirs=[/product/overlay/NavigationBarMode3Button/NavigationBarMode3ButtonOverlay.apk,/product/overlay/TransparentNavigationBar/TransparentNavigationBarOverlay.apk,/data/resource-cache/com.android.systemui-neutral-fqM4.frro,/data/resource-cache/com.android.systemui-accent-dWKL.frro,/data/resource-cache/com.android.systemui-dynamic-YRMm.frro] mLibDirs=[/data/app/~~HJgIBUNQGPqW-_HOfudvxA==/com.google.android.webview-_5PKQ4svYRqiiGBSfCrohQ==/base.apk,/system/framework/android.test.base.jar,/system_ext/framework/androidx.window.extensions.jar] mDisplayId=0 mOverrideConfig=v35 mCompatInfo={420dpi always-compat} mLoaders=[]}
-11-26 22:09:00.725 11605 11605 D ADPFLog : getCurrentThermalStatus(), caller:11278,[unknown.none.nx2android]
-11-26 22:09:00.726 11605 11635 D ADPFLog : addThermalStatusListener(listener), caller:11278,[unknown.none.nx2android]
-11-26 22:09:00.726 11605 11635 D ADPFLog : addThermalStatusListener(executor, listener), caller:11278,[unknown.none.nx2android]
-11-26 22:27:43.337 11605 11605 W Looper  : Slow delivery took 18975ms main h=android.os.Handler c=unknown.none.nx2android.MainActivity$1@529b303 m=0
-11-26 22:27:43.359 11605 11605 W Looper  : Drained
-11-26 22:29:18.008 11605 11605 W Looper  : Slow dispatch took 5329ms main h=android.app.ActivityThread$H c=null m=159
-11-26 22:29:18.009 11605 11605 W Looper  : Slow delivery took 5299ms main h=android.app.ActivityThread$H c=null m=159
-11-26 22:29:18.115 11605 11605 W Looper  : Drained
-11-26 22:30:59.474 11605 19167 D TrafficStats: tagSocket(5) with statsTag=0xffffffff, statsUid=-1
-11-26 22:31:01.675 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:01.675 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:01.677 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:01.677 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:01.993 11605 19167 D TrafficStats: tagSocket(5) with statsTag=0xffffffff, statsUid=-1
-11-26 22:31:04.424 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:04.425 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:04.425 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:04.425 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:04.426 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:04.427 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:04.428 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:04.428 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:04.435 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:04.435 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:04.438 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:04.438 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:04.512 11605 19167 D TrafficStats: tagSocket(5) with statsTag=0xffffffff, statsUid=-1
-11-26 22:31:07.026 11605 19167 D TrafficStats: tagSocket(5) with statsTag=0xffffffff, statsUid=-1
-11-26 22:31:08.751 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:08.752 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:08.753 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:08.753 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:08.759 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:08.759 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:08.761 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:08.761 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:08.765 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:08.765 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:08.766 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:08.767 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:09.539 11605 19167 D TrafficStats: tagSocket(5) with statsTag=0xffffffff, statsUid=-1
-11-26 22:31:09.660 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:09.661 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:09.675 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:09.675 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:09.775 11605 30482 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:09.775 11605 30482 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:09.775 11605 30482 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:09.775 11605 30482 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:09.792 11605 30482 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:09.792 11605 30482 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:09.792 11605 30482 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:09.792 11605 30482 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:11.982 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:11.982 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:11.986 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:11.986 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:12.054 11605 19167 D TrafficStats: tagSocket(358) with statsTag=0xffffffff, statsUid=-1
-11-26 22:31:12.737 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:12.737 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:12.741 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:12.741 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:12.987 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:12.987 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:12.992 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:12.992 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:14.085 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:14.085 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:14.090 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:14.090 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:14.568 11605 19167 D TrafficStats: tagSocket(323) with statsTag=0xffffffff, statsUid=-1
-11-26 22:31:14.965 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:14.965 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:14.975 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:14.975 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:15.069 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:15.069 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:15.071 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:15.071 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:15.088 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:15.088 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:15.098 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:15.098 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:15.692 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:15.692 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:15.694 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:15.694 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:15.709 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:15.709 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:15.709 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:15.709 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:15.713 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:15.713 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:15.713 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:15.713 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:15.733 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:15.733 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:15.736 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:15.736 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:15.738 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:15.738 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:15.741 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:15.741 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:15.753 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:15.753 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:15.755 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:15.755 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:15.776 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:15.776 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:15.786 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:15.786 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:15.799 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:15.799 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:15.800 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:15.800 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:16.597 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:16.597 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:16.607 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:16.607 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:17.081 11605 19167 D TrafficStats: tagSocket(323) with statsTag=0xffffffff, statsUid=-1
-11-26 22:31:17.222 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:17.222 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:17.224 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:17.224 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:19.596 11605 19167 D TrafficStats: tagSocket(323) with statsTag=0xffffffff, statsUid=-1
-11-26 22:31:21.887 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:21.887 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:21.889 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:21.889 11605 31650 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:22.109 11605 19167 D TrafficStats: tagSocket(323) with statsTag=0xffffffff, statsUid=-1
-11-26 22:31:22.280 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:22.280 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:22.282 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
-11-26 22:31:22.282 11605 31651 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
-11-26 22:31:24.619 11605 19167 D TrafficStats: tagSocket(323) with statsTag=0xffffffff, statsUid=-1
-11-26 22:31:27.038 11605 11605 I NGRRuntime: [activity] onPause begin
-11-26 22:31:27.044 11605 11605 I NGRRuntime: [activity] onPause returned
-11-26 22:31:27.063 11605  2171 I NGRRuntime: [save] mirrored committed private saves to Download: /storage/emulated/0/Download/NX2A/Saves/9383b4fd4e8540ed5d6e
-11-26 22:31:27.075 11605 11605 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
-11-26 22:31:27.075 11605 11605 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
-11-26 22:31:27.085 11605 11622 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:27.085 11605 11622 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:27.085 11605 11622 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:27.085 11605 11622 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:27.086 11605 11622 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:27.086 11605 11622 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:27.086 11605 11622 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:27.086 11605 11622 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:27.116 11605 11605 I NGRRuntime: [window] focus changed focused=0
-11-26 22:31:27.116 11605 11605 I NGRRuntime: [window] focus callback returned
-11-26 22:31:27.134 11605 19167 D TrafficStats: tagSocket(323) with statsTag=0xffffffff, statsUid=-1
-11-26 22:31:27.412 11605 11605 D VRI[NgrGameActivity]: visibilityChanged oldVisibility=true newVisibility=false
-11-26 22:31:27.462 11605 11605 I NGRRuntime: [window] destroyed window=0x7a6f752000
-11-26 22:31:27.464 11605 11605 I NGRRuntime: [window] destroyed callback returned
-11-26 22:31:27.643 11605 11605 I NGRRuntime: [activity] onStop begin
-11-26 22:31:27.643 11605 11605 I NGRRuntime: [activity] onStop returned
-11-26 22:31:27.645 11605 11605 I NGRRuntime: [activity] onDestroy begin
-11-26 22:31:29.960  2272  2272 I libc    : SetHeapTaggingLevel: tag level set to 0
-11-26 22:31:29.995  2272  2272 D nativeloader: Configuring clns-7 for other apk /data/app/~~t_UJI-tIBMByKIwIPF04yQ==/unknown.none.nx2android-CA-8yweozvXVGEuuqD3Umg==/base.apk. target_sdk_version=28, uses_libraries=, library_path=/data/app/~~t_UJI-tIBMByKIwIPF04yQ==/unknown.none.nx2android-CA-8yweozvXVGEuuqD3Umg==/lib/arm64:/data/app/~~t_UJI-tIBMByKIwIPF04yQ==/unknown.none.nx2android-CA-8yweozvXVGEuuqD3Umg==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/unknown.none.nx2android
-11-26 22:31:30.008  2272  2272 V Monotype: SetAppTypeFace- try to flip, app = unknown.none.nx2android
-11-26 22:31:30.057  2272  2272 I NGRRuntime: Application.onCreate process=unknown.none.nx2android
-11-26 22:31:30.065  2272  2295 D vulkan  : searching for layers in '/data/app/~~t_UJI-tIBMByKIwIPF04yQ==/unknown.none.nx2android-CA-8yweozvXVGEuuqD3Umg==/lib/arm64'
-11-26 22:31:30.065  2272  2295 D vulkan  : searching for layers in '/data/app/~~t_UJI-tIBMByKIwIPF04yQ==/unknown.none.nx2android-CA-8yweozvXVGEuuqD3Umg==/base.apk!/lib/arm64-v8a'
-11-26 22:31:30.077  2272  2272 V Monotype: SetAppTypeFace- try to flip, app = unknown.none.nx2android
-11-26 22:31:30.110  2272  2295 I AdrenoVK-0: ===== BEGIN DUMP OF OVERRIDDEN SETTINGS =====
-11-26 22:31:30.110  2272  2295 I AdrenoVK-0: ===== END DUMP OF OVERRIDDEN SETTINGS =====
-11-26 22:31:30.112  2272  2295 I AdrenoVK-0: QUALCOMM build          : ac42ce8aee, I8e937e587a
-11-26 22:31:30.112  2272  2295 I AdrenoVK-0: Build Date              : 11/15/24
-11-26 22:31:30.112  2272  2295 I AdrenoVK-0: Shader Compiler Version : E031.41.03.57
-11-26 22:31:30.112  2272  2295 I AdrenoVK-0: Local Branch            : 
-11-26 22:31:30.112  2272  2295 I AdrenoVK-0: Remote Branch           : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.13.2.0.11.00.00.855.856
-11-26 22:31:30.112  2272  2295 I AdrenoVK-0: Remote Branch           : NONE
-11-26 22:31:30.112  2272  2295 I AdrenoVK-0: Reconstruct Branch      : NOTHING
-11-26 22:31:30.112  2272  2295 I AdrenoVK-0: Build Config            : S P 14.1.4 AArch64
-11-26 22:31:30.112  2272  2295 I AdrenoVK-0: Driver Path             : /vendor/lib64/hw/vulkan.adreno.so
-11-26 22:31:30.112  2272  2295 I AdrenoVK-0: Driver Version          : 0676.66
-11-26 22:31:30.112  2272  2295 I AdrenoVK-0: PFP                     : 0x01740158
-11-26 22:31:30.112  2272  2295 I AdrenoVK-0: ME                      : 0x00000000
-11-26 22:31:30.112  2272  2295 I AdrenoVK-0: Application Name    : android framework
-11-26 22:31:30.112  2272  2295 I AdrenoVK-0: Application Version : 0x00000000
-11-26 22:31:30.112  2272  2295 I AdrenoVK-0: Engine Name         : android framework
-11-26 22:31:30.112  2272  2295 I AdrenoVK-0: Engine Version      : 0x00000000
-11-26 22:31:30.112  2272  2295 I AdrenoVK-0: Api Version         : 0x00401000
-11-26 22:31:30.112  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.112  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.112  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.112  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.113  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.113  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.113  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.113  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.113  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.113  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.113  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.113  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.113  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.113  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.113  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.113  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.113  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.113  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.113  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.113  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.113  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.113  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.113  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.113  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:30.183  2272  2272 D ADPFLog : getCurrentThermalStatus(), caller:11278,[unknown.none.nx2android]
-11-26 22:31:30.183  2272  2326 D ADPFLog : addThermalStatusListener(listener), caller:11278,[unknown.none.nx2android]
-11-26 22:31:30.183  2272  2326 D ADPFLog : addThermalStatusListener(executor, listener), caller:11278,[unknown.none.nx2android]
-11-26 22:31:30.473  2272  2272 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
-11-26 22:31:30.473  2272  2272 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
-11-26 22:31:30.556  2272  2295 I AdrenoUtils: <ReadGpuID:407>: Reading chip ID through GSL
-11-26 22:31:32.113  2272  2471 I AdrenoGLES-0: QUALCOMM build                   : ac42ce8aee, I8e937e587a
-11-26 22:31:32.113  2272  2471 I AdrenoGLES-0: Build Date                       : 11/15/24
-11-26 22:31:32.113  2272  2471 I AdrenoGLES-0: OpenGL ES Shader Compiler Version: E031.41.03.57
-11-26 22:31:32.113  2272  2471 I AdrenoGLES-0: Local Branch                     : 
-11-26 22:31:32.113  2272  2471 I AdrenoGLES-0: Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.13.2.0.11.00.00.855.856
-11-26 22:31:32.113  2272  2471 I AdrenoGLES-0: Remote Branch                    : NONE
-11-26 22:31:32.113  2272  2471 I AdrenoGLES-0: Reconstruct Branch               : NOTHING
-11-26 22:31:32.113  2272  2471 I AdrenoGLES-0: Build Config                     : S P 14.1.4 AArch64
-11-26 22:31:32.113  2272  2471 I AdrenoGLES-0: Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
-11-26 22:31:32.113  2272  2471 I AdrenoGLES-0: Driver Version                   : 0676.66
-11-26 22:31:32.116  2272  2471 I AdrenoGLES-0: PFP: 0x01740158, ME: 0x00000000
-11-26 22:31:32.141  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.141  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.141  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.141  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.142  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.142  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.142  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.142  2272  2295 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: QUALCOMM build          : ac42ce8aee, I8e937e587a
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Build Date              : 11/15/24
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Shader Compiler Version : E031.41.03.57
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Local Branch            : 
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Remote Branch           : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.13.2.0.11.00.00.855.856
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Remote Branch           : NONE
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Reconstruct Branch      : NOTHING
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Build Config            : S P 14.1.4 AArch64
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Driver Path             : /vendor/lib64/hw/vulkan.adreno.so
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Driver Version          : 0676.66
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: PFP                     : 0x01740158
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: ME                      : 0x00000000
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Application Name    : Chromium
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Application Version : 0x00000000
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Engine Name         : (null)
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Engine Version      : 0x00000000
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Api Version         : 0x00401000
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.146  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.147  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.147  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.147  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.147  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.147  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.147  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.147  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.147  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.170  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.170  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.170  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.170  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.170  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.170  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.170  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.170  2272  2471 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
-11-26 22:31:32.231  2272  2471 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-26 22:31:32.231  2272  2471 I AdrenoVK-0: Pipeline create failed
-11-26 22:31:32.262  2272  2471 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-26 22:31:32.262  2272  2471 I AdrenoVK-0: Pipeline create failed
-11-26 22:31:32.270  2272  2471 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-26 22:31:32.270  2272  2471 I AdrenoVK-0: Pipeline create failed
-11-26 22:31:32.278  2272  2471 I AdrenoVK-0: Shader compilation failed for shaderType: 4
-11-26 22:31:32.278  2272  2471 I AdrenoVK-0: Pipeline create failed
-11-26 22:31:32.288  2272  2471 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-26 22:31:32.288  2272  2471 I AdrenoVK-0: Pipeline create failed
-11-26 22:31:32.341  2272  2471 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-26 22:31:32.341  2272  2471 I AdrenoVK-0: Pipeline create failed
-11-26 22:31:34.744  2272  2471 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-26 22:31:34.744  2272  2471 I AdrenoVK-0: Pipeline create failed
-11-26 22:31:34.759  2272  2471 I AdrenoVK-0: Shader compilation failed for shaderType: 4
-11-26 22:31:34.759  2272  2471 I AdrenoVK-0: Pipeline create failed
-11-26 22:31:34.765  2272  2471 I AdrenoVK-0: Failed to link shaders.
-11-26 22:31:34.765  2272  2471 I AdrenoVK-0: Pipeline create failed
-11-26 22:31:34.771  2272  2471 I AdrenoVK-0: Shader compilation failed for shaderType: 0
-11-26 22:31:34.771  2272  2471 I AdrenoVK-0: Pipeline create failed
-11-26 22:31:35.653  2272  2585 D ProfileInstaller: Installing profile for unknown.none.nx2android
-11-26 22:31:36.193  2272  2272 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
-11-26 22:31:36.193  2272  2272 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
+===== Android Logcat (recent system + NGR process events; game pid=26097) =====
+11-27 00:04:25.872 26097 26097 V ResourcesManager: The following library key has been added: ResourcesKey{ mHash=10f30cf4 mResDir=null mSplitDirs=[] mOverlayDirs=[/product/overlay/NavigationBarMode3Button/NavigationBarMode3ButtonOverlay.apk,/product/overlay/TransparentNavigationBar/TransparentNavigationBarOverlay.apk,/data/resource-cache/com.android.systemui-neutral-fqM4.frro,/data/resource-cache/com.android.systemui-accent-dWKL.frro,/data/resource-cache/com.android.systemui-dynamic-YRMm.frro] mLibDirs=[/data/app/~~HJgIBUNQGPqW-_HOfudvxA==/com.google.android.webview-_5PKQ4svYRqiiGBSfCrohQ==/base.apk,/system/framework/android.test.base.jar,/system_ext/framework/androidx.window.extensions.jar] mDisplayId=0 mOverrideConfig=v35 mCompatInfo={420dpi always-compat} mLoaders=[]}
+11-27 00:04:25.947 26097 26097 D ADPFLog : getCurrentThermalStatus(), caller:11278,[unknown.none.nx2android]
+11-27 00:04:25.956 26097 26143 D ADPFLog : addThermalStatusListener(listener), caller:11278,[unknown.none.nx2android]
+11-27 00:04:25.956 26097 26143 D ADPFLog : addThermalStatusListener(executor, listener), caller:11278,[unknown.none.nx2android]
+11-27 00:06:22.317 26097 26806 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
+11-27 00:06:22.317 26097 26805 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
+11-27 00:06:22.317 26097 26806 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
+11-27 00:06:22.317 26097 26805 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
+11-27 00:06:22.318 26097 26805 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
+11-27 00:06:22.318 26097 26806 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
+11-27 00:06:22.319 26097 26806 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
+11-27 00:06:22.319 26097 26805 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
+11-27 00:06:22.494 26097 26202 D TrafficStats: tagSocket(198) with statsTag=0xffffffff, statsUid=-1
+11-27 00:06:25.001 26097 26202 D TrafficStats: tagSocket(198) with statsTag=0xffffffff, statsUid=-1
+11-27 00:06:27.508 26097 26202 D TrafficStats: tagSocket(198) with statsTag=0xffffffff, statsUid=-1
+11-27 00:06:30.020 26097 26202 D TrafficStats: tagSocket(198) with statsTag=0xffffffff, statsUid=-1
+11-27 00:06:30.128 26097 26805 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
+11-27 00:06:30.128 26097 26805 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
+11-27 00:06:30.129 26097 26805 W libc    : Access denied finding property "vendor.mesa.spirv.dump.path"
+11-27 00:06:30.130 26097 26805 W libc    : Access denied finding property "vendor.mesa.spirv.read.path"
+11-27 00:06:32.527 26097 26202 D TrafficStats: tagSocket(198) with statsTag=0xffffffff, statsUid=-1
+11-27 00:06:35.034 26097 26202 D TrafficStats: tagSocket(198) with statsTag=0xffffffff, statsUid=-1
+11-27 00:06:37.542 26097 26202 D TrafficStats: tagSocket(198) with statsTag=0xffffffff, statsUid=-1
+11-27 00:06:40.050 26097 26202 D TrafficStats: tagSocket(198) with statsTag=0xffffffff, statsUid=-1
+11-27 00:06:40.723 26097 26097 I NGRRuntime: [activity] onPause begin
+11-27 00:06:40.731 26097 26097 I NGRRuntime: [activity] onPause returned
+11-27 00:06:40.737 26097 26097 I NGRRuntime: [window] focus changed focused=0
+11-27 00:06:40.737 26097 26097 I NGRRuntime: [window] focus callback returned
+11-27 00:06:40.766 26097 26097 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-27 00:06:40.766 26097 26097 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
+11-27 00:06:40.834 26097 26119 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:40.834 26097 26119 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:40.834 26097 26119 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:40.834 26097 26119 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:40.835 26097 26119 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:40.835 26097 26119 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:40.835 26097 26119 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:40.835 26097 26119 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:40.846 26097 26164 W chromium: [WARNING:android_webview/browser/gfx/display_webview.cc:33] WebView overlays are enabled!
+11-27 00:06:40.849 26097 27655 I NGRRuntime: [save] mirrored committed private saves to Download: /storage/emulated/0/Download/NX2A/Saves/9383b4fd4e8540ed5d6e
+11-27 00:06:41.137 26097 26097 D VRI[NgrGameActivity]: visibilityChanged oldVisibility=true newVisibility=false
+11-27 00:06:41.158 26097 26097 I NGRRuntime: [window] destroyed window=0x7a6f743190
+11-27 00:06:41.161 26097 26097 I NGRRuntime: [window] destroyed callback returned
+11-27 00:06:41.261 26097 26097 I NGRRuntime: [activity] onStop begin
+11-27 00:06:41.261 26097 26097 I NGRRuntime: [activity] onStop returned
+11-27 00:06:41.261 26097 26097 I NGRRuntime: [activity] onDestroy begin
+11-27 00:06:44.273 27730 27730 I libc    : SetHeapTaggingLevel: tag level set to 0
+11-27 00:06:44.296 27730 27730 D nativeloader: Configuring clns-7 for other apk /data/app/~~NUDIrMERQVTKd9yK4bYrbQ==/unknown.none.nx2android-Ko1qHAl7JSFL9dM6WpObeQ==/base.apk. target_sdk_version=28, uses_libraries=, library_path=/data/app/~~NUDIrMERQVTKd9yK4bYrbQ==/unknown.none.nx2android-Ko1qHAl7JSFL9dM6WpObeQ==/lib/arm64:/data/app/~~NUDIrMERQVTKd9yK4bYrbQ==/unknown.none.nx2android-Ko1qHAl7JSFL9dM6WpObeQ==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/unknown.none.nx2android
+11-27 00:06:44.305 27730 27730 V Monotype: SetAppTypeFace- try to flip, app = unknown.none.nx2android
+11-27 00:06:44.335 27730 27730 I NGRRuntime: Application.onCreate process=unknown.none.nx2android
+11-27 00:06:44.343 27730 27748 D vulkan  : searching for layers in '/data/app/~~NUDIrMERQVTKd9yK4bYrbQ==/unknown.none.nx2android-Ko1qHAl7JSFL9dM6WpObeQ==/lib/arm64'
+11-27 00:06:44.343 27730 27748 D vulkan  : searching for layers in '/data/app/~~NUDIrMERQVTKd9yK4bYrbQ==/unknown.none.nx2android-Ko1qHAl7JSFL9dM6WpObeQ==/base.apk!/lib/arm64-v8a'
+11-27 00:06:44.353 27730 27730 V Monotype: SetAppTypeFace- try to flip, app = unknown.none.nx2android
+11-27 00:06:44.358 27730 27748 I AdrenoVK-0: ===== BEGIN DUMP OF OVERRIDDEN SETTINGS =====
+11-27 00:06:44.358 27730 27748 I AdrenoVK-0: ===== END DUMP OF OVERRIDDEN SETTINGS =====
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: QUALCOMM build          : ac42ce8aee, I8e937e587a
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Build Date              : 11/15/24
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Shader Compiler Version : E031.41.03.57
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Local Branch            : 
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Remote Branch           : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.13.2.0.11.00.00.855.856
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Remote Branch           : NONE
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Reconstruct Branch      : NOTHING
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Build Config            : S P 14.1.4 AArch64
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Driver Path             : /vendor/lib64/hw/vulkan.adreno.so
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Driver Version          : 0676.66
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: PFP                     : 0x01740158
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: ME                      : 0x00000000
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Application Name    : android framework
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Application Version : 0x00000000
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Engine Name         : android framework
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Engine Version      : 0x00000000
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Api Version         : 0x00401000
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.360 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:44.407 27730 27730 D ADPFLog : getCurrentThermalStatus(), caller:11278,[unknown.none.nx2android]
+11-27 00:06:44.409 27730 27764 D ADPFLog : addThermalStatusListener(listener), caller:11278,[unknown.none.nx2android]
+11-27 00:06:44.409 27730 27764 D ADPFLog : addThermalStatusListener(executor, listener), caller:11278,[unknown.none.nx2android]
+11-27 00:06:44.592 27730 27730 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-27 00:06:44.592 27730 27730 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
+11-27 00:06:44.644 27730 27748 I AdrenoUtils: <ReadGpuID:407>: Reading chip ID through GSL
+11-27 00:06:46.217 27730 27839 I AdrenoGLES-0: QUALCOMM build                   : ac42ce8aee, I8e937e587a
+11-27 00:06:46.217 27730 27839 I AdrenoGLES-0: Build Date                       : 11/15/24
+11-27 00:06:46.217 27730 27839 I AdrenoGLES-0: OpenGL ES Shader Compiler Version: E031.41.03.57
+11-27 00:06:46.217 27730 27839 I AdrenoGLES-0: Local Branch                     : 
+11-27 00:06:46.217 27730 27839 I AdrenoGLES-0: Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.13.2.0.11.00.00.855.856
+11-27 00:06:46.217 27730 27839 I AdrenoGLES-0: Remote Branch                    : NONE
+11-27 00:06:46.217 27730 27839 I AdrenoGLES-0: Reconstruct Branch               : NOTHING
+11-27 00:06:46.217 27730 27839 I AdrenoGLES-0: Build Config                     : S P 14.1.4 AArch64
+11-27 00:06:46.217 27730 27839 I AdrenoGLES-0: Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
+11-27 00:06:46.217 27730 27839 I AdrenoGLES-0: Driver Version                   : 0676.66
+11-27 00:06:46.218 27730 27839 I AdrenoGLES-0: PFP: 0x01740158, ME: 0x00000000
+11-27 00:06:46.232 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.232 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.232 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.232 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.232 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.232 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.232 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.232 27730 27748 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.232 27730 27839 I AdrenoVK-0: QUALCOMM build          : ac42ce8aee, I8e937e587a
+11-27 00:06:46.232 27730 27839 I AdrenoVK-0: Build Date              : 11/15/24
+11-27 00:06:46.232 27730 27839 I AdrenoVK-0: Shader Compiler Version : E031.41.03.57
+11-27 00:06:46.232 27730 27839 I AdrenoVK-0: Local Branch            : 
+11-27 00:06:46.232 27730 27839 I AdrenoVK-0: Remote Branch           : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.13.2.0.11.00.00.855.856
+11-27 00:06:46.232 27730 27839 I AdrenoVK-0: Remote Branch           : NONE
+11-27 00:06:46.232 27730 27839 I AdrenoVK-0: Reconstruct Branch      : NOTHING
+11-27 00:06:46.232 27730 27839 I AdrenoVK-0: Build Config            : S P 14.1.4 AArch64
+11-27 00:06:46.232 27730 27839 I AdrenoVK-0: Driver Path             : /vendor/lib64/hw/vulkan.adreno.so
+11-27 00:06:46.232 27730 27839 I AdrenoVK-0: Driver Version          : 0676.66
+11-27 00:06:46.232 27730 27839 I AdrenoVK-0: PFP                     : 0x01740158
+11-27 00:06:46.232 27730 27839 I AdrenoVK-0: ME                      : 0x00000000
+11-27 00:06:46.232 27730 27839 I AdrenoVK-0: Application Name    : Chromium
+11-27 00:06:46.232 27730 27839 I AdrenoVK-0: Application Version : 0x00000000
+11-27 00:06:46.232 27730 27839 I AdrenoVK-0: Engine Name         : (null)
+11-27 00:06:46.232 27730 27839 I AdrenoVK-0: Engine Version      : 0x00000000
+11-27 00:06:46.232 27730 27839 I AdrenoVK-0: Api Version         : 0x00401000
+11-27 00:06:46.233 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.233 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.233 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.233 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.233 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.233 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.233 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.233 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.234 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.234 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.234 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.234 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.234 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.234 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.234 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.234 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.250 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.250 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.250 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.250 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.251 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.251 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.251 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.251 27730 27839 I AdrenoVK-0: Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+11-27 00:06:46.276 27730 27839 I AdrenoVK-0: Shader compilation failed for shaderType: 0
+11-27 00:06:46.276 27730 27839 I AdrenoVK-0: Pipeline create failed
+11-27 00:06:46.284 27730 27839 I AdrenoVK-0: Shader compilation failed for shaderType: 0
+11-27 00:06:46.284 27730 27839 I AdrenoVK-0: Pipeline create failed
+11-27 00:06:46.289 27730 27839 I AdrenoVK-0: Shader compilation failed for shaderType: 0
+11-27 00:06:46.289 27730 27839 I AdrenoVK-0: Pipeline create failed
+11-27 00:06:46.294 27730 27839 I AdrenoVK-0: Shader compilation failed for shaderType: 4
+11-27 00:06:46.294 27730 27839 I AdrenoVK-0: Pipeline create failed
+11-27 00:06:46.314 27730 27839 I AdrenoVK-0: Shader compilation failed for shaderType: 0
+11-27 00:06:46.314 27730 27839 I AdrenoVK-0: Pipeline create failed
+11-27 00:06:46.328 27730 27839 I AdrenoVK-0: Shader compilation failed for shaderType: 0
+11-27 00:06:46.328 27730 27839 I AdrenoVK-0: Pipeline create failed
+11-27 00:06:47.398 27730 27839 I AdrenoVK-0: Shader compilation failed for shaderType: 0
+11-27 00:06:47.398 27730 27839 I AdrenoVK-0: Pipeline create failed
+11-27 00:06:47.408 27730 27839 I AdrenoVK-0: Shader compilation failed for shaderType: 4
+11-27 00:06:47.408 27730 27839 I AdrenoVK-0: Pipeline create failed
+11-27 00:06:47.414 27730 27839 I AdrenoVK-0: Failed to link shaders.
+11-27 00:06:47.414 27730 27839 I AdrenoVK-0: Pipeline create failed
+11-27 00:06:47.419 27730 27839 I AdrenoVK-0: Shader compilation failed for shaderType: 0
+11-27 00:06:47.419 27730 27839 I AdrenoVK-0: Pipeline create failed
+11-27 00:06:48.543 27730 27730 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-27 00:06:48.543 27730 27730 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
+11-27 00:06:49.558 27730 27986 D ProfileInstaller: Installing profile for unknown.none.nx2android
