@@ -1413,42 +1413,6 @@ int clonefile(const char *src, const char *dst, uint32_t flags) {"""),
         if (!atomic_exchange(&clone_mode_logged, 1))""")
 ]);
 
-# 35. The v2 limiter only called sched_yield once per 256 excess yields. On
-# Android a pinned guest worker can immediately reacquire its core, so the
-# watchdog still measured 700k+ yields/s. Once a named Metro worker exceeds its
-# per-thread budget, sleep on every further progressing yield; this bounds the
-# polling loop and gives audio/main/lock owners real CPU time.
-patch('NGR Metro hard progressing-yield cap', 'nxnative/dm/host/hle_thread.c', 'NX2A_METRO_HARD_YIELD_CAP', [
-    ("""    if (++count > (unsigned)limit && ++excess >= (unsigned)handoff_every) {
-        excess = 0;
-        sched_yield();
-    }""",
-     """    if (++count > (unsigned)limit) {
-        if (sleep_us > 0 && me) {
-            if (sleep_target < 0) {
-                sleep_target = 0;
-                const char *names = getenv("DM_YIELD_PROGRESS_SLEEP_NAMES");
-                if (names && *names) {
-                    char name[64]; const char *n = thr_name(me, name, sizeof name);
-                    size_t nl = strlen(n);
-                    for (const char *p = names; *p;) {
-                        const char *end = strchr(p, ';');
-                        size_t len = end ? (size_t)(end - p) : strlen(p);
-                        if (len == nl && nl && !memcmp(p, n, len)) { sleep_target = 1; break; }
-                        if (!end) break;
-                        p = end + 1;
-                    }
-                }
-            }
-            if (sleep_target) {
-                struct timespec ts = { sleep_us / 1000000, (long)(sleep_us % 1000000) * 1000L };
-                nanosleep(&ts, NULL);
-            } else sched_yield();
-        } else sched_yield();
-    }""")
-]);
-
-
 # 36. Patch 25 wraps the excess-yield action in the named-worker sleep branch.
 # Remove the 256-yield batching condition so the configured sleep is applied to
 # every progressing yield after the per-thread rate budget is exceeded.
