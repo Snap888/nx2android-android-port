@@ -1017,3 +1017,9 @@
 ### Version 215 validation queue
 - The previous version-214 run `45899160982` completed successfully; it validates the APK pipeline before patches 50–51.
 - Patches 50–51 and manifest version 215 are now the branch head. Their own patch-application and APK build must be validated in a run whose head includes the version-215 manifest; earlier artifacts must not be substituted.
+
+
+### Manifest hash correction
+- CI run `45899368099` correctly rejected the hand-computed hash for patcher version 215. The source patch and Python syntax checks passed; failure was isolated to `payload.json` SHA-256.
+- Recomputed SHA-256 against the exact branch file and confirmed it matches CI's `tools/make_manifest.py`: `ddebc883fba3fcd0ef79d7eb9523b29aa836ff73203b378c5653ed27096794c6`.
+- Corrected `payload.json` at commit `c4a5da43f66cde7aa28f9453c3e651601d101553`. Version remains 215. Final CI must be rerun; do not use the rejected run's result.
