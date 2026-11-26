@@ -1099,3 +1099,33 @@
 4. The (2,3,4,0) texture swizzle explicitly requests RGB with alpha ZERO; no global semantic change is justified until the affected texture and its draw are identified.
 5. Distant-texture sampler LOD and the earlier 1280x720 / 640x360 overlapping-image alias remain unresolved. No global maxLod change or image-storage rewrite was made.
 6. Shadows may share the indexed-geometry defect, but must be checked against shadow-caster draws and depth attachments separately.
+
+## 2026-11-27 — Texture / particle regression: reject ineffective BC override, add bounded trace
+
+### Device evidence reviewed
+- The stored gameplay log is session 9383b4fd4e8540ed5d6e, launched at 2026-11-27 01:05:58. Its game manifest says Data Pack made: 2026-11-26 22:00:32; it is not a new capture after the later payload-219 build.
+- Runtime reports Turnip Adreno 740 with BC and ASTC support; 854-shader bundle loaded; 1,667 live Vulkan images / 427 MB.
+- The same log reports 0 first uploads and 0 re-uploads in the packaged-texture counters, 27 texture swizzle builder calls with one non-identity (2,3,4,0), and no texture-format mapping, image-allocation, or vkCreateImageView failure messages.
+- This does not prove all 1,667 images contain valid pixels or are sampled by the intended shaders. The saved log has no texture first-use / descriptor trace.
+- Android AdrenoGLES shader compile errors are from the separate Chromium/WebView path; the game Vulkan device in this log is Turnip. Do not use those GLES errors as proof of Metro's Vulkan shaders failing.
+
+### Correction to payload 219 BC hypothesis
+- Pinned upstream gfx_vk_tex.c already contains cpu_content_tex() and explicitly documents the BC7 particle-sprite zero-image case.
+- On this device, f->compressed covers hardware-supported BC formats; f->dec identifies software-decoded formats. Extending the predicate to f->dec did not address the reported Turnip BC path and bypassed IMAGE/COMPRESSIBLE guards for compressed formats.
+- Removed the speculative NX2A_CPU_DECODED_BC_FIRST_USE override and its test. Do not reintroduce it without a trace proving the actual texture format takes that path.
+
+### Implemented: opt-in texture trace
+- DM_VK_TEX_TRACE=1 enables bounded diagnostics; default remains off.
+- [tex-first]: max 96 first-use records; logs upload source (linear, packaged, ft-written, cpu-content, no-upload), serial, pool/offset, memory pointer/size, NVN/Vulkan format, target, dimensions, flags, pool flags, layout, compressed/decoder state.
+- [tex-bind]: max 96 sampled/storage descriptor records for textures at least 16x16; logs shader key, binding, handle/ID, serial, pool/offset, format, dimensions, levels, flags, texture/view swizzles, Vulkan image/view and GPU-write state.
+- [tex-bind-miss]: max 32 unresolved texture-ID records.
+- Instrumentation preserves upload and descriptor behavior. No per-frame trace and no change to swizzle, LOD, aliasing, render targets, or save handling.
+- Payload version: 225. Patcher marker IDs: NX2A_TEX_FIRST_TRACE, NX2A_TEX_BIND_TRACE.
+- CI run for current HEAD: 45912386380 (pending at log update). Build/patch application and native Vulkan compilation still need successful CI confirmation.
+
+### Next actions
+1. Wait for CI 45912386380; fix any patch/test/compiler failures before device testing.
+2. Install its APK and verify the runtime library in the selected game's data pack is refreshed by the app. Capture a new gameplay log after this build; confirm the tex-first and tex-bind records appear.
+3. If source=no-upload, use first-use metadata to isolate the gating reason; if IDs are missing, audit texture-pool registration/handle decode; if bindings exist, correlate format/swizzle/image bytes with shader key and sampler.
+4. Keep the next trace run short. All tracing is opt-in and bounded; do not enable verbose/per-frame logging.
+5. After texture path is identified, investigate the known (2,3,4,0) swizzle only for the correlated texture. Keep alias and shadow-depth issues separate.
