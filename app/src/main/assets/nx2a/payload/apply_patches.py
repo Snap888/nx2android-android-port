@@ -1629,12 +1629,12 @@ _sint = """#version 450
 layout(push_constant) uniform P { vec4 c; } p;
 """
 for _loc in range(8):
-    _float += f"layout(location = {_loc}) out vec4 o{_loc};\\n"
-    _uint += f"layout(location = {_loc}) out uvec4 o{_loc};\\n"
-    _sint += f"layout(location = {_loc}) out ivec4 o{_loc};\\n"
-_float += "void main() {\\n" + "".join(f"    o{i} = p.c;\\n" for i in range(8)) + "}\\n"
-_uint += "void main() {\\n" + "".join(f"    o{i} = uvec4(p.c);\\n" for i in range(8)) + "}\\n"
-_sint += "void main() {\\n" + "".join(f"    o{i} = ivec4(p.c);\\n" for i in range(8)) + "}\\n"
+    _float += f"layout(location = {_loc}) out vec4 o{_loc};\n"
+    _uint += f"layout(location = {_loc}) out uvec4 o{_loc};\n"
+    _sint += f"layout(location = {_loc}) out ivec4 o{_loc};\n"
+_float += "void main() {\n" + "".join(f"    o{i} = p.c;\n" for i in range(8)) + "}\n"
+_uint += "void main() {\n" + "".join(f"    o{i} = uvec4(p.c);\n" for i in range(8)) + "}\n"
+_sint += "void main() {\n" + "".join(f"    o{i} = ivec4(p.c);\n" for i in range(8)) + "}\n"
 for _name, _body in (('maskclear.frag', _float), ('maskclear_uint.frag', _uint), ('maskclear_sint.frag', _sint)):
     (_shader_dir / _name).write_text(_body)
 print('NGR masked clear shader variants: generated 8-location FLOAT/UINT/SINT outputs')
