@@ -1003,3 +1003,12 @@
 - Masked-clear fix is implemented and packaged in APK; not yet device-verified.
 - Missing fire/reticle/distant textures/shadows are not declared fixed. Alias stale-read behavior is now the strongest remaining evidence-backed lead.
 - Preserve the current save implementation and keep high-frequency diagnostics disabled by default.
+
+
+## 2026-11-27 — NVN raw storage class + bounded texture-alias diagnostics (payload 215)
+
+- Patch 50 adds the missing `nvnTextureBuilderGetRawStorageClass` entry point as an ABI-safe no-prototype NVN export taking `const NVNtextureBuilder *` and returning 1. This follows the pinned porter's existing `nvnTextureGetRawStorageClass` behavior; it is separate from `nvnTextureBuilderGetStorageClass`, which remains 0.
+- Patch 51 makes stale texture-alias logging opt-in via `DM_VK_ALIAS_TRACE=1`, caps it at 16 events, and reports both images' sample counts, targets, flags, dimensions, format and pool range. The stale-read watermark still updates when tracing is disabled.
+- This diagnostic does not yet synchronize aliased images or fix the 1280x720 / 640x360 content mismatch. It is intended to determine whether the pair is MSAA/resolve reuse or a different layout reinterpretation without per-draw logging.
+- Payload version advanced to 215. `apply_patches.py` SHA-256: `0ef02b50bb796c8c9bcd50b3ba580136337db597fa3e0639ac4180cf855f0f31`.
+- CI and APK build for version 215 are pending. Version 214 artifact remains available but does not include these two follow-up patches.
