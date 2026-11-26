@@ -116,6 +116,16 @@ jobs:
         run: |
           yes | sdkmanager --licenses >/dev/null 2>&1 || true
           gradle --no-daemon assembleRelease
+      - name: Compile patched NVN Vulkan backend and SPIR-V shaders
+        if: steps.chg.outputs.build == 'true'
+        run: |
+          SDK="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          NDK="$SDK/ndk/27.2.12479018"
+          test -x "$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/clang"
+          test -x "$NDK/shader-tools/linux-x86_64/glslc"
+          python3 /tmp/nx2a-upstream/nxnative/dm/android/build.py \
+            --game 0100CD701434C000 --ndk "$NDK" --lib --release --jobs 4
+          test -s /tmp/nx2a-upstream/nxnative/dm/android/out/0100CD701434C000-release/libdmhost.so
       - uses: actions/upload-artifact@v4
         if: steps.chg.outputs.build == 'true'
         with: { name: nx2android-apk, path: 'app/build/outputs/apk/release/*.apk' }
