@@ -1513,4 +1513,18 @@ patch('NGR Metro video decoder Utility QoS', 'nxnative/dm/android/front_android.
      '''        setenv("DM_QOS_UTILITY_NAMES", "uEngine :: PhysX simulator;uEngine :: Secondary;video-decoder", 1); // NX2A_METRO_VIDEO_DECODER_QOS''')
 ]);
 
+# 43. Android's FICLONE ioctl may return EACCES on app-private filesystems
+# even though ordinary file creation/writes are permitted. Treat that result
+# like an unsupported reflink and fall back to the transactional byte copy.
+# Do not weaken permissions or bypass the save commit/atomic swap.
+patch('NGR Android FICLONE EACCES byte-copy fallback', 'nxnative/dm/android/compat/darwin_compat.c', 'NX2A_FICLONE_EACCES_FALLBACK', [
+    ("""    if (ce != EOPNOTSUPP && ce != ENOTTY && ce != EXDEV && ce != EINVAL && ce != ENOSYS && ce != EPERM) {""",
+     """    if (ce != EOPNOTSUPP && ce != ENOTTY && ce != EXDEV && ce != EINVAL && ce != ENOSYS && ce != EPERM && ce != EACCES) { // NX2A_FICLONE_EACCES_FALLBACK
+"""),
+    ("""    if (!atomic_exchange(&clone_mode_logged, 1))
+        __android_log_print(ANDROID_LOG_WARN, "NGRRuntime", "[fs] Android save clone: FICLONE unsupported (errno=%d); byte-copy fallback active", ce);""",
+     """    if (!atomic_exchange(&clone_mode_logged, 1))
+        __android_log_print(ANDROID_LOG_WARN, "NGRRuntime", "[fs] Android save clone: FICLONE unavailable (errno=%d); byte-copy fallback active", ce); // NX2A_FICLONE_EACCES_FALLBACK""")
+]);
+
 sys.exit(1 if failed else 0)
