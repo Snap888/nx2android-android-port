@@ -1434,10 +1434,15 @@ patch('NGR Metro hard throttle hot-yield named workers', 'nxnative/dm/host/hle_t
     int nx2a_metro_worker = !strcmp(nx2a_name, "uEngine :: PhysX simulator") ||
                             !strcmp(nx2a_name, "uEngine :: Secondary") ||
                             !strcmp(nx2a_name, "main thread");
-    if (nx2a_metro_worker) {
+    // The log's LR is sdk+0xd688c0: SDK 8.2.0's YieldThread SVC return site.
+    // Restrict the hard back-off to this exact SDK build/site, not every YieldThread call.
+    module_t *nx2a_sdk = module_of((void *)regs[30]);
+    int nx2a_sdk82_yield_site = nx2a_sdk && !strcmp(nx2a_sdk->name, "sdk") &&
+                               regs[30] - (uint64_t)nx2a_sdk->base == 0xd688c0;
+    if (nx2a_metro_worker && nx2a_sdk82_yield_site) {
         static _Atomic int nx2a_throttle_logged;
         if (!atomic_exchange(&nx2a_throttle_logged, 1))
-            LOG("[scheduler] Metro hot-yield hard throttle: named PhysX/Secondary/main yields sleep 250 us per SVC");
+            LOG("[scheduler] Metro SDK 8.2.0 YieldThread sdk+0xd688c0 hard throttle: PhysX/Secondary/main sleep 250 us per SVC");
         me->nbackoff++;
         me->sleeping = 1;
         struct timespec nx2a_ts = {0, 250000L};
