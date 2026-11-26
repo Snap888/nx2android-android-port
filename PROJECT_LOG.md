@@ -819,3 +819,12 @@
 4. Verify `DM_SAVE` resolves to app-private storage, save commits succeed, and no `errno=95` / `atomic swap failed errno=22` remain.
 5. Exit to launcher; verify Download mirror refreshes; relaunch and load the save.
 6. Capture a new gameplay log with slowframe/watchdog enabled. Correlate `[io] slow pread` events with frame stalls, audio underruns, mutex owner snapshots, and Vulkan present waits.
+
+
+### CI result — 2026-11-26 save/IO fix
+- GitHub Actions run: 45880168188 — SUCCESS (head used by CI: `c04f920e309af0714fab79794a34dec31ea38a0e`).
+- Passed: Python syntax and tests, NGR patch application twice (idempotence), WebView JS syntax, payload manifest consistency, Release APK build and artifact upload.
+- APK artifact: `nx2android-apk`, artifact ID `15146718921`, SHA-256 `296b092cf21429b6041a12587f3d0f2bb2b83ee1058b6eb4060d11f054716315`.
+- Run: https://github.com/Snap888/nx2android-android-port/actions/runs/45880168188
+- The subsequent `PROJECT_LOG.md`-only commit does not change APK/native code.
+- CI validates that patches apply and the Android app builds. It does not compile a Metro data pack on the user's device or prove runtime save/audio/hang fixes. Recompile/update Metro's data pack before gameplay testing.
