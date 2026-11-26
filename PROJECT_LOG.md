@@ -737,3 +737,13 @@
 - Next validation: rebuild APK, install it, then recompile/update Metro's data pack. Confirm the one-time `SDK 8.2.0 YieldThread sdk+0xd688c0 hard throttle` log appears and the three targeted threads' yield rate falls from ~670k–776k/s to roughly 4k/s or less. Compare CPU time, long frames, Looper delays and audio underruns.
 
 - CI run 45866670330: Python validation and NGR patch-set verification (including the exact SDK 8.2.0 `sdk+0xd688c0` return-site guard) both passed. It stopped only at the expected stale payload SHA check; the manifest is refreshed to the authoritative `tools/make_manifest.py` digest `09858cc1c38a730fdeceb89a6dae0d5a9dc89d915a89bbc7b1156b311e66b5eb`. Native build is pending in the next run.
+
+
+## 2026-11-26 — Metro SDK 8.2.0 targeted yield throttle: build verified
+- Additional thread-state evidence from the 19:37 gameplay run: at ~63 s PhysX (0x1010) waited on mutex 0x712677d5dc owned by audio-I1 (0x1009); at ~64.8 s audio-I1 waited on the same mutex owned by PhysX. Later samples show the owner/wait state changing again, so this is lock hand-off contention/ping-pong, not enough evidence to call it a permanent deadlock. It supports the conclusion that the hot YieldThread loops starve or repeatedly contend with the audio worker.
+- At ~80 s, PhysX had accumulated 25.88 s CPU and Secondary 18.64 s CPU; watchdog rates reached 776,085/s and 817,728/s respectively. Main reached 672,695/s. At on-screen frame 900, p99 frame time was 5,680.33 ms, dropped frames 197/298, footprint 736 MiB; thermal telemetry was unavailable (-1).
+- The latest uploaded gameplay log predates the exact-site patch. The APK containing the narrowed SDK 8.2.0 site guard has now built successfully.
+- CI run: https://github.com/Snap888/nx2android-android-port/actions/runs/45866775641 — all checks, NGR patch verification, payload manifest, signing, and Release APK build passed.
+- Artifact: `nx2android-apk`, artifact ID `15140607937`, SHA-256 `84717a2cc5676312b99150ccdf0c04016de9ba3d898822faf6d2791efaeeb6c4`.
+- Install this APK, then recompile/update the Metro 2033 Redux data pack. The new log must contain `Metro SDK 8.2.0 YieldThread sdk+0xd688c0 hard throttle`; the target yield rate should be capped near 4k/s per affected thread (actual Android nanosleep scheduling may vary). Compare frame p99/max, process CPU, audio queue/underruns, and system responsiveness.
+- The save transaction still reports EACCES in the pre-patch log; the same APK also includes patch 38 stage-by-stage clonefile diagnostics so the next run can identify the exact failing save-clone operation. This remains separate from the CPU/yield hang.
