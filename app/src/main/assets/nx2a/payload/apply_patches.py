@@ -1652,7 +1652,7 @@ patch('NGR masked clear typed shader per attachment', 'nxnative/dm/android/gfx_v
 # Generate exact location/type shader variants; build.py compiles these into SPIR-V.
 _shader_dir = repo / 'nxnative/dm/android/shaders'
 _shader_dir.mkdir(parents=True, exist_ok=True)
-for _kind, _type, _expr in ((0, 'vec4', 'p.c'), (1, 'uvec4', 'uvec4(p.c)'), (2, 'ivec4', 'ivec4(p.c)')):
+for _kind, _type, _expr in ((0, 'vec4', 'p.c'), (1, 'uvec4', 'uvec4(max(p.c, vec4(0.0)))'), (2, 'ivec4', 'ivec4(p.c)')):
     for _index in range(8):
         _body = f"""#version 450
 layout(push_constant) uniform P {{ vec4 c; }} p;
