@@ -886,3 +886,25 @@
 - Device test: save user.cfg + reach checkpoint, exit normally, verify files in Download/NX2A/Saves/9383b4fd4e8540ed5d6e, relaunch and load.
 - Confirm gameplay log reports [fs] Android save clone: FICLONE unavailable (errno=13); byte-copy fallback active and subsequent save commits succeed with nonzero writes.
 - Compare stability with diagnostics off vs only runtime + slow-frame summaries. Do not enable watchdog dumps, NVN or filesystem tracing for normal play.
+
+
+## 2026-11-27 — Metro save EACCES and missing-render-feature audit
+
+### Save failure confirmed from the latest runtime log
+- Repeated `clonefile .../save.new failed errno=13` occurs after the game opens `save:/user.cfg`, `save:/2033_auto_save`, and checkpoint `.player` files. The save transaction therefore aborts before replacing the committed tree; this is not a Download mirror-only issue.
+- Patch 43, `NX2A_FICLONE_EACCES_FALLBACK`, now treats `EACCES` from Android `FICLONE` as an unavailable reflink and falls back to the existing byte-copy path. Transactional clone/commit/swap remains enabled; no permissions are broadened.
+- Payload manifest bumped to version 208; `apply_patches.py` SHA-256: `8e8e2420a6461603fbc0f5211cf426f6b15f9a10be3bbe7994e72b9ae78b53c1`.
+
+### Missing textures / shadows / reticle audit
+- Latest log identifies Turnip Adreno 740 / Vulkan 1.4.363 and 854 shader bundle entries; no shader compilation failures or explicit texture upload errors were found in the inspected startup/gameplay window.
+- Three NVN entry points report as unimplemented: `nvnTextureBuilderGetRawStorageClass` once, `nvnProgramSetSampleShading` four times, and `nvnCommandBufferSetStencilCullCriteria` 26 times.
+- The stencil-cull entry point is documented as a ZCull hint, not the actual depth/stencil test state; its absence alone is not evidence for missing shadows. The texture-builder getter is a concrete compatibility gap and should be implemented from the matching pinned porter source before making a safe patch. Sample-shading arguments and the shader/depth path need validation before changing behavior.
+- Do not claim missing fire/reticle/shadows are fixed yet. Next diagnostics should correlate the missing visual object with the draw's texture descriptor, texture format/swizzle, shader key, depth target, and pipeline state, using opt-in low-volume event logging (not per-frame/per-draw logging).
+
+### Performance/logging
+- User confirms gameplay is smooth with logging disabled and hangs when logging is enabled. Keep verbose NVN/filesystem/lock tracing disabled by default; only explicit diagnostic sessions may enable it. Avoid high-frequency log writes in hot paths.
+
+### Validation still required
+- Rebuild/recompile Metro Data Pack so the new porter patch is actually applied to `libdmhost.so`; APK build alone does not compile the pinned native porter.
+- Verify save commit no longer reports `errno=13`, save files appear in the private committed tree and then Download mirror, and reload works.
+- Retest the same scene with logging disabled for performance and with minimal diagnostics for visual regressions. Compare screenshots for fire, reticle and shadow scenes.
