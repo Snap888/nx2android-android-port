@@ -1527,4 +1527,43 @@ patch('NGR Android FICLONE EACCES byte-copy fallback', 'nxnative/dm/android/comp
         __android_log_print(ANDROID_LOG_WARN, "NGRRuntime", "[fs] Android save clone: FICLONE unavailable (errno=%d); byte-copy fallback active", ce); // NX2A_FICLONE_EACCES_FALLBACK""")
 ]);
 
+
+# 44. The transaction creates save.new as a sibling of DM_SAVE. A previous
+# commit/import can leave the per-game root with read-only owner bits; mkdir()
+# then returns EACCES before clonefile reaches its child-copy fallback. Restore
+# owner rwx on the private game/save roots before exposing DM_SAVE.
+patch('NGR restore writable private save roots', 'nxnative/dm/android/front_android.c', 'NX2A_PRIVATE_SAVE_ROOT_PERMISSIONS', [
+    ('''    snprintf(p, sizeof p, "%s/save", ngr_private_root);
+    if (mkdir(p, 0700) && errno != EEXIST) LOG("[save] cannot create private transactional save root %s: errno=%d", p, errno);
+    setenv("DM_SAVE", p, 1); // NX2A_PRIVATE_TRANSACTIONAL_SAVE_ROOT''',
+     '''    if (chmod(ngr_private_root, 0700) && errno != ENOENT)
+        LOG("[save] cannot restore private game root permissions %s: errno=%d", ngr_private_root, errno);
+    snprintf(p, sizeof p, "%s/save", ngr_private_root);
+    if (mkdir(p, 0700) && errno != EEXIST)
+        LOG("[save] cannot create private transactional save root %s: errno=%d", p, errno);
+    if (chmod(p, 0700))
+        LOG("[save] cannot restore private save root permissions %s: errno=%d", p, errno);
+    if (access(p, R_OK | W_OK | X_OK))
+        LOG("[RED] private save root is not readable/writable/traversable %s: errno=%d", p, errno);
+    setenv("DM_SAVE", p, 1); // NX2A_PRIVATE_SAVE_ROOT_PERMISSIONS''')
+]);
+
+# 45. Imported/older committed saves can contain owner-unreadable entries.
+# clonefile() must be able to enumerate source directories and open source
+# files before it can create the writable transactional copy. Restore only the
+# app-owner read/execute bits when EACCES proves they are missing.
+patch('NGR recover owner-readable committed save entries', 'nxnative/dm/android/compat/darwin_compat.c', 'NX2A_SAVE_SOURCE_OWNER_READ', [
+    ('''    int in = open(src, O_RDONLY | O_CLOEXEC); if (in < 0) return -1;''',
+     '''    int in = open(src, O_RDONLY | O_CLOEXEC);
+    if (in < 0 && errno == EACCES && chmod(src, (mode & 07777) | S_IRUSR) == 0)
+        in = open(src, O_RDONLY | O_CLOEXEC); // NX2A_SAVE_SOURCE_OWNER_READ
+    if (in < 0) return -1;'''),
+    ('''    DIR *d = opendir(src); if (!d) return -1;''',
+     '''    DIR *d = opendir(src);
+    if (!d && errno == EACCES &&
+            chmod(src, (st.st_mode & 07777) | S_IRUSR | S_IXUSR) == 0)
+        d = opendir(src); // NX2A_SAVE_SOURCE_OWNER_READ
+    if (!d) return -1;''')
+]);
+
 sys.exit(1 if failed else 0)
