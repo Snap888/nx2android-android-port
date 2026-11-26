@@ -726,3 +726,12 @@
 - CI run 45862916716 validated patch-set application successfully, then stopped at payload-manifest verification. Its authoritative generator reported apply_patches.py SHA-256 `e5fbfe281cabc8144c4c5c549e50ea1eede99db25138135a2153980ffa00cbff`; manifest corrected in commit 6019b38, version 203. Fresh CI is pending.
 
 - Critical discovery: appended patch blocks 36+ were below the patcher's earlier sys.exit(), so they were never executed. Moved sys.exit to the actual file end in commit 079bdd3. CI run 45863166529 now verifies all appended patches (37 hot-yield throttle and 38 clone diagnostics) successfully; it only failed on the payload hash. Manifest hash corrected to CI-authoritative 62ab1a48c8e59ad8c537884199befd557ae607194880201b175008fb78a5c16f, payload version 203, commit ca415ef.
+
+
+## 2026-11-26 — SDK 8.2.0 yield-site isolation
+- Identified the exact Metro SDK from the game profile/diagnostics: Nintendo SDK 8.2.0, SDK NSO build ID `3ae34e689d7a35f13cbf42bfd672af8b`; Metro game main build ID `85c362cc9790f0edf23749b041953c51`. No subsdk modules.
+- SDK source patch table already contains only the two AddressRegionManager memory cuts for this SDK build (offsets 0x336b50 and 0x336bf0); these are unrelated to the observed hang. No speculative memory cut was added.
+- Log stack evidence: hot worker SVC #0x0b (YieldThread) returns at `sdk+0xd688c0`; backtraces point into the game main at `main+0x1e92f4` (PhysX simulator) and `main+0x539ec` (Secondary), followed by `sdk+0x3344b8 sdk+0x338984`. The SDK address is the YieldThread SVC return stub, not proof that the SDK's implementation itself is defective. The tight polling loops are in the game-side callers.
+- The latest uploaded runtime log was captured at 19:37 and still reports the old 50k/s + 256-yield handoff configuration. It predates the later successful CI build that contains patch 37, so it cannot validate or falsify that hard-throttle patch.
+- Narrowed patch 37: it now sleeps 250 µs only when (a) the thread is one of Metro's named PhysX/Secondary/main workers and (b) LR resolves to the exact SDK 8.2.0 `sdk+0xd688c0` YieldThread site. Other SDK calls and other games retain the normal scheduler path.
+- Next validation: rebuild APK, install it, then recompile/update Metro's data pack. Confirm the one-time `SDK 8.2.0 YieldThread sdk+0xd688c0 hard throttle` log appears and the three targeted threads' yield rate falls from ~670k–776k/s to roughly 4k/s or less. Compare CPU time, long frames, Looper delays and audio underruns.
