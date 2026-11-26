@@ -777,3 +777,19 @@
 3. Verify runtime marker `[NGR save] using user-visible save directory`, save mount path, checkpoint write, exit and reload.
 4. Compare private fallback when storage permission is denied.
 5. Continue SDK 8.2.0 yield-throttle validation using fresh logs from the APK/data pack containing the hard-throttle patch.
+
+### CI result — 2026-11-26
+- GitHub Actions run: 45873462593 — SUCCESS.
+- Checks passed: Python syntax/unit tests, NGR patch application and idempotence against pinned porter, WebView JavaScript syntax, payload manifest consistency.
+- Release APK build and artifact upload both succeeded.
+- Artifact: `nx2android-apk`, artifact ID `15142809840`, run URL: https://github.com/Snap888/nx2android-android-port/actions/runs/45873462593
+- Artifact ZIP SHA-256: `e07588be1f787325f8478aba1775c8b46cd697ce784fecde239ae3fd1e892248`.
+- Build commit: `a5f63a67ad81fbd861fc8cb8033129e60f9a438c`. The branch head subsequently received only a comment-only change in `ngrhost.c` (`bee018b91843fcbd9c2bf6fe7a1031279b07658c`); functional source is identical.
+- Draft PR: https://github.com/Snap888/nx2android-android-port/pull/1
+
+### Device validation still required
+1. Install the new APK.
+2. Recompile/update Metro 2033 Redux's data pack so its `libdmhost.so` contains the new `DM_SAVE` root patch.
+3. Verify runtime log says `[NGR save] using user-visible save directory`.
+4. Create checkpoint, exit, confirm files in Download, relaunch and load.
+5. Upload fresh runtime/gameplay logs to verify SDK 8.2.0 YieldThread hard-throttle behavior and remaining stalls. CI does not establish device-level hang resolution.
