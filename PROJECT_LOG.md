@@ -602,3 +602,25 @@
 - Проверить Handheld и Docked на одной сцене; ожидание: Handheld window/surface full-screen, destination 0,0 width,height; Docked aspect-fit centered. APK пока не подтверждает реальное поведение на устройстве.
 
 - Follow-up correction: keep Utility QoS limited to PhysX/Secondary; include `main thread` only in the Metro named yield back-off list (it must retain interactive QoS). Payload version 195 refreshes the patcher manifest.
+
+
+## 2026-11-26 — Handheld final-surface fix and Android RomFS lookup stalls
+
+### Handheld image output
+- Previous full-screen override was applied before the ov_band() calculation. When the gamepad overlay was visible, that later calculation could replace the full-surface destination; the earlier patch therefore did not guarantee full-screen output.
+- Added a final Handheld override after all overlay-band geometry is calculated and immediately before vk_pic_set() / present blit. Handheld now forces destination (0,0,g_sext.width,g_sext.height) regardless of overlay visibility; Docked keeps aspect-fit.
+- The guest crop/render dimensions remain unchanged (for example 1280×720); only the destination rectangle changes.
+- Display diagnostics now include mode=handheld|docked, full destination x/y/width/height, swapchain target and overlay visibility.
+
+### Metro 2033 Redux: reduce synchronous RomFS lookup stalls
+- Audited pinned Porter source nxnative/dm/host/hle_fs.c. Read-only RomFS path resolution enumerated directory entries to resolve each component; the first lookup also built a sorted directory index while callers held the global PATH_LOCK.
+- That lock serialized unrelated filesystem operations. A first lookup into a large asset directory could therefore pause other loader threads and audio asset opens, matching the observed pattern of long location/asset-loading stalls more closely than a GPU bottleneck.
+- Android app-private/external RomFS is case-sensitive. Added an Android-only exact lstat(parent/name) fast path for read-only mounts, bypassing directory enumeration and lazy index construction. Writable save mounts and non-Android builds retain their existing behavior.
+- Added one-time marker: [fs] Android RomFS lookup v1: exact path lookup; serialized directory scans/index builds bypassed. This does not add worker threads or per-file logging.
+
+### Проверка / статус
+- Patcher changes are committed; payload manifest bumped to version 196 and SHA-256 refreshed.
+- CI must validate the new patches against the pinned Porter, compile the Android C sources and produce a signed APK before device testing.
+- After installing the APK, Metro's data pack must be recompiled/updated so its libdmhost.so contains the new filesystem and display patches.
+- Expected Handheld log: mode=handheld destination=0,0 <full-window-width>x<full-window-height>; Docked should report mode=docked and centered aspect-fit.
+- Expected Metro marker: [fs] Android RomFS lookup v1. Compare long-frame duration, file-open/read timing, yield rates and audio underruns against the previous build. Audio code was not changed.
