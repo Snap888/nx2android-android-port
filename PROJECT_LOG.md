@@ -655,3 +655,35 @@
 1. Wait for/inspect GitHub Actions build; resolve compile or patch-anchor failures before distributing an APK.
 2. Install APK and rebuild Metro data pack; test the same checkpoint transition and record save commit duration.
 3. Test Handheld over at least 30 seconds, including after overlay/menu visibility changes; if the final blit log stays full-size but the displayed image shrinks, inspect swapchain transform and Android surface lifecycle rather than repeating the destination-rectangle patch.
+
+
+## 2026-11-26 — Metro 2033 Redux log analysis and second scheduler/save fix
+
+### Log evidence (game ID 9383b4fd4e8540ed5d6e)
+- Runtime log: Logs/ngr-runtime-9383b4fd4e8540ed5d6e.log.txt
+- Gameplay log: Logs/ngr-gameplay-9383b4fd4e8540ed5d6e.log.txt
+- RomFS direct lookup v1 is active, but the save clone FICLONE marker is absent.
+- Save mount fails before gameplay: clonefile(save → save.work) returns EACCES (errno=13), then the runtime mounts the committed save read-only. Thus this run does not demonstrate a slow checkpoint commit; it demonstrates that the save transaction could not even be initialized.
+- Root cause in Android darwin_compat.c clonefile(): directory clones used the source directory's exact mode for mkdir(dst). A read-only committed save directory (e.g. 0555) creates a read-only work directory, so the first child creation fails with EACCES. File clones could also preserve a non-writable mode.
+- Runtime freeze is independently demonstrated as CPU-side: frame 913 = 1642.3 ms total / 17.9 ms GPU; frame 915 = 14036.9 ms total / 17.6 ms GPU, with about 12.84 CPU-seconds charged to the process. No shader/pipeline creation or texture upload occurred during these long frames.
+- Repeated watchdogs report 660,968–723,053 progressing yields/s in PhysX simulator, 445,137/s in Secondary, and 250,259/s in main thread. Scheduler v2 only called sched_yield once per 256 excess yields, which did not meaningfully throttle pinned workers.
+- Audio underruns are downstream symptoms: at the end, 2,000/2,000 callbacks had zero queued blocks. Audio implementation is deliberately unchanged.
+
+### Fixes committed
+- Commit 6aaeee8d0619e853e4e811a7ab53cd41e07b15af: added owner-writable mode to cloned save directories/files. clonefile() now adds owner rwx to destination directories and owner rw to files, while preserving other mode bits. This allows a writable transactional work tree even if the committed source is read-only.
+- Commit 25f59a11ce0cacc7021af70e1589e6fa142878a3: removed a superseded intermediate scheduler patch that had an incompatible anchor.
+- Commit 746774e0f137ba4304bbc1bc7e01c26a5ac92458: add per-yield cap patch; once the configured 50,000 progressing yields/s per-thread budget is exceeded, named Metro workers use the configured 100 µs sleep on each further progressing yield instead of one sched_yield per 256 excess yields. The sleep applies only to the named PhysX simulator, Secondary and main thread. This is a targeted CPU/thermal mitigation; it may trade some worker throughput for stable scheduling and must be measured.
+- Commit 4608260f42f00f944f99b09059a3e584fb09e051: payload version 200; apply_patches.py SHA-256 refreshed to 5ee1f95d4a01515aebf9fb63e6c22db552b88c01cabd31c57b0ad40054cf3bd9.
+
+### Validation / limitations
+- Log analysis confirms the current build has the filesystem direct-lookup patch and scheduler v2, but not enough evidence that FICLONE code was invoked (empty save directory can produce no copy_file marker).
+- New source patch anchors have not yet been run through a complete NDK/CI build. CI and real-device validation are pending; no APK is claimed.
+- After a new APK, rebuild/update Metro's data pack to regenerate libdmhost.so.
+- Verify save mount logs no longer show EACCES/read-only fallback; exercise a save write and checkpoint, then confirm save commit success.
+- Verify watchdog rates fall substantially and the same checkpoint/location no longer produces 1.6s/14s CPU frames. Check thermal status and audio queue depth after scheduler change.
+- If the named workers still burn CPU, next step is symbolicate sdk+0xd688c0 and inspect exact guest loop / lock protocol before more aggressive scheduling changes.
+
+### Next actions
+1. Validate patcher anchors and compile/CI build; correct any patch application or NDK errors.
+2. Install APK, rebuild Metro data pack, verify save mount is transactional and writable.
+3. Re-test the same gameplay path; compare long-frame CPU/GPU split, watchdog yields/s and audio underruns.
