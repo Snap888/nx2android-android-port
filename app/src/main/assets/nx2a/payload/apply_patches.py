@@ -1466,4 +1466,40 @@ patch('NGR Android save clone failure diagnostics', 'nxnative/dm/android/compat/
      '''        r = clonefile(a, b, flags); if (r) __android_log_print(ANDROID_LOG_ERROR, "NGRRuntime", "[fs] clonefile child failed src=%s dst=%s errno=%d", a, b, errno);''')
 ]);
 
+
+# 39. Keep NGR transactional save commits on app-private storage. Shared Download
+# is a Java-managed mirror: Android's emulated external filesystem does not
+# reliably implement directory RENAME_EXCHANGE required by the save transaction.
+patch('NGR keep transactional save root private', 'nxnative/dm/android/front_android.c', 'NX2A_PRIVATE_TRANSACTIONAL_SAVE_ROOT', [
+    ('''    const char *ngr_public_save_root = getenv("NGR_PUBLIC_SAVE_DIR");
+    if (ngr_public_save_root && *ngr_public_save_root) snprintf(p, sizeof p, "%s", ngr_public_save_root);
+    else snprintf(p, sizeof p, "%s/save", ngr_private_root);
+    if (mkdir(p, 0700) && errno != EEXIST) LOG("[save] cannot create selected save root %s: errno=%d", p, errno);
+    setenv("DM_SAVE", p, 1);''',
+     '''    snprintf(p, sizeof p, "%s/save", ngr_private_root);
+    if (mkdir(p, 0700) && errno != EEXIST) LOG("[save] cannot create private transactional save root %s: errno=%d", p, errno);
+    setenv("DM_SAVE", p, 1); // NX2A_PRIVATE_TRANSACTIONAL_SAVE_ROOT''')
+]);
+
+# 40. Android shared-storage FUSE may not support xattrs. If physical and guest
+# names already match, removing absent optional metadata must not fail file create.
+patch('NGR tolerate unsupported save-name xattrs', 'nxnative/dm/host/hle_fs.c', 'NX2A_XATTR_OPTIONAL_ON_ANDROID', [
+    ('''    if (!removexattr(hp, FS_GUEST_NAME, XATTR_NOFOLLOW) || errno == ENOATTR) return 0;''',
+     '''    if (!removexattr(hp, FS_GUEST_NAME, XATTR_NOFOLLOW) || errno == ENOATTR
+            || errno == ENOTSUP || errno == EOPNOTSUPP) return 0; // NX2A_XATTR_OPTIONAL_ON_ANDROID''')
+]);
+
+# 41. Record only genuinely slow host reads. Event-driven (>25 ms), no per-read
+# log I/O during normal streaming.
+patch('NGR slow host read latency diagnostics', 'nxnative/dm/host/hle_fs.c', 'NX2A_SLOW_PREAD_DIAGNOSTICS', [
+    ('''        ssize_t r = pread((int)h, (uint8_t *)buf + got, sz - got, off + got);''',
+     '''        uint64_t nx2a_read_started = now_ns();
+        ssize_t r = pread((int)h, (uint8_t *)buf + got, sz - got, off + got);
+        uint64_t nx2a_read_elapsed = now_ns() - nx2a_read_started;
+        if (nx2a_read_elapsed >= 25000000ull)
+            LOG("[io] slow pread fd=%d offset=%#llx requested=%zu returned=%zd elapsed=%.3f ms errno=%d",
+                (int)h, (unsigned long long)(off + got), sz - got, r,
+                nx2a_read_elapsed / 1000000.0, r < 0 ? errno : 0); // NX2A_SLOW_PREAD_DIAGNOSTICS''')
+]);
+
 sys.exit(1 if failed else 0)
