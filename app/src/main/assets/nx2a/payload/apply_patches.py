@@ -1662,4 +1662,14 @@ void main() {{ o = {_expr}; }}
         (_shader_dir / f'maskclear_f{_kind * 8 + _index}.frag').write_text(_body)
 print('NGR masked clear shader variants: generated 24 location/type outputs')
 
+
+# 48. Cache all practical attachment/mask/type combinations; do not regress to
+# full clears after a small number of different MRT layouts have been seen.
+patch('NGR masked clear pipeline cache capacity', 'nxnative/dm/android/gfx_vk_exec.c', 'NX2A_MASKED_CLEAR_CACHE_512', [
+    ("""mckey k[64]; VkPipeline p[64]; int n; } g_mc;""",
+     """mckey k[512]; VkPipeline p[512]; int n; } g_mc; // NX2A_MASKED_CLEAR_CACHE_512"""),
+    ("""if (g_mc.bad || g_mc.n == 32) return VK_NULL_HANDLE;""",
+     """if (g_mc.bad || g_mc.n == 512) return VK_NULL_HANDLE; // NX2A_MASKED_CLEAR_CACHE_512""")
+]);
+
 sys.exit(1 if failed else 0)
