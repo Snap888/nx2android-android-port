@@ -211,5 +211,53 @@ class ApplyPatchesTests(unittest.TestCase):
             self.assertEqual(second.returncode, 0, second.stdout + second.stderr)
             self.assertIn("already", second.stdout)
 
+
+    def test_bounded_texture_first_use_and_descriptor_trace_is_applied_and_idempotent(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tex = Path(tmp) / "nxnative/dm/android/gfx_vk_tex.c"
+            exe = Path(tmp) / "nxnative/dm/android/gfx_vk_exec.c"
+            tex.parent.mkdir(parents=True)
+            exe.parent.mkdir(parents=True)
+            tex.write_text(
+                "    int nvn_ft_written(const tex_t *);\\n"
+                "    if (t->mem && lin_copy(im, t, f)) {}\\n"
+                "    else if (t->mem && (packaged_tex(t) || (first && (nvn_ft_written(t) || cpu_content_tex(t, f))))) {\\n",
+                encoding="utf-8",
+            )
+            exe.write_text(
+                "    int num = 0;\\n"
+                "    if (tid && g_var_now != 3 && vk_tex_by_id(tid, &v, &t) && t) {\\n"
+                "        vkimg_t *im = NULL; ii->imageView = vk_tex_view(t, v, b->dim, b->flags & 1, 0, &im); if (storage && im) im->gpu_w = 1;\\n"
+                "    }\\n"
+                "    if (num && !storage) ii->sampler = samp_for(st, b, h, 1);\\n"
+                "    if (!ii->imageView) {\\n",
+                encoding="utf-8",
+            )
+            env = dict(
+                os.environ,
+                NX2A_PATCH_ONLY="NGR bounded texture first-use trace;NGR bounded texture descriptor trace",
+            )
+            first = subprocess.run(
+                [sys.executable, str(PATCHER), tmp],
+                capture_output=True, text=True, env=env, check=False,
+            )
+            self.assertEqual(first.returncode, 0, first.stdout + first.stderr)
+            patched_tex = tex.read_text(encoding="utf-8")
+            patched_exec = exe.read_text(encoding="utf-8")
+            self.assertIn("NX2A_TEX_FIRST_TRACE", patched_tex)
+            self.assertIn("[tex-first]", patched_tex)
+            self.assertIn("source=%s", patched_tex)
+            self.assertIn("NX2A_TEX_BIND_TRACE", patched_exec)
+            self.assertIn("[tex-bind]", patched_exec)
+            self.assertIn("[tex-bind-miss]", patched_exec)
+            self.assertIn("DM_VK_TEX_TRACE", patched_exec)
+
+            second = subprocess.run(
+                [sys.executable, str(PATCHER), tmp],
+                capture_output=True, text=True, env=env, check=False,
+            )
+            self.assertEqual(second.returncode, 0, second.stdout + second.stderr)
+            self.assertIn("already", second.stdout)
+
 if __name__ == "__main__":
     unittest.main()
