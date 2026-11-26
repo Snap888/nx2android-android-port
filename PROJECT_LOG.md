@@ -1121,7 +1121,7 @@
 - [tex-bind-miss]: max 32 unresolved texture-ID records.
 - Instrumentation preserves upload and descriptor behavior. No per-frame trace and no change to swizzle, LOD, aliasing, render targets, or save handling.
 - Payload version: 225. Patcher marker IDs: NX2A_TEX_FIRST_TRACE, NX2A_TEX_BIND_TRACE.
-- CI run for current HEAD: 45912386380 (pending at log update). Build/patch application and native Vulkan compilation still need successful CI confirmation.
+- CI run 45912643379 for HEAD 44eb34ed0b65fb0e203155a53d159f8ac28338e0 passed: Python tests, patch application twice against pinned Porter, WebView syntax, payload manifest, signed APK, and patched NVN Vulkan backend / SPIR-V compilation. APK artifact 15160672401 (35,878,129 bytes).
 
 ### Next actions
 1. Wait for CI 45912386380; fix any patch/test/compiler failures before device testing.
