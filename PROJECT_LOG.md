@@ -724,3 +724,5 @@
 - CI patch validation/NDK build and on-device validation are pending. No APK is available yet. Install the next APK and recompile/update Metro data pack to regenerate libdmhost.so; verify the one-time hard-throttle message, named yield rates reduced to thousands/s, and the precise clonefile failure diagnostic.
 
 - CI run 45862916716 validated patch-set application successfully, then stopped at payload-manifest verification. Its authoritative generator reported apply_patches.py SHA-256 `e5fbfe281cabc8144c4c5c549e50ea1eede99db25138135a2153980ffa00cbff`; manifest corrected in commit 6019b38, version 203. Fresh CI is pending.
+
+- Critical discovery: appended patch blocks 36+ were below the patcher's earlier sys.exit(), so they were never executed. Moved sys.exit to the actual file end in commit 079bdd3. CI run 45863166529 now verifies all appended patches (37 hot-yield throttle and 38 clone diagnostics) successfully; it only failed on the payload hash. Manifest hash corrected to CI-authoritative 62ab1a48c8e59ad8c537884199befd557ae607194880201b175008fb78a5c16f, payload version 203, commit ca415ef.
