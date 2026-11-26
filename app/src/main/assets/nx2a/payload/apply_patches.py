@@ -1707,4 +1707,109 @@ patch('NGR opt-in texture alias metadata trace', 'nxnative/dm/android/gfx_vk_tex
 } // NX2A_ALIAS_TRACE_METADATA""")
 ]);
 
+
+
+# 52. Indexed draws may span two zero-copy memory-pool chunks. A VkBuffer
+# represents only one chunk, so binding the first chunk and drawing the whole
+# range reads past that VkBuffer. Copy the aligned byte range GPU-to-GPU into
+# this submission's scratch index buffer, with global memory barriers. This
+# preserves GPU-written index data; no CPU shadow/readback is assumed.
+patch('NGR GPU copy for indexed ranges crossing pool chunks', 'nxnative/dm/android/gfx_vk_exec.c', 'NX2A_INDEX_CHUNK_COPY', [
+    ("""static void draw_idx(const p_draw_idx *d) {""",
+     """// NX2A_INDEX_CHUNK_COPY: the source may have been written by an earlier GPU draw/dispatch.
+static int vk_index_range_scratch(uint64_t addr, uint64_t size, VkBuffer *out, VkDeviceSize *out_off) {
+    if (!size || addr > UINT64_MAX - size || size > (64ull << 20)) return 0;
+    uint64_t start = addr & ~3ull, raw_end = addr + size;
+    if (raw_end > UINT64_MAX - 3) return 0;
+    uint64_t end = (raw_end + 3) & ~3ull;
+    vkpool_t *first = vk_pool_of(addr, 1);
+    if (!first || start < first->base || end > first->end || end <= start) return 0;
+    // Validate the entire source before ending the pass or recording any copies.
+    for (uint64_t cur = start; cur < end;) {
+        vkpool_t *p = vk_pool_of(cur, 1);
+        if (!p || p->base != first->base || p->end != first->end || p->hi <= cur) return 0;
+        uint64_t n = p->hi - cur; if (n > end - cur) n = end - cur;
+        if ((cur & 3) || (n & 3)) return 0;   // vkCmdCopyBuffer's four-byte alignment
+        cur += n;
+    }
+    vk_end_pass_land();
+    VkBuffer dst; VkDeviceSize dst_off;
+    (void)vk_scratch(end - start, 4, &dst, &dst_off);
+    VkCommandBuffer cb = vk_cmd();
+    vk_img_barrier_all(cb);   // include earlier shader/storage writes to the index pool
+    for (uint64_t cur = start; cur < end;) {
+        vkpool_t *p = vk_pool_of(cur, 1);
+        uint64_t n = p->hi - cur; if (n > end - cur) n = end - cur;
+        VkBuffer src; VkDeviceSize src_off;
+        if (!vk_buf_at(cur, n, &src, &src_off)) return 0;   // validated above; guard pool teardown
+        VkBufferCopy r = {src_off, dst_off + (cur - start), n};
+        vkCmdCopyBuffer(cb, src, dst, 1, &r);
+        cur += n;
+    }
+    vk_img_barrier_all(cb);   // transfer writes become index-input reads
+    if (!begin_pass()) return 0;
+    cb = vk_cmd();
+    set_dynamic(cb);          // begin_pass starts a new dynamic-state generation
+    *out = dst;
+    *out_off = dst_off + (addr - start);   // preserve an unaligned UINT8/UINT16 index start
+    return 1;
+}
+static void draw_idx(const p_draw_idx *d) {"""),
+    ("""    if (!d->ind) { vkpool_t *ip = vk_pool_of(d->ibuf, 1); uint64_t in = (uint64_t)d->count * isz; if (ip && d->ibuf + in > ip->hi && ip->hi < ip->end) vk_cross(3, d->ibuf, in, ip); }""",
+     """    if (!d->ind && d->count > 0) {
+        vkpool_t *ip = vk_pool_of(d->ibuf, 1);
+        uint64_t in = (uint64_t)(uint32_t)d->count * isz;
+        if (ip && in <= UINT64_MAX - d->ibuf && d->ibuf + in > ip->hi && ip->hi < ip->end) {
+            vk_cross(3, d->ibuf, in, ip);
+            static int trace = -1; static unsigned traced;
+            if (trace < 0) { const char *e = getenv("DM_VK_INDEX_TRACE"); trace = e && atoi(e) > 0; }
+            if (trace && traced < 16) {
+                traced++;
+                VKLOG("[index-cross] draw %u addr %#llx bytes %#llx count %d type %d prim %d instances %u base_vertex %d chunk_end %#llx pool %llu shaders %016llx/%016llx",
+                    traced, (unsigned long long)d->ibuf, (unsigned long long)in, d->count, d->itype, prim,
+                    (unsigned)(d->instances ? d->instances : 1), d->base_vertex, (unsigned long long)ip->hi,
+                    (unsigned long long)ip->serial, (unsigned long long)(S.sh[0] ? S.sh[0]->key : 0),
+                    (unsigned long long)(S.sh[1] ? S.sh[1]->key : 0));
+            }
+            // NVN quads are converted by CPU-reading the original index data below;
+            // keep that special path separate until its GPU readback semantics are handled.
+            if (prim != 7 && g_ok && !(dbg_draw() & 1) && !vk_index_range_scratch(d->ibuf, in, &ib, &io)) {
+                VKRED_ONCE(98, "cross-chunk index range could not be copied safely; draw skipped");
+                return;
+            }
+        }
+    }""")
+]);
+
+patch('NGR opt-in texture swizzle-to-view trace', 'nxnative/dm/android/gfx_vk_tex.c', 'NX2A_SWIZZLE_VIEW_TRACE', [
+    ("""    VkComponentMapping swz = sample_swizzle(&f->swz,t,vw,as_attachment);
+    VkFormat fmt = f->vk;""",
+     """    VkComponentMapping swz = sample_swizzle(&f->swz,t,vw,as_attachment);
+    // NX2A_SWIZZLE_VIEW_TRACE: bounded descriptor metadata, no image readback or per-draw logging.
+    {
+        static int trace = -1; static unsigned n;
+        if (trace < 0) { const char *e = getenv("DM_VK_SWIZZLE_TRACE"); trace = e && atoi(e) > 0; }
+        if (trace && n < 64) {
+            int tr = t->set_swz ? (int)(t->swz & 7) : -1;
+            int tg = t->set_swz ? (int)((t->swz >> 3) & 7) : -1;
+            int tb = t->set_swz ? (int)((t->swz >> 6) & 7) : -1;
+            int ta = t->set_swz ? (int)((t->swz >> 9) & 7) : -1;
+            int vr = vw && vw->set_swizzle ? vw->swz[0] : -1;
+            int vg = vw && vw->set_swizzle ? vw->swz[1] : -1;
+            int vb = vw && vw->set_swizzle ? vw->swz[2] : -1;
+            int va = vw && vw->set_swizzle ? vw->swz[3] : -1;
+            n++;
+            VKLOG("[swizzle] #%u serial %llu pool %p+%#llx %ux%u fmt %#x target %d levels %u tex_set %d (%d,%d,%d,%d) view_set %d (%d,%d,%d,%d) view_fmt %d levels %u+%u result %d,%d,%d,%d attachment %d",
+                n, (unsigned long long)t->serial, (void *)t->pool, (unsigned long long)t->off,
+                t->d.width, t->d.height, t->d.format, t->d.target, t->d.levels, t->set_swz,
+                tr, tg, tb, ta, vw ? vw->set_swizzle : 0, vr, vg, vb, va,
+                vw && vw->set_format ? vw->format : -1,
+                vw && vw->set_levels ? vw->base_level : 0,
+                vw && vw->set_levels ? vw->nlevels : t->d.levels,
+                (int)swz.r, (int)swz.g, (int)swz.b, (int)swz.a, as_attachment);
+        }
+    }
+    VkFormat fmt = f->vk;""")
+]);
+
 sys.exit(1 if failed else 0)
