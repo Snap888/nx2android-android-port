@@ -1035,7 +1035,14 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
            log and synchronous stderr I/O during audio/render contention.
            Keep it opt-in only for a dedicated future sync-trace control. */
         setenv("DM_SYNC_TRACE", "0", 1);
-        LOGI("[scheduler] Metro 2033 performance profile: verbose NVN/filesystem and per-lock synchronization tracing disabled");
+        /* Full watchdog thread dumps are not passive: they walk guest/host thread
+           state and can perturb the exact scheduler/audio timing under test.
+           Metro runs with low-overhead runtime + slow-frame summaries only. */
+        setenv("DM_WATCH_LOAD_DUMPS", "0", 1);
+        setenv("DM_WATCH_LOAD_INTERVAL", "0", 1);
+        setenv("DM_WATCH_STALL", "0", 1);
+        setenv("DM_WATCH_DUMP_ALL", "0", 1);
+        LOGI("[scheduler] Metro 2033 performance profile: verbose NVN/filesystem, per-lock tracing and watchdog thread dumps disabled");
     }
     LOGI("[stage 1/8] payload validated; game_dir=%s private_dir=%s", game_dir, private_dir);
     LOGI("[stage 2/8] native libraries staged; runtime=%s", lib_path);
