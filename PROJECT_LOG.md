@@ -705,3 +705,20 @@
 - CI run 45855491169 failed before native compilation; no APK from that run is valid. Await a fresh run for patch-set validation, native compilation, and artifact upload.
 
 - Follow-up CI run 45856075092 confirms the patch-set verification now passes on both applications. It then caught a stale payload hash; the manifest is corrected to the exact SHA-256 emitted by `tools/make_manifest.py` (version 202, no unnecessary version bump).
+
+
+## 2026-11-26 — Latest Metro Redux gameplay log / CPU stall follow-up
+
+### New evidence from Logs/ngr-gameplay-9383b4fd4e8540ed5d6e.log.txt
+- Session 2026-11-26 19:37, game time ~528–830 s, 9,300 frames sampled. On-screen frame stats show dropped frames rising rapidly and p99 at frame 900 reaching 5,680 ms; after the severe stall window it stabilizes around 32.85 ms. Footprint grows from ~699 MiB to ~866 MiB then plateaus.
+- Extreme frames with GPU time far below wall duration: frame 599 2,347.6 ms / GPU 0.4 ms; frame 858 5,395.2 ms / GPU 40.7 ms; frame 860 45,499.3 ms / GPU 38.1 ms; frame 861 5,875.6 ms / GPU 43.1 ms; frame 862 8,704.9 ms / GPU 39.9 ms; frame 863 18,424.5 ms / GPU 37.9 ms. Pipeline/shader-library creation and texture uploads are zero on these events. Frame 913 is 983.1 ms with 14.5 ms GPU.
+- Named threads remain pathological: PhysX simulator 745,115–776,085 progressing yields/s, Secondary 741,440–817,728/s, main 672,695/s. Same return site sdk+0xd688c0. Thread dumps show running/not waiting, later mutex wait. CPU totals reach ~146.6 s per PhysX and Secondary thread over ~304 s elapsed. Previous 50k progressing-yield budget and 100 us setting did not stop this signature-changing loop.
+- Audio is starved during the same interval: callback batches 6k–24k show 589–2,000 underruns per 2,000 callbacks, peak 100% underruns in batch 22,000 (10,000 ms zero-padded). Later recovers to zero underruns as frame pacing stabilizes. This is secondary evidence of CPU scheduling starvation; audio implementation remains untouched.
+- Save initialization still fails with EACCES errno=13 and committed save is mounted read-only. The previous writable-clone patch did not fix it on-device. No FICLONE success/fallback marker appears; failure is at root clone directory before per-file copy.
+- Android main looper reports slow deliveries of 23.5 s and 24.8 s, consistent with system-wide starvation.
+
+### New source changes
+- Patch 37 hard-throttles only Metro's named PhysX/Secondary/main threads at the yield SVC boundary with a 250 us sleep per yield (~4k SVC/s). This bypasses the previous progress-signature detector that allowed changing-signature loops to run at >670k/s. Other games and threads remain on the existing path.
+- Patch 38 adds stage-specific clonefile diagnostics for stat/access/mkdir/opendir/recursive child failures. It is diagnostic, not another guessed permission change; the next run should expose the exact operation/path/mode.
+- Payload manifest bumped to version 203 and apply_patches.py SHA-256 refreshed to 7e40347d2ebcc1f444a943e1e9b298181b0e9b021014e136e9f6071bfe76a222.
+- CI patch validation/NDK build and on-device validation are pending. No APK is available yet. Install the next APK and recompile/update Metro data pack to regenerate libdmhost.so; verify the one-time hard-throttle message, named yield rates reduced to thousands/s, and the precise clonefile failure diagnostic.
