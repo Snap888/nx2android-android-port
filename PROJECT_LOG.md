@@ -974,3 +974,10 @@
 - UINT clear conversion now clamps negative input components to zero before conversion, matching the existing full-clear path's unsigned conversion rule.
 - Pipeline cache capacity is 512 entries (up to 8 attachment locations × 3 numeric classes × 15 nonzero channel masks, with room for multiple pass layouts).
 - Latest manifest commit: `2c301cce1947b73f9ea1cd5e5b3d64ff73ce96dc`; current branch head must be checked before final CI validation.
+
+
+### CI result for the 24-shader implementation (pre-final UINT clamp)
+- Run `45898729198` completed successfully from commit `0bb67836f9da41ee8bdceb91d67b6342759d2d11`.
+- Passed: Python syntax/unit checks, patch application twice against pinned Porter, WebView syntax, payload manifest verification, release APK build.
+- Artifact: `nx2android-apk`, ID `15154972411`, 35,873,460 bytes. This artifact contains payload version 213 and predates the final unsigned-value clamp/hash update; do not use it as the final test APK.
+- Final source now has payload version 214 and the unsigned clear conversion clamp. A new CI run is required for the final artifact.
