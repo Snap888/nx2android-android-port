@@ -183,8 +183,8 @@ class ApplyPatchesTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             tex = Path(tmp) / "nxnative/dm/android/gfx_vk_tex.c"
             exe = Path(tmp) / "nxnative/dm/android/gfx_vk_exec.c"
-            tex.parent.mkdir(parents=True)
-            exe.parent.mkdir(parents=True)
+            tex.parent.mkdir(parents=True, exist_ok=True)
+            exe.parent.mkdir(parents=True, exist_ok=True)
             tex.write_text(
                 "    int nvn_ft_written(const tex_t *);\\n"
                 "    if (t->mem && lin_copy(im, t, f)) {}\\n"
