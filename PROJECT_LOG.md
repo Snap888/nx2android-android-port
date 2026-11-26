@@ -865,3 +865,24 @@
 - Первый workflow после изменения прошёл Python syntax/tests и NGR patch apply/idempotence, но остановился на manifest freshness: локально рассчитанный SHA-256 не совпал с `tools/make_manifest.py`.
 - Взял authoritative hash из CI diff и обновил `payload.json`: `5a1551849a8cd181649076af99b20a8848419732ec03f9ddf9192555c1dc53dd`.
 - Новый workflow запущен на обновлённом manifest commit; APK пока не объявлять готовым до успешного завершения.
+
+## 2026-11-26 — Metro save transaction EACCES + low-overhead diagnostics
+
+### New evidence
+- Updated gameplay log shows the save transaction itself is failing:
+  - save:/user.cfg opens for write, then clonefile save.new fails errno=13.
+  - Same EACCES repeats for 2033_auto_save and checkpoint player files.
+  - The committed save remains unchanged; this explains why the Download mirror is empty even though the Java mirror task reports completion.
+- Existing Android reflink patch only treated EOPNOTSUPP/ENOTTY/EXDEV/EINVAL/ENOSYS/EPERM as unsupported. EACCES from FICLONE therefore aborted the transaction instead of taking the normal byte-copy fallback.
+- New user A/B test: no hangs with logging disabled; hangs return when logging is enabled. Treat intrusive diagnostics as a likely timing perturbation, not as proof of a game-only hang.
+
+### Changes
+- Payload patch 43: treat FICLONE EACCES as an unsupported reflink result and use the existing byte-copy fallback. This preserves private transactional storage and atomic save commit; it does not weaken permissions or bypass the transaction.
+- Metro diagnostic profile in ngrhost.c: disable watchdog full thread dumps and their 10/15-second sampling for this title. Keep low-overhead runtime and selected slow-frame summaries. Verbose NVN, filesystem and per-lock tracing were already suppressed.
+- Payload manifest bumped to version 208 and apply_patches.py SHA-256 updated.
+
+### Validation / next
+- GitHub CI must validate patch application/idempotence, payload manifest and Release APK.
+- Device test: save user.cfg + reach checkpoint, exit normally, verify files in Download/NX2A/Saves/9383b4fd4e8540ed5d6e, relaunch and load.
+- Confirm gameplay log reports [fs] Android save clone: FICLONE unavailable (errno=13); byte-copy fallback active and subsequent save commits succeed with nonzero writes.
+- Compare stability with diagnostics off vs only runtime + slow-frame summaries. Do not enable watchdog dumps, NVN or filesystem tracing for normal play.
