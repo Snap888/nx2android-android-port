@@ -747,3 +747,33 @@
 - Artifact: `nx2android-apk`, artifact ID `15140607937`, SHA-256 `84717a2cc5676312b99150ccdf0c04016de9ba3d898822faf6d2791efaeeb6c4`.
 - Install this APK, then recompile/update the Metro 2033 Redux data pack. The new log must contain `Metro SDK 8.2.0 YieldThread sdk+0xd688c0 hard throttle`; the target yield rate should be capped near 4k/s per affected thread (actual Android nanosleep scheduling may vary). Compare frame p99/max, process CPU, audio queue/underruns, and system responsiveness.
 - The save transaction still reports EACCES in the pre-patch log; the same APK also includes patch 38 stage-by-stage clonefile diagnostics so the next run can identify the exact failing save-clone operation. This remains separate from the CPU/yield hang.
+
+## 2026-11-26 — User-visible NGR save directory
+
+### Implementation branch
+- Created `feature/metro-save-manager` from `feature/ngr-universal-library`.
+- Branch base: `8f3e75958e51c5d4ab7762270faf7ccfda14e215`.
+
+### Changes
+- Added asynchronous legacy-save migration in `MainActivity.java`. The copy runs on a dedicated background-priority thread before launching NativeActivity; it does not block the launcher UI thread.
+- Default public save location: `Download/NX2A/Saves/<game-id>/`.
+- Existing private saves at `files/games/<game-id>/save/` are copied only when a destination file does not already exist. The private source is retained. Each file is copied to a temporary sibling, fsynced, then renamed into place. Migration marker is stored beside the per-game directory, not inside the game's save tree.
+- Launcher passes `ngr_public_save_path` to NativeActivity. `ngrhost.c` validates the expected `/Download/NX2A/Saves/<game-id>` suffix and creates the directory before loading the game runtime. If unavailable, it unsets the public override and retains private-save fallback.
+- Updated the NGR patcher so `front_android.c` mounts the validated public directory as `DM_SAVE`; `DM_TEMP` remains under private per-game storage.
+- Added `docs/USER_VISIBLE_SAVES.md` with migration behavior and device validation steps.
+- Updated payload manifest to version 205; `apply_patches.py` SHA-256: `abbec1a608301d91ecfab13072bae7e2aa62eb42435f1244e38808a5d212016b`.
+- Added this branch to the APK workflow push triggers.
+
+### Validation status
+- GitHub source edits committed successfully.
+- Local Gradle/NDK build was not run in this environment.
+- CI must validate Python syntax, patch application/idempotence against pinned porter, native compilation, manifest hash and APK artifact.
+- Device test must update/recompile the Metro data pack so its `libdmhost.so` includes the revised `DM_SAVE` mount patch. The APK alone does not replace the already-installed game's native data pack.
+- This change does not claim to fix the Metro CPU hang. The latest project evidence identified pathological SDK 8.2.0 YieldThread polling at `sdk+0xd688c0`; the targeted hard-throttle build exists in the previous feature branch and must be verified on-device separately.
+
+### Next actions
+1. Inspect CI for `feature/metro-save-manager`; fix patch-anchor, Python, Java or NDK failures.
+2. Install the APK and update Metro's data pack.
+3. Verify runtime marker `[NGR save] using user-visible save directory`, save mount path, checkpoint write, exit and reload.
+4. Compare private fallback when storage permission is denied.
+5. Continue SDK 8.2.0 yield-throttle validation using fresh logs from the APK/data pack containing the hard-throttle patch.
