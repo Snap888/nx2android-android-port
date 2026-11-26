@@ -922,3 +922,6 @@
 - Validation status: Android runtime save/load has not yet been re-tested. CI must confirm patch application against the pinned porter and produce the APK before device testing. Required device test: create a new save, exit cleanly, relaunch, load it, then verify the Download mirror contains the committed save.
 
 - CI validation caught two patch-set issues before any APK was published: the source-directory permission edit had to compose with the earlier clonefile diagnostics patch, and the new save-root patch had to preserve the original idempotence marker. Both were corrected. The full patch application now passes twice against the pinned porter (run 45890392757, patch-verification step); its later manifest check failed only because the manifest still carried the previous patcher hash, which has now been corrected to the hash reported by CI.
+
+- CI result: **success** — run `45890510369`, built from `a6d306949076a85e6da9adb2b282b7409d3fadca`. Python/unit checks, double application of the complete patch set against the pinned porter, WebView syntax, payload manifest check, and release APK build all passed.
+- APK artifact: `nx2android-apk`, artifact ID `15151721124`, 35,872,190 bytes; archive SHA-256 `1dafdc46a0b67c8d12934403790d4a47b01c2a27822c2977908ab1905bdbaced`. Device-level save/load verification is still outstanding.
