@@ -1558,12 +1558,12 @@ patch('NGR recover owner-readable committed save entries', 'nxnative/dm/android/
     if (in < 0 && errno == EACCES && chmod(src, (mode & 07777) | S_IRUSR) == 0)
         in = open(src, O_RDONLY | O_CLOEXEC); // NX2A_SAVE_SOURCE_OWNER_READ
     if (in < 0) return -1;'''),
-    ('''    DIR *d = opendir(src); if (!d) return -1;''',
+    ('''    DIR *d = opendir(src); if (!d) { int e = errno; __android_log_print(ANDROID_LOG_ERROR, "NGRRuntime", "[fs] clonefile opendir failed src=%s errno=%d", src, e); errno = e; return -1; }''',
      '''    DIR *d = opendir(src);
     if (!d && errno == EACCES &&
             chmod(src, (st.st_mode & 07777) | S_IRUSR | S_IXUSR) == 0)
         d = opendir(src); // NX2A_SAVE_SOURCE_OWNER_READ
-    if (!d) return -1;''')
+    if (!d) { int e = errno; __android_log_print(ANDROID_LOG_ERROR, "NGRRuntime", "[fs] clonefile opendir failed src=%s errno=%d", src, e); errno = e; return -1; }''')
 ]);
 
 sys.exit(1 if failed else 0)
