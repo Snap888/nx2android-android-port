@@ -944,3 +944,26 @@
 - Runtime validation on Turnip Adreno 740 is pending. This change fixes masked-clear semantics only; it does not yet prove the missing fire/reticle/distant textures/shadow defects are resolved.
 - Texture descriptor, sampler-version, mip/LOD, swizzle and depth/stencil investigations remain next steps.
 - Keep detailed/high-frequency logging disabled by default.
+
+
+## 2026-11-27 — Masked-clear implementation refined for mixed MRT formats
+
+### Final implementation details
+- Patch 46 adds the all-attachment masked-clear path and selects FLOAT/UINT/SINT output class from the target attachment format.
+- Patch 47 refines the shader design: one fragment shader per (attachment location, numeric class), 24 variants total. This avoids declaring outputs at unrelated locations whose numeric classes may differ in a mixed-format MRT.
+- The patcher generates `maskclear_f0.frag` … `maskclear_f23.frag` in the pinned Porter source tree. The existing Android `build.py` shader glob compiles them into 24 SPIR-V headers.
+- Pipeline selection uses `kind * 8 + attachmentIndex`; only the selected attachment has a nonzero `colorWriteMask`.
+- Patch 48 increases the masked-clear pipeline cache from 32/64 entries to 512, enough for the practical combinations of 8 attachment locations, 3 numeric classes and 15 nonzero channel masks.
+- Pipeline cache key includes attachment index and numeric class in addition to the existing render-target formats, depth format, sample count and channel mask.
+- Payload version advanced to 213. `apply_patches.py` SHA-256: `a981f298404e7f8d3e77c62a0798ad800f044887c8f3f74380d453c61d401e08`.
+
+### Validation status
+- GitHub branch commits:
+  - patch 46 + first manifest/log: `3f0bdbbebb523d13a9a61e7266bbbf11f6450a8c` / `f6247b2cfdd943278a9033edc4dfd38b0931d970` / `a9791124e9909e6464728f7f7928655042fcd656`
+  - per-location/type shader refinement: `f088070711ab22e6e800aca0d9f8ba1803d32de0`
+  - shader generator and source patch corrected: `38561d684b99798fb546215f374b84e1aaa0474d`
+  - cache capacity: `7e60ad3174ee0cc746167c9f714a36ae2e502b31`
+  - manifest update: `034bd1431045784b334f13381fc18b209027da61`
+- CI run `45898531356` was created for the first version; it predates the final 24-shader refinement and is not a valid final-build result. A new run for the final manifest/log commits must be inspected.
+- No APK is declared ready until final CI patch application, double-application idempotence, manifest check, shader compilation and APK build pass.
+- Device test still required on Turnip Adreno 740. Masked clear is a targeted renderer correctness fix; it is not proof that fire, reticle, distant textures or shadows are all restored.
