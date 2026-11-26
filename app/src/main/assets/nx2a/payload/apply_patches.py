@@ -1396,11 +1396,10 @@ patch('NGR Handheld final Vulkan blit destination', 'nxnative/dm/android/gfx_vk_
 # then failed with EACCES when creating its first child. Keep source modes, but
 # always grant the app owner rwx on cloned directories and rw on cloned files.
 patch('NGR Android save clone writable owner permissions', 'nxnative/dm/android/compat/darwin_compat.c', 'NX2A_SAVE_CLONE_OWNER_MODE', [
-    ("""    if (close(out)) r = -1; errno = e; return r;
+    ("""    int e = errno; close(in); if (close(out)) r = -1; errno = e; return r;
 }
 int clonefile(const char *src, const char *dst, uint32_t flags) {""",
-     """    if (fchmod(out, (mode & 07777) | S_IRUSR | S_IWUSR)) r = -1; // NX2A_SAVE_CLONE_OWNER_MODE
-    if (close(out)) r = -1; errno = e; return r;
+     """    int e = errno; close(in); if (fchmod(out, (mode & 07777) | S_IRUSR | S_IWUSR)) r = -1; if (close(out)) r = -1; errno = e; return r; // NX2A_SAVE_CLONE_OWNER_MODE
 }
 int clonefile(const char *src, const char *dst, uint32_t flags) {"""),
     ("""    if (mkdir(dst, st.st_mode & 07777)) return -1;""",
