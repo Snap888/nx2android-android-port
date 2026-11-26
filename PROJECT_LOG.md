@@ -828,3 +828,34 @@
 - Run: https://github.com/Snap888/nx2android-android-port/actions/runs/45880168188
 - The subsequent `PROJECT_LOG.md`-only commit does not change APK/native code.
 - CI validates that patches apply and the Android app builds. It does not compile a Metro data pack on the user's device or prove runtime save/audio/hang fixes. Recompile/update Metro's data pack before gameplay testing.
+
+
+
+## 2026-11-26 — Metro 2033 Redux: новый разбор зависаний и QoS для видеодекодера
+
+### Что подтверждено свежими логами
+- Сессия 2026-11-26 22:26:29, game ID `9383b4fd4e8540ed5d6e`, SDK 35, ARM64, Turnip выбран из `Download/GAME/Turnip_Gen8_V37/libvulkan_freedreno.so`.
+- Игра действительно использует AudioOut через AAudio: 240 кадров на callback при 48 кГц (5 мс), стартовая очередь — 4 блока.
+- AudioOut queue резко истощается: callback 4000 — 1,424 underrun/2,000; 6000 — 729; 8000 — 913; 10000 — 700; 12000 — 2,000; 14000 — 1,966; 16000 — 2,000; 22000–30000 — 2,000 underrun в каждом окне. Это подтверждает, что producer не успевает подавать блоки, а не неисправность самого AAudio callback.
+- Thread snapshots показывают, что `video-decoder` — заметный CPU-конкурент: 4.87 CPU-секунды примерно за первые 17 секунд и 7.05 CPU-секунды примерно за 34 секунды. В это же время AudioOut queue теряет большую часть буферов.
+- SDK 8.2.0 горячий YieldThread site остаётся `sdk+0xd688c0`; PhysX/Secondary/main уже ограничиваются предыдущим hard-throttle patch. Снимки также фиксируют main/video mutex wait contention, но они не доказывают устойчивый deadlock или конкретный порядок блокировок.
+- NVN frame work: p50 около 33.4 ms; p95 до 130.6 ms, max 9.27 s в окне первых 600 кадров и max 29.17 s в следующем окне. GPU p50 около 0.36–0.65 ms на ранних окнах, затем около 17.23 ms при frame 1200. NVN submit+present достигает max 1.58 s. Это согласуется с длинными CPU-side stalls и последующей GPU-нагрузкой.
+- В slow-I/O diagnostics найден один `pread` длительностью 71.3 ms; в этой сессии нет признаков, что постоянное чтение с Download является основной причиной многосекундных зависаний.
+- Android Logcat: Slow delivery 18.975 s для `MainActivity$1`, Slow dispatch 5.329 s для ActivityThread. Эти события подтверждают задержки обработки Android main looper, но не доказывают, что источник именно Java UI.
+- `AdrenoVK-0 Shader compilation failed` после завершения NativeActivity относится к новому PID 2272 и контекстам Android framework/Chromium, а не к игровому PID 11605. Не использовать эти сообщения как основание для патча игрового Vulkan shader pipeline.
+
+### Изменение
+- Patch 42 `NX2A_METRO_VIDEO_DECODER_QOS`: добавлен `video-decoder` в Metro-only `DM_QOS_UTILITY_NAMES`. Это понижает конкуренцию фонового декодирования за CPU относительно main/audio threads; существующий механизм priority inheritance должен временно поднять QoS владельца блокировки, если игровой поток ждёт его mutex.
+- Изменение ограничено Metro game ID и именем `video-decoder`; другие игры и аудиопотоки не затрагиваются.
+- Payload manifest bumped to version 207; новый SHA-256 `apply_patches.py`: `5ebb8d4e9d59024d22533bda123307955cb75479d60c22cc787b09294882a218`.
+
+### Ограничения / что не заявляем
+- QoS-патч — направленная оптимизация по измеренному CPU-конкуренту, а не доказанное устранение lock cycle. Не менял семантику гостевых mutex/condition variables, Vulkan aliasing и AudioOut buffer count.
+- Старый лог содержит многосекундные frame stalls; для проверки нужен новый Metro Data Pack, потому что patch script применяется при пересборке Data Pack, а APK сам по себе не заменяет `libdmhost.so`.
+- Нужно сравнить с тем же сценарием: underrun на 2k callback-окнах, CPU time `video-decoder`, frame work p95/max, main/video mutex snapshots и медленные pread.
+
+### Следующие шаги
+1. Проверить CI: patch 42 должен применяться к pinned Porter и проходить повторное применение без изменений.
+2. Установить новый APK и обновить/пересобрать Metro Data Pack.
+3. Повторить проблемный участок не менее 2–3 минут; не менять одновременно Vulkan-драйвер, разрешение и игровые настройки.
+4. Сравнить новые callback underrun, CPU time декодера, frame timing и mutex snapshots. Если зависания сохраняются, следующий шаг — точечная трассировка владельца mutex и producer wakeups AudioOut, а не увеличение буфера вслепую.
