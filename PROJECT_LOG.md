@@ -793,3 +793,29 @@
 3. Verify runtime log says `[NGR save] using user-visible save directory`.
 4. Create checkpoint, exit, confirm files in Download, relaunch and load.
 5. Upload fresh runtime/gameplay logs to verify SDK 8.2.0 YieldThread hard-throttle behavior and remaining stalls. CI does not establish device-level hang resolution.
+
+
+## 2026-11-26 — Metro: restore private transactional saves, add slow-I/O tracing
+
+### Changes
+- Reverted the live `DM_SAVE` mount to `<app-private-files>/games/<game-id>/save`. Android shared Download/FUSE is no longer used for the live transaction tree; the game keeps its rename/exchange semantics on app-private storage.
+- Kept `Download/NX2A/Saves/<game-id>/` as a user-visible mirror. Before launch, a public file is imported only when its mtime is clearly newer than the private copy. After NativeActivity returns, committed private saves are copied to Download on a background thread.
+- Save mirror copies are staged in sibling temporary files, flushed and synced, then moved into place. No partial copy is published as a completed save.
+- Cleared stale `NGR_PUBLIC_SAVE_DIR` from the native host before starting a new game, preventing a previous activity's environment override from leaking into the next session.
+- Added NGR patch 40: when physical and guest filenames already match, unsupported xattr removal (`ENOTSUP/EOPNOTSUPP`) is treated as optional metadata rather than a failed file creation. This addresses the observed `errno=95` path.
+- Added NGR patch 41: event-driven slow `pread` diagnostics for host reads taking at least 25 ms. The log includes fd, offset, requested/returned bytes, elapsed time and errno; normal reads do not emit per-read logs.
+- Payload manifest bumped to version 206; `apply_patches.py` SHA-256: `a9e22481289ce602c13c02a031e2292dc9741161c29f553a3aad409bfd886a0e`.
+- Updated workflow so pushes to `feature/metro-save-manager` force a test APK build.
+
+### Important scope
+- This corrects the confirmed external-storage save incompatibilities: the previous log showed `errno=95` during optional xattr handling and `EINVAL` during directory exchange. The updated native Data Pack must be rebuilt/recompiled for the game; APK-only installation does not replace its `libdmhost.so`.
+- Audio mutex contention and Vulkan present/alias stalls are not yet claimed fixed. The current evidence shows transient lock contention and long frame gaps, but does not identify a safe lock-order change. Do not change guest mutex semantics or globally delay audio/worker threads without further evidence.
+- Slow-read diagnostics will establish whether location-streaming pauses are host I/O stalls. If no slow preads align with a freeze, investigate decompression/worker hand-off and Vulkan present separately.
+
+### Validation / next steps
+1. CI run for head `c04f920e309af0714fab79794a34dec31ea38a0e`: https://github.com/Snap888/nx2android-android-port/actions/runs/45880168188 (status was in progress when recorded).
+2. Confirm patch 39–41 apply cleanly and idempotently to pinned Porter, and that the native host and APK compile.
+3. Install APK; recompile/update Metro 2033 Redux data pack.
+4. Verify `DM_SAVE` resolves to app-private storage, save commits succeed, and no `errno=95` / `atomic swap failed errno=22` remain.
+5. Exit to launcher; verify Download mirror refreshes; relaunch and load the save.
+6. Capture a new gameplay log with slowframe/watchdog enabled. Correlate `[io] slow pread` events with frame stalls, audio underruns, mutex owner snapshots, and Vulkan present waits.
