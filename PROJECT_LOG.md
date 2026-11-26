@@ -908,3 +908,15 @@
 - Rebuild/recompile Metro Data Pack so the new porter patch is actually applied to `libdmhost.so`; APK build alone does not compile the pinned native porter.
 - Verify save commit no longer reports `errno=13`, save files appear in the private committed tree and then Download mirror, and reload works.
 - Retest the same scene with logging disabled for performance and with minimal diagnostics for visual regressions. Compare screenshots for fire, reticle and shadow scenes.
+
+
+## 2026-11-26 — Save transaction permission recovery (patches 44–45)
+
+- Compared `feature/metro-save-manager` against `main`: the feature branch adds per-game `DM_SAVE` under `<files>/games/<game-id>/save`, plus a transactional private-save store and a Download mirror. The legacy `main` branch does not contain this per-game save manager, so reverting the whole feature to `main` would also discard the launcher/runtime work rather than isolate the save defect.
+- Confirmed the pinned porter implements `clonefile()` as a recursive tree clone; NGR patch 32 adds Linux `FICLONE` and byte-copy fallback, patch 34 adjusts destination permissions, and patch 43 adds EACCES to the reflink fallback list.
+- The earlier `errno=13` report is not enough to prove the failure is the FICLONE ioctl. Recursive `clonefile()` can also return EACCES while creating `save.new`, enumerating a source directory, or opening a source file. The previous patch 43 addressed only the ioctl case.
+- Patch 44 restores owner rwx on the private per-game root and `DM_SAVE` root before the game runtime uses them, and logs an explicit red error if the save root is still not accessible.
+- Patch 45 retries source-file open / source-directory enumeration after restoring only the app owner's required read (and directory execute) permission when the original operation fails with EACCES. Destination files/directories continue to receive owner write permissions from patch 34.
+- Payload version bumped to 209. `apply_patches.py` SHA-256: `2727c7caf9e4e02e6dc1ff20453cffda32dfb53e7d0518ef6042e383999ab3c9`.
+- Commits: patcher `6860c88d953f56c229d7dd8f0cfad8d8779b32d8`; manifest `623579a2c448b3e7a9231a9e445b8fa00735ca09`.
+- Validation status: Android runtime save/load has not yet been re-tested. CI must confirm patch application against the pinned porter and produce the APK before device testing. Required device test: create a new save, exit cleanly, relaunch, load it, then verify the Download mirror contains the committed save.
