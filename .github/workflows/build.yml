@@ -5,7 +5,7 @@ concurrency:
   group: build
   cancel-in-progress: false
 on:
-  push: { branches: [main, feature/ngr-universal-library] }
+  push: { branches: [main, feature/ngr-universal-library, feature/metro-save-manager] }
   pull_request: { branches: [main] }
   workflow_dispatch: {}
   schedule:
