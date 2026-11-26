@@ -925,3 +925,22 @@
 
 - CI result: **success** — run `45890510369`, built from `a6d306949076a85e6da9adb2b282b7409d3fadca`. Python/unit checks, double application of the complete patch set against the pinned porter, WebView syntax, payload manifest check, and release APK build all passed.
 - APK artifact: `nx2android-apk`, artifact ID `15151721124`, 35,872,190 bytes; archive SHA-256 `1dafdc46a0b67c8d12934403790d4a47b01c2a27822c2977908ab1905bdbaced`. Device-level save/load verification is still outstanding.
+
+
+## 2026-11-27 — Vulkan masked-clear MRT/FLOAT/UINT/SINT implementation
+
+### Implementation
+- Added patch 46, `NX2A_MASKED_CLEAR_ALL_ATTACHMENTS`, to the payload patcher.
+- Masked-clear pipeline cache key now includes render-pass attachment formats, sample count, clear mask, selected color attachment index, and numeric output class.
+- Pipeline color write mask is applied to the requested attachment index instead of hard-coded attachment 0.
+- Added three fragment shader variants: FLOAT/UNORM/SNORM (`vec4`), UINT (`uvec4`), and SINT (`ivec4`). Each declares output locations 0–7; the pipeline write mask enables only the requested target. This permits mixed-type MRTs without mismatched fragment output types.
+- `clear_masked()` no longer rejects attachment indices >0 or integer attachments; it selects the shader variant from the porter format metadata.
+- The payload patcher generates the GLSL sources under `nxnative/dm/android/shaders/`; existing `build.py` compiles all shader files to SPIR-V headers during native build.
+- Payload version advanced to 212. `apply_patches.py` SHA-256: `220850506fe68424b75c25195ab408457dfc014eef98c80aa11541b7f4bf911f`.
+
+### Validation status
+- Source patch and manifest are committed to `feature/metro-save-manager`.
+- CI patch-application, shader compilation, native build and APK artifact validation are pending.
+- Runtime validation on Turnip Adreno 740 is pending. This change fixes masked-clear semantics only; it does not yet prove the missing fire/reticle/distant textures/shadow defects are resolved.
+- Texture descriptor, sampler-version, mip/LOD, swizzle and depth/stencil investigations remain next steps.
+- Keep detailed/high-frequency logging disabled by default.
