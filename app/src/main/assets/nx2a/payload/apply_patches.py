@@ -1338,7 +1338,7 @@ patch('NGR Android reflink save cloning', 'nxnative/dm/android/compat/darwin_com
     int in = open(src, O_RDONLY | O_CLOEXEC); if (in < 0) return -1;
     int out = open(dst, O_WRONLY | O_CREAT | O_EXCL | O_CLOEXEC, mode & 07777);
     if (out < 0) { int e = errno; close(in); errno = e; return -1; }
-    static _Atomic int clone_mode_logged;
+    static _Atomic int clone_mode_logged; // NX2A_ANDROID_REFLINK_CLONE: idempotence marker
     if (ioctl(out, FICLONE, in) == 0) {
         if (!atomic_exchange(&clone_mode_logged, 1))
             __android_log_print(ANDROID_LOG_INFO, "NGRRuntime", "[fs] Android save clone: FICLONE copy-on-write enabled");
