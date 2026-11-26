@@ -1843,7 +1843,7 @@ patch('NGR bounded texture first-use trace', 'nxnative/dm/android/gfx_vk_tex.c',
             if (!ft_written) cpu_written = cpu_content_tex(t, f);
         }
     }
-    static int tex_trace = -1; if (tex_trace < 0) { const char *e = getenv("DM_VK_TEX_TRACE"); tex_trace = e && atoi(e) != 0; }
+    static int tex_trace = -1; /* NX2A_TEX_FIRST_TRACE: bounded first-use source trace */ if (tex_trace < 0) { const char *e = getenv("DM_VK_TEX_TRACE"); tex_trace = e && atoi(e) != 0; }
     static unsigned tex_trace_n;
     if (first && tex_trace && tex_trace_n < 96) {
         const char *src = linear_upload ? "linear" : is_packaged ? "packaged" : ft_written ? "ft-written" : cpu_written ? "cpu-content" : "no-upload";
@@ -1864,7 +1864,7 @@ patch('NGR bounded texture descriptor trace', 'nxnative/dm/android/gfx_vk_exec.c
         vkimg_t *im = NULL; ii->imageView = vk_tex_view(t, v, b->dim, b->flags & 1, 0, &im); if (storage && im) im->gpu_w = 1;
 """,
      """    int num = 0;
-    static int ngr_tex_trace = -1; if (ngr_tex_trace < 0) { const char *e = getenv("DM_VK_TEX_TRACE"); ngr_tex_trace = e && atoi(e) != 0; }
+    static int ngr_tex_trace = -1; /* NX2A_TEX_BIND_TRACE: bounded descriptor trace */ if (ngr_tex_trace < 0) { const char *e = getenv("DM_VK_TEX_TRACE"); ngr_tex_trace = e && atoi(e) != 0; }
     int found_tex = tid && g_var_now != 3 && vk_tex_by_id(tid, &v, &t) && t;
     if (found_tex) {
         vkimg_t *im = NULL; ii->imageView = vk_tex_view(t, v, b->dim, b->flags & 1, 0, &im); if (storage && im) im->gpu_w = 1;
