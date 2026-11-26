@@ -847,7 +847,7 @@
 ### Изменение
 - Patch 42 `NX2A_METRO_VIDEO_DECODER_QOS`: добавлен `video-decoder` в Metro-only `DM_QOS_UTILITY_NAMES`. Это понижает конкуренцию фонового декодирования за CPU относительно main/audio threads; существующий механизм priority inheritance должен временно поднять QoS владельца блокировки, если игровой поток ждёт его mutex.
 - Изменение ограничено Metro game ID и именем `video-decoder`; другие игры и аудиопотоки не затрагиваются.
-- Payload manifest bumped to version 207; новый SHA-256 `apply_patches.py`: `5ebb8d4e9d59024d22533bda123307955cb75479d60c22cc787b09294882a218`.
+- Payload manifest bumped to version 207; новый SHA-256 `apply_patches.py`: `5a1551849a8cd181649076af99b20a8848419732ec03f9ddf9192555c1dc53dd`.
 
 ### Ограничения / что не заявляем
 - QoS-патч — направленная оптимизация по измеренному CPU-конкуренту, а не доказанное устранение lock cycle. Не менял семантику гостевых mutex/condition variables, Vulkan aliasing и AudioOut buffer count.
@@ -859,3 +859,9 @@
 2. Установить новый APK и обновить/пересобрать Metro Data Pack.
 3. Повторить проблемный участок не менее 2–3 минут; не менять одновременно Vulkan-драйвер, разрешение и игровые настройки.
 4. Сравнить новые callback underrun, CPU time декодера, frame timing и mutex snapshots. Если зависания сохраняются, следующий шаг — точечная трассировка владельца mutex и producer wakeups AudioOut, а не увеличение буфера вслепую.
+
+
+### CI follow-up — 2026-11-26
+- Первый workflow после изменения прошёл Python syntax/tests и NGR patch apply/idempotence, но остановился на manifest freshness: локально рассчитанный SHA-256 не совпал с `tools/make_manifest.py`.
+- Взял authoritative hash из CI diff и обновил `payload.json`: `5a1551849a8cd181649076af99b20a8848419732ec03f9ddf9192555c1dc53dd`.
+- Новый workflow запущен на обновлённом manifest commit; APK пока не объявлять готовым до успешного завершения.
