@@ -1502,4 +1502,15 @@ patch('NGR slow host read latency diagnostics', 'nxnative/dm/host/hle_fs.c', 'NX
                 nx2a_read_elapsed / 1000000.0, r < 0 ? errno : 0); // NX2A_SLOW_PREAD_DIAGNOSTICS''')
 ]);
 
+
+# 42. Metro's video decoder is the dominant competing CPU worker in the new
+# trace (about 7 CPU seconds in its first 34 seconds), while AudioOut's producer
+# queue collapses to zero. Keep decode work at Utility QoS; existing lock-owner
+# priority inheritance can temporarily raise it when a higher-QoS game thread
+# is blocked on a decoder-owned lock.
+patch('NGR Metro video decoder Utility QoS', 'nxnative/dm/android/front_android.c', 'NX2A_METRO_VIDEO_DECODER_QOS', [
+    ('''        setenv("DM_QOS_UTILITY_NAMES", "uEngine :: PhysX simulator;uEngine :: Secondary", 1);''',
+     '''        setenv("DM_QOS_UTILITY_NAMES", "uEngine :: PhysX simulator;uEngine :: Secondary;video-decoder", 1); // NX2A_METRO_VIDEO_DECODER_QOS''')
+]);
+
 sys.exit(1 if failed else 0)
