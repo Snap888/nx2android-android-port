@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Keeps /root/nx2android complete, at the pinned commit and patched. Safe to call often: it only downloads when files are missing or the pinned commit changed.
 The old tree is renamed aside before the new one goes in, so a failed step can never leave a half-deleted porter behind."""
-import hashlib, io, json, os, shutil, subprocess, sys, tarfile, time, urllib.request
+import fcntl, hashlib, io, json, os, shutil, subprocess, sys, tarfile, tempfile, time, urllib.request
 from pathlib import Path
 
 REPO = Path(os.environ.get('NX2A_REPO', Path.home() / 'nx2android'))
@@ -100,11 +100,11 @@ def patch():
 
 def _install(sha, log, must_patch):
     """Downloads sha, checks it is complete and that our patches still fit, then swaps it in. Raises on any problem and leaves the current tree untouched."""
-    tmp = REPO.with_name(REPO.name + '.new')
+    # Unique staging avoids collisions; sync() serializes the full transaction.
+    tmp = Path(tempfile.mkdtemp(prefix=REPO.name + '.new.', dir=str(REPO.parent)))
     try:
         url = (os.environ.get('NX2A_PORTER_URL') or 'https://codeload.github.com/shirai91/nx2android/tar.gz/{sha}').format(sha=sha)
         data = _download(url)
-        shutil.rmtree(tmp, ignore_errors=True); tmp.mkdir(parents=True)
         with tarfile.open(fileobj=io.BytesIO(data), mode='r:gz') as t:
             t.extractall(tmp, filter='data') if hasattr(tarfile, 'data_filter') else t.extractall(tmp)
         kids = list(tmp.iterdir())
@@ -114,6 +114,8 @@ def _install(sha, log, must_patch):
         r = subprocess.run([sys.executable, str(HERE / 'apply_patches.py'), str(src)], capture_output=True, text=True)
         if r.returncode != 0: raise RuntimeError('our patches no longer fit this commit: ' + (r.stdout + r.stderr).strip().replace(chr(10), ' | ')[:1200])
         (src / '.nx2a_sha').write_text(sha)
+        patch_hash = hashlib.sha256((HERE / 'apply_patches.py').read_bytes()).hexdigest()
+        (src / '.nx2a_patched').write_text(sha + '\n' + patch_hash + '\n')
         old = None
         if REPO.exists():
             old = REPO.with_name(f'{REPO.name}.old{int(time.time())}'); REPO.rename(old)
@@ -126,7 +128,7 @@ def _install(sha, log, must_patch):
         shutil.rmtree(tmp, ignore_errors=True)
 
 
-def sync(force=False, log=print):
+def _sync_impl(force=False, log=print):
     """Use a verified local checkout for normal analysis/build; upstream polling is explicit."""
     if not force:
         cached, cached_sha = local_ready()
@@ -147,41 +149,52 @@ def sync(force=False, log=print):
         if not sha or (sha == pinned and sha == target and msgs):
             break
         if not force and complete() and have == sha:
+            # Reuse a complete checkout when its patch set validates. The
+            # installer writes the stamp after its single clean patch pass.
             try:
                 patch()
                 return True, ' ; '.join(msgs + ['porter ready (' + have[:9] + ')'])
             except Exception as e:
-                m = f'porter {sha[:9]} is present but its NGR patches are invalid: {e}'
+                m = f'porter {sha[:9]} NGR patches are invalid: {e}'
                 log(m); msgs.append(m)
-                # Do not compile from a complete-but-unpatched tree. If this is
-                # the moving upstream branch, try the pinned known-good source.
+                if mode() == 'good' or not (sha == target and track and pinned != target):
+                    try: STATUS.write_text(' ; '.join(msgs) + '\\n')
+                    except OSError: pass
+                    return False, ' ; '.join(msgs)
+                # Moving upstream no longer matches our patches: skip
+                # installing this invalid tree and try the pinned revision.
                 if sha == target and track and pinned != target:
                     continue
-                try: STATUS.write_text(' ; '.join(msgs) + '\n')
-                except OSError: pass
-                return False, ' ; '.join(msgs)
 
         log(f'downloading the porter ({sha[:9]})')
         try:
             _install(sha, log, must_patch=must)
-            patch()
-            return True, ' ; '.join(msgs + [f'porter {sha[:9]} installed and patched'])
+            return True, ' ; '.join(msgs + [f'porter {sha[:9]} installed and patched (single patch pass)'])
         except Exception as e:
             m = f'porter {sha[:9]} not installed: {e}'
             log(m); msgs.append(m)
-            if complete() and sha == target and track:
-                # The previous checkout may still be usable. Validate it before
-                # keeping it; otherwise continue to the pinned fallback.
-                try:
-                    patch()
-                    return True, ' ; '.join(msgs + [f'keeping {have[:9] or "the current porter"}'])
-                except Exception as previous_error:
-                    m = f'current porter patch validation also failed: {previous_error}'
-                    log(m); msgs.append(m)
 
     try: STATUS.write_text(' ; '.join(msgs) + '\n')
     except OSError: pass
     return False, ' ; '.join(msgs) or 'porter unavailable or patch validation failed'
+
+
+def sync(force=False, log=print):
+    """Serialize Porter sync/repair across launcher, GUI requests and updater.
+
+    Previously all callers shared /root/nx2android.new. Concurrent downloads
+    could delete or extract into the same directory, then race during rename,
+    reporting incomplete archives or FileExistsError despite successful HTTP
+    transfers. flock is released automatically if a process exits.
+    """
+    lock_path = REPO.with_name(REPO.name + '.sync.lock')
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open('a+') as lock:
+        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+        try:
+            return _sync_impl(force=force, log=log)
+        finally:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
 
 
 if __name__ == '__main__':

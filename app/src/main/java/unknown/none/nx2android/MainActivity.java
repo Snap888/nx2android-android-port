@@ -42,6 +42,25 @@ public class MainActivity extends Activity {
     private ScrollView scroll;
     private final Handler h = new Handler(Looper.getMainLooper());
     private String loadedToken = "";
+    private volatile String pendingSaveSyncGameId;
+
+    @Override protected void onResume() {
+        super.onResume();
+        final String gameId = pendingSaveSyncGameId;
+        if (gameId != null) {
+            pendingSaveSyncGameId = null;
+            new Thread(() -> {
+                try {
+                    File privateSave = privateSaveDirectory(gameId);
+                    File publicSave = publicSaveDirectory(gameId);
+                    syncSaveFiles(privateSave, publicSave, true);
+                    android.util.Log.i("NGRRuntime", "[save] mirrored committed private saves to Download: " + publicSave);
+                } catch (Exception error) {
+                    android.util.Log.e("NGRRuntime", "[save] post-game public mirror failed", error);
+                }
+            }, "NGR-Save-Publish").start();
+        }
+    }
 
     @Override protected void onCreate(Bundle b) {
         super.onCreate(b);
@@ -677,6 +696,131 @@ public class MainActivity extends Activity {
         }
     }
 
+    private File privateSaveDirectory(String gameId) {
+        return new File(new File(new File(getFilesDir(), "games"), gameId), "save");
+    }
+
+    private File publicSaveDirectory(String gameId) {
+        File downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        return new File(new File(new File(downloads, "NX2A"), "Saves"), gameId);
+    }
+
+    /** Keep transactional game writes on app-private storage; Download is a user-visible mirror. */
+    private String preparePublicSaveRoot(String gameId) throws java.io.IOException {
+        File root = publicSaveDirectory(gameId);
+        if (!root.isDirectory() && !root.mkdirs()) throw new java.io.IOException("Cannot create " + root);
+        File privateSave = privateSaveDirectory(gameId);
+        if (!privateSave.isDirectory() && !privateSave.mkdirs()) throw new java.io.IOException("Cannot create private save directory " + privateSave);
+        syncSaveFiles(root, privateSave, false);
+        syncSaveFiles(privateSave, root, true);
+        return root.getCanonicalPath();
+    }
+
+    /** Copies complete files through a sibling temp and atomic rename; never exposes partial saves. */
+    private void syncSaveFiles(File source, File destination, boolean sourceWinsTies) throws java.io.IOException {
+        if (!source.exists()) return;
+        File[] children = source.listFiles();
+        if (children == null) throw new java.io.IOException("Cannot list save directory: " + source);
+        if (!destination.isDirectory() && !destination.mkdirs()) throw new java.io.IOException("Cannot create save directory: " + destination);
+        for (File child : children) {
+            File target = new File(destination, child.getName());
+            if (child.isDirectory()) {
+                syncSaveFiles(child, target, sourceWinsTies);
+            } else if (child.isFile()) {
+                long srcTime = child.lastModified(), dstTime = target.exists() ? target.lastModified() : -1L;
+                boolean newer = !target.exists() || (sourceWinsTies ? srcTime >= dstTime : srcTime > dstTime + 2000L);
+                if (!newer) continue;
+                File temp = new File(destination, child.getName() + ".nx2a-sync.tmp");
+                try (java.io.FileInputStream in = new java.io.FileInputStream(child);
+                     java.io.FileOutputStream out = new java.io.FileOutputStream(temp, false)) {
+                    byte[] buffer = new byte[64 * 1024]; int count;
+                    while ((count = in.read(buffer)) != -1) out.write(buffer, 0, count);
+                    out.flush(); out.getFD().sync();
+                } catch (Exception error) {
+                    temp.delete();
+                    if (error instanceof java.io.IOException) throw (java.io.IOException) error;
+                    throw new java.io.IOException(error);
+                }
+                try {
+                    java.nio.file.Files.move(temp.toPath(), target.toPath(),
+                            java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+                            java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+                } catch (java.nio.file.AtomicMoveNotSupportedException unsupported) {
+                    java.nio.file.Files.move(temp.toPath(), target.toPath(),
+                            java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                } finally {
+                    if (temp.exists()) temp.delete();
+                }
+                if (srcTime > 0) target.setLastModified(srcTime);
+            }
+        }
+    }
+
+    private void launchPreparedGame(String gameId, String dataPath, String driver,
+            boolean logRuntime, boolean logSlowframe, boolean logNvn, boolean logWatchdog,
+            boolean logFs, String publicSaveRoot, String saveError) {
+        boolean anyLogging = logRuntime || logSlowframe || logNvn || logWatchdog || logFs;
+        if (anyLogging && !resetRuntimeLogForLaunch(gameId)) {
+            Toast.makeText(this, "Could not start a fresh runtime log. Check app storage.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (logRuntime) appendRuntimeLog(gameId, "NEW LAUNCH SESSION; previous per-game log truncated; appPid="
+                + android.os.Process.myPid() + " package=" + getPackageName() + " sdk=" + Build.VERSION.SDK_INT);
+        try {
+            if (saveError != null || publicSaveRoot == null) {
+                if (logRuntime) appendRuntimeLog(gameId, "[save] public save directory unavailable; using private fallback: " + saveError);
+                Toast.makeText(this, "Public saves unavailable; using private app storage.", Toast.LENGTH_LONG).show();
+            } else if (logRuntime) {
+                appendRuntimeLog(gameId, "[save] user-visible save root: " + publicSaveRoot);
+            }
+            File nativeHost = new File(getApplicationInfo().nativeLibraryDir, "libngrhost.so");
+            if (logRuntime) appendRuntimeLog(gameId, "Native host library: " + nativeHost.getAbsolutePath()
+                    + " exists=" + nativeHost.isFile() + " readable=" + nativeHost.canRead());
+            android.content.ComponentName component = new android.content.ComponentName(this, NgrGameActivity.class);
+            if (logRuntime) {
+                try {
+                    android.content.pm.ActivityInfo info = getPackageManager().getActivityInfo(component, 0);
+                    appendRuntimeLog(gameId, "Resolved NGR activity: name=" + info.name + " process=" + info.processName
+                            + " enabled=" + info.enabled + " exported=" + info.exported);
+                } catch (Exception error) { appendRuntimeLog(gameId, "NGR activity resolution failed: " + error); throw error; }
+            }
+            Intent launch = new Intent().setComponent(component);
+            launch.putExtra("game_id", gameId);
+            launch.putExtra("ngr_log_runtime", logRuntime);
+            launch.putExtra("ngr_log_slowframe", logSlowframe);
+            launch.putExtra("ngr_log_nvn", logNvn);
+            launch.putExtra("ngr_log_watchdog", logWatchdog);
+            launch.putExtra("ngr_log_fs", logFs);
+            launch.putExtra("ngr_vulkan_driver_path", driver);
+            launch.putExtra("game_data_path", dataPath);
+            // DM_SAVE stays app-private for transactional rename/exchange semantics.
+            // Download is synchronized before launch and after NativeActivity returns.
+            pendingSaveSyncGameId = gameId;
+            getSharedPreferences("nx2a", MODE_PRIVATE).edit()
+                    .putString("game_data_path_" + gameId, dataPath).apply();
+            if (logRuntime) appendRuntimeLog(gameId, "Starting NGR game=" + gameId + " data=" + dataPath
+                    + " DM_SAVE=app-private; Download mirror=" + (publicSaveRoot == null ? "unavailable" : publicSaveRoot));
+            startActivity(launch);
+            if (logRuntime) appendRuntimeLog(gameId, "NativeActivity startActivity returned successfully");
+            h.postDelayed(() -> {
+                try {
+                    ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+                    boolean found = false;
+                    if (am != null && am.getRunningAppProcesses() != null) for (ActivityManager.RunningAppProcessInfo p : am.getRunningAppProcesses()) {
+                        if (p.processName.startsWith(getPackageName())) {
+                            if (logRuntime) appendRuntimeLog(gameId, "Observed process: " + p.processName + " pid=" + p.pid + " importance=" + p.importance);
+                            found = true;
+                        }
+                    }
+                    if (!found && logRuntime) appendRuntimeLog(gameId, "No NGR app process visible 1500ms after startActivity");
+                } catch (Exception error) { if (logRuntime) appendRuntimeLog(gameId, "Process snapshot failed: " + error); }
+            }, 1500);
+        } catch (Exception error) {
+            if (logRuntime) appendRuntimeLog(gameId, "NativeActivity start failed: " + error);
+            Toast.makeText(this, "Could not start NGR runtime: " + error.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
     private class Bridge {
         @JavascriptInterface public void pick(String id, boolean dir) { runOnUiThread(() -> startPick(id, dir)); }
         @JavascriptInterface public void pickCover(String gameId) { runOnUiThread(() -> startPickCover(gameId)); }
@@ -693,85 +837,39 @@ public class MainActivity extends Activity {
         @JavascriptInterface public void exportGameplayLog(String gameId) { runOnUiThread(() -> MainActivity.this.exportGameplayLog(gameId)); }
         @JavascriptInterface public void clearRuntimeLog(String gameId) { runOnUiThread(() -> MainActivity.this.clearRuntimeLog(gameId)); }
 
-        /** Launch a game through NGR's own NativeActivity; no per-game Android package is installed. */
+        /** Launch preparation is kept off Android's UI thread: old private saves can be large. */
         @JavascriptInterface public void launchGame(String gameId, String dataPath, String logOptionsJson) {
             runOnUiThread(() -> {
                 if (gameId == null || !gameId.matches("[0-9a-f]{20}")) {
                     Toast.makeText(MainActivity.this, "Invalid game shortcut ID", Toast.LENGTH_LONG).show();
                     return;
                 }
-                org.json.JSONObject logOptions;
-                try { logOptions = new org.json.JSONObject(logOptionsJson == null ? "{}" : logOptionsJson); }
-                catch (org.json.JSONException invalidOptions) { logOptions = new org.json.JSONObject(); }
-                final boolean logRuntime = logOptions.optBoolean("runtime", false);
-                final boolean logSlowframe = logOptions.optBoolean("slowframe", false);
-                final boolean logNvn = logOptions.optBoolean("nvn", false);
-                final boolean logWatchdog = logOptions.optBoolean("watchdog", false);
-                final boolean logFs = logOptions.optBoolean("fs", false);
-                final String vulkanDriverPath = logOptions.optString("vulkanDriver", "").trim();
-                final boolean anyLogging = logRuntime || logSlowframe || logNvn || logWatchdog || logFs;
-                if (anyLogging && !resetRuntimeLogForLaunch(gameId)) {
-                    Toast.makeText(MainActivity.this, "Could not start a fresh runtime log. Check app storage.", Toast.LENGTH_LONG).show();
+                org.json.JSONObject options;
+                try { options = new org.json.JSONObject(logOptionsJson == null ? "{}" : logOptionsJson); }
+                catch (org.json.JSONException ignored) { options = new org.json.JSONObject(); }
+                final boolean runtime = options.optBoolean("runtime", false);
+                final boolean slowframe = options.optBoolean("slowframe", false);
+                final boolean nvn = options.optBoolean("nvn", false);
+                final boolean watchdog = options.optBoolean("watchdog", false);
+                final boolean fs = options.optBoolean("fs", false);
+                final String driver = options.optString("vulkanDriver", "").trim();
+                final String resolved = resolveNgrGameDataPath(dataPath);
+                if (resolved == null) {
+                    Toast.makeText(MainActivity.this, "Game data path is missing or outside NGR storage.", Toast.LENGTH_LONG).show();
                     return;
                 }
-                if (logRuntime) appendRuntimeLog(gameId, "NEW LAUNCH SESSION; previous per-game log truncated; appPid="
-                        + android.os.Process.myPid() + " package=" + getPackageName()
-                        + " sdk=" + Build.VERSION.SDK_INT);
-                try {
-                    File nativeHost = new File(getApplicationInfo().nativeLibraryDir, "libngrhost.so");
-                    if (logRuntime) appendRuntimeLog(gameId, "Native host library: " + nativeHost.getAbsolutePath()
-                            + " exists=" + nativeHost.isFile() + " readable=" + nativeHost.canRead());
-                    android.content.ComponentName gameComponent = new android.content.ComponentName(MainActivity.this, NgrGameActivity.class);
-                    try {
-                        android.content.pm.ActivityInfo info = getPackageManager().getActivityInfo(gameComponent, 0);
-                        if (logRuntime) appendRuntimeLog(gameId, "Resolved NGR activity: name=" + info.name + " process="
-                                + info.processName + " enabled=" + info.enabled + " exported=" + info.exported);
-                    } catch (Exception resolveError) {
-                        if (logRuntime) appendRuntimeLog(gameId, "NGR activity resolution failed: " + resolveError);
-                        throw resolveError;
-                    }
-                    Intent launch = new Intent().setComponent(gameComponent);
-                    launch.putExtra("game_id", gameId);
-                    launch.putExtra("ngr_log_runtime", logRuntime);
-                    launch.putExtra("ngr_log_slowframe", logSlowframe);
-                    launch.putExtra("ngr_log_nvn", logNvn);
-                    launch.putExtra("ngr_log_watchdog", logWatchdog);
-                    launch.putExtra("ngr_log_fs", logFs);
-                    launch.putExtra("ngr_vulkan_driver_path", vulkanDriverPath);
-                    String resolvedDataPath = resolveNgrGameDataPath(dataPath);
-                    if (resolvedDataPath == null) {
-                        throw new IllegalStateException("Game data path is missing or outside NGR storage: " + dataPath);
-                    }
-                    launch.putExtra("game_data_path", resolvedDataPath);
-                    getSharedPreferences("nx2a", MODE_PRIVATE).edit()
-                            .putString("game_data_path_" + gameId, resolvedDataPath).apply();
-                    if (logRuntime) appendRuntimeLog(gameId, "Starting explicit component " + launch.getComponent()
-                            + " with game_id=" + launch.getStringExtra("game_id")
-                            + " game_data_path=" + resolvedDataPath);
-                    startActivity(launch);
-                    if (logRuntime) appendRuntimeLog(gameId, "NativeActivity startActivity returned successfully");
-                    h.postDelayed(() -> {
-                        try {
-                            ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
-                            boolean found = false;
-                            if (am != null && am.getRunningAppProcesses() != null) {
-                                for (ActivityManager.RunningAppProcessInfo p : am.getRunningAppProcesses()) {
-                                    if (p.processName.startsWith(getPackageName())) {
-                                        if (logRuntime) appendRuntimeLog(gameId, "Observed process after launch: name=" + p.processName
-                                                + " pid=" + p.pid + " importance=" + p.importance);
-                                        found = true;
-                                    }
-                                }
-                            }
-                            if (!found && logRuntime) appendRuntimeLog(gameId, "No NGR app process visible 1500ms after startActivity");
-                        } catch (Exception e) {
-                            if (logRuntime) appendRuntimeLog(gameId, "Process snapshot failed: " + e);
-                        }
-                    }, 1500);
-                } catch (Exception e) {
-                    if (logRuntime) appendRuntimeLog(gameId, "NativeActivity startActivity failed: " + e);
-                    Toast.makeText(MainActivity.this, "Could not start NGR runtime: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                }
+                Toast.makeText(MainActivity.this, "Preparing game saves…", Toast.LENGTH_SHORT).show();
+                new Thread(() -> {
+                    android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+                    String saveRoot = null;
+                    String saveError = null;
+                    try { saveRoot = preparePublicSaveRoot(gameId); }
+                    catch (Exception error) { saveError = error.toString(); }
+                    final String finalSaveRoot = saveRoot;
+                    final String finalSaveError = saveError;
+                    runOnUiThread(() -> launchPreparedGame(gameId, resolved, driver,
+                            runtime, slowframe, nvn, watchdog, fs, finalSaveRoot, finalSaveError));
+                }, "NGR-Save-Migration").start();
             });
         }
 

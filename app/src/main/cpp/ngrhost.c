@@ -946,6 +946,35 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
 
     setenv("DM_GAME_DIR", game_dir, 1);
     setenv("NGR_PRIVATE_GAME_DIR", private_dir, 1);
+    /* NX2A_PUBLIC_SAVE_ROOT_V1: saves are user data, not executable payload.
+       Prefer the app-created Download/NX2A/Saves/<game-id> directory; retain
+       private fallback when shared-storage access is unavailable. */
+    /* Avoid carrying a previous activity's shared-storage override into this game.
+       DM_SAVE is deliberately app-private; Java mirrors committed saves to Download. */
+    unsetenv("NGR_PUBLIC_SAVE_DIR");
+    jstring jpublic_save = intent_string_extra(activity, "ngr_public_save_path");
+    const char *public_save = jpublic_save
+        ? (*activity->env)->GetStringUTFChars(activity->env, jpublic_save, NULL) : NULL;
+    if (public_save && *public_save) {
+        char expected_suffix[96];
+        int suffix_len = snprintf(expected_suffix, sizeof expected_suffix, "/Download/NX2A/Saves/%s", id);
+        size_t public_len = strlen(public_save), suffix_size = suffix_len > 0 ? (size_t)suffix_len : 0;
+        if (suffix_size && public_len >= suffix_size
+                && !strcmp(public_save + public_len - suffix_size, expected_suffix)
+                && !mkdirs(public_save)) {
+            setenv("NGR_PUBLIC_SAVE_DIR", public_save, 1);
+            LOGI("[NGR save] using user-visible save directory: %s", public_save);
+        } else {
+            unsetenv("NGR_PUBLIC_SAVE_DIR");
+            LOGE("[NGR save] rejected/unavailable public save directory: %s (errno=%d); private fallback active",
+                 public_save, errno);
+        }
+    } else {
+        unsetenv("NGR_PUBLIC_SAVE_DIR");
+        LOGI("[NGR save] no public save directory supplied; private fallback active");
+    }
+    if (public_save) (*activity->env)->ReleaseStringUTFChars(activity->env, jpublic_save, public_save);
+    if (jpublic_save) (*activity->env)->DeleteLocalRef(activity->env, jpublic_save);
     setenv("NGR_GAME_ID", id, 1);
     /* Metro 2033 Redux's PhysX simulator / Secondary workers were observed
        issuing 1.7–2.9 million progressing SleepThread yields per second while
@@ -1006,7 +1035,14 @@ void ANativeActivity_onCreate(ANativeActivity *activity, void *saved_state, size
            log and synchronous stderr I/O during audio/render contention.
            Keep it opt-in only for a dedicated future sync-trace control. */
         setenv("DM_SYNC_TRACE", "0", 1);
-        LOGI("[scheduler] Metro 2033 performance profile: verbose NVN/filesystem and per-lock synchronization tracing disabled");
+        /* Full watchdog thread dumps are not passive: they walk guest/host thread
+           state and can perturb the exact scheduler/audio timing under test.
+           Metro runs with low-overhead runtime + slow-frame summaries only. */
+        setenv("DM_WATCH_LOAD_DUMPS", "0", 1);
+        setenv("DM_WATCH_LOAD_INTERVAL", "0", 1);
+        setenv("DM_WATCH_STALL", "0", 1);
+        setenv("DM_WATCH_DUMP_ALL", "0", 1);
+        LOGI("[scheduler] Metro 2033 performance profile: verbose NVN/filesystem, per-lock tracing and watchdog thread dumps disabled");
     }
     LOGI("[stage 1/8] payload validated; game_dir=%s private_dir=%s", game_dir, private_dir);
     LOGI("[stage 2/8] native libraries staged; runtime=%s", lib_path);

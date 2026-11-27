@@ -403,7 +403,7 @@ patch('NGR per-game overlay assets', 'nxnative/dm/android/overlay_theme.c', 'NX2
 # 8. Keep game saves and temporary files isolated in NGR's private storage per game.
 patch('NGR per-game save roots', 'nxnative/dm/android/front_android.c', 'NX2A_GAME_SAVE_ROOT', [
 ("    snprintf(p, sizeof p, \"%s/save\", act->internalDataPath); mkdir(p, 0700); setenv(\"DM_SAVE\", p, 0);\n    snprintf(p, sizeof p, \"%s/temp\", act->internalDataPath); mkdir(p, 0700); setenv(\"DM_TEMP\", p, 0);",
- "    const char *ngr_private_root = getenv(\"NGR_PRIVATE_GAME_DIR\"); if (!ngr_private_root || !*ngr_private_root) ngr_private_root = act->internalDataPath;\n    snprintf(p, sizeof p, \"%s/save\", ngr_private_root); mkdir(p, 0700); setenv(\"DM_SAVE\", p, 0);\n    snprintf(p, sizeof p, \"%s/temp\", ngr_private_root); mkdir(p, 0700); setenv(\"DM_TEMP\", p, 0); // NX2A_GAME_SAVE_ROOT"),
+ "    const char *ngr_private_root = getenv(\"NGR_PRIVATE_GAME_DIR\"); if (!ngr_private_root || !*ngr_private_root) ngr_private_root = act->internalDataPath;\n    const char *ngr_public_save_root = getenv(\"NGR_PUBLIC_SAVE_DIR\");\n    if (ngr_public_save_root && *ngr_public_save_root) snprintf(p, sizeof p, \"%s\", ngr_public_save_root);\n    else snprintf(p, sizeof p, \"%s/save\", ngr_private_root);\n    if (mkdir(p, 0700) && errno != EEXIST) LOG(\"[save] cannot create selected save root %s: errno=%d\", p, errno);\n    setenv(\"DM_SAVE\", p, 1);\n    snprintf(p, sizeof p, \"%s/temp\", ngr_private_root); mkdir(p, 0700); setenv(\"DM_TEMP\", p, 0); // NX2A_GAME_SAVE_ROOT"),
 ])
 
 # 9. NGR writes the compiled native host, optional driver libraries and UI assets directly into the data pack.
@@ -477,42 +477,6 @@ patch('NGR build complete native runtime', 'porter/pipeline.py', 'NX2A_NGR_ADREN
 ])
 
 
-# 9b. The in-game pause/settings menu must provide an explicit way back to NGR.
-# Back opens this menu; the last row now ends the NativeActivity instead of leaving
-# the player trapped with only Resume available.
-patch('NGR overlay exit row', 'nxnative/dm/android/overlay_layout.h', 'NX2A_NGR_EXIT_ROW', [
-("OVM_RESUME, OVM_TAB, OVM_N", "OVM_RESUME, OVM_EXIT, OVM_TAB, OVM_N"),
-("#define OVM_ROWS (OVM_PER_TAB + 2)", "#define OVM_ROWS (OVM_PER_TAB + 3)"),
-("static inline int ov_menu_item(int tab, int row) { return row == 0 ? OVM_TAB : row == OVM_ROWS - 1 ? OVM_RESUME : row > 0 && row < OVM_ROWS - 1 ? OVM_TAB_ITEMS[tab & 1][row - 1] : -1; }",
- "static inline int ov_menu_item(int tab, int row) { return row == 0 ? OVM_TAB : row == OVM_ROWS - 2 ? OVM_RESUME : row == OVM_ROWS - 1 ? OVM_EXIT : row > 0 && row < OVM_ROWS - 2 ? OVM_TAB_ITEMS[tab & 1][row - 1] : -1; }"),
-])
-
-patch('NGR overlay exit action', 'nxnative/dm/android/front_android.c', 'NX2A_NGR_EXIT_ACTION', [
-("static void on_resume(ANativeActivity *a) { if (g_quit) { act_finish(a); return; } go_foreground(); }",
- """static void act_finish_async(void) {   // menu/input thread: NGR's Java shim marshals Activity.finish() onto Android's UI thread
-    if (!g_act || !g_act->vm) return;
-    JavaVM *vm = g_act->vm; JNIEnv *E = NULL; int attached = 0;
-    jint state = (*vm)->GetEnv(vm, (void **)&E, JNI_VERSION_1_6);
-    if (state == JNI_EDETACHED) { if ((*vm)->AttachCurrentThread(vm, &E, NULL) != JNI_OK) { LOG("[RED] cannot attach exit request to Java VM"); return; } attached = 1; }
-    else if (state != JNI_OK) { LOG("[RED] cannot obtain JNI environment for exit request"); return; }
-    jclass cls = (*E)->GetObjectClass(E, g_act->clazz);
-    jmethodID method = cls ? (*E)->GetMethodID(E, cls, "finishFromNative", "()V") : NULL;
-    if (method) (*E)->CallVoidMethod(E, g_act->clazz, method);
-    if ((*E)->ExceptionCheck(E)) { (*E)->ExceptionDescribe(E); (*E)->ExceptionClear(E); }
-    if (!method) { LOG("[RED] finishFromNative is unavailable; using ANativeActivity_finish fallback"); ANativeActivity_finish(g_act); }
-    if (attached) (*vm)->DetachCurrentThread(vm);
-}
-static void on_resume(ANativeActivity *a) { if (g_quit) { act_finish(a); return; } go_foreground(); }"""),
-("static void menu_do(int item) {\n    if (item == OVM_OVERLAY)",
- "static void menu_do(int item) {\n    if (item == OVM_EXIT) { LOG(\"[menu] Exit game selected\"); g_quit = 1; act_finish_async(); return; }\n    if (item == OVM_OVERLAY)"),
-])
-
-patch('NGR overlay exit labels', 'nxnative/dm/android/gfx_vk_present.c', 'NX2A_NGR_EXIT_LABEL', [
-("static const char *const OVM_LABELS[OVM_N] = {\"Show gamepad\", \"Opacity\", \"Edit layout\", \"Rumble\", \"Show FPS\", \"Mode\", \"Export save\", \"Import save\", \"Face buttons\", \"Resume\", \"\"};",
- "static const char *const OVM_LABELS[OVM_N] = {\"Show gamepad\", \"Opacity\", \"Edit layout\", \"Rumble\", \"Show FPS\", \"Mode\", \"Export save\", \"Import save\", \"Face buttons\", \"Resume\", \"Exit game\", \"\"};"),
-("if (it == OVM_RESUME) { cv_rrect(cv, r[0], r[1], r[0] + rw, r[1] + 1, 0.5f, C_LINE); cv_text(cv, r[0] + (rw - cv_text_w(\"Resume\", is)) / 2, cy, \"Resume\", is, C_ACCENT); continue; }",
- "if (it == OVM_RESUME || it == OVM_EXIT) { const char *word = OVM_LABELS[it]; cv_rrect(cv, r[0], r[1], r[0] + rw, r[1] + 1, 0.5f, C_LINE); cv_text(cv, r[0] + (rw - cv_text_w(word, is)) / 2, cy, word, is, C_ACCENT); continue; }"),
-])
 
 
 # 10. every device path in env.txt (DLC, sysdata, fonts, FPS tables) resolves inside this game's NGR folder.
@@ -718,7 +682,7 @@ static int ngr_sync_key_watched(uint64_t key) {
         G_lock();
         for (thr_t *w; (cnt <= 0 || n < cnt) && (w = pick(2, key)); n++) lock_acquire_for(w, w->waddr, w->wtag);   // In kernel order; once turned into a lock wait or woken it is no longer kind 2
 """, """        uint64_t key = regs[0]; int cnt = (int)regs[1], n = 0;
-        G_lock();
+        pthread_mutex_lock(&G);
         int ngr_tracked_signal = ngr_sync_key_watched(key);
         if (ngr_tracked_signal && g_ngr_sync_signal_logs < 256)
             LOG("[NGR_SYNC] cv-signal key=%#llx count=%d", (unsigned long long)key, cnt);
@@ -1464,6 +1428,597 @@ patch('NGR Android save clone failure diagnostics', 'nxnative/dm/android/compat/
      '''    DIR *d = opendir(src); if (!d) { int e = errno; __android_log_print(ANDROID_LOG_ERROR, "NGRRuntime", "[fs] clonefile opendir failed src=%s errno=%d", src, e); errno = e; return -1; }'''),
     ('''        r = clonefile(a, b, flags);''',
      '''        r = clonefile(a, b, flags); if (r) __android_log_print(ANDROID_LOG_ERROR, "NGRRuntime", "[fs] clonefile child failed src=%s dst=%s errno=%d", a, b, errno);''')
+]);
+
+
+# 39. Keep NGR transactional save commits on app-private storage. Shared Download
+# is a Java-managed mirror: Android's emulated external filesystem does not
+# reliably implement directory RENAME_EXCHANGE required by the save transaction.
+patch('NGR keep transactional save root private', 'nxnative/dm/android/front_android.c', 'NX2A_PRIVATE_TRANSACTIONAL_SAVE_ROOT', [
+    ('''    const char *ngr_public_save_root = getenv("NGR_PUBLIC_SAVE_DIR");
+    if (ngr_public_save_root && *ngr_public_save_root) snprintf(p, sizeof p, "%s", ngr_public_save_root);
+    else snprintf(p, sizeof p, "%s/save", ngr_private_root);
+    if (mkdir(p, 0700) && errno != EEXIST) LOG("[save] cannot create selected save root %s: errno=%d", p, errno);
+    setenv("DM_SAVE", p, 1);''',
+     '''    snprintf(p, sizeof p, "%s/save", ngr_private_root);
+    if (mkdir(p, 0700) && errno != EEXIST) LOG("[save] cannot create private transactional save root %s: errno=%d", p, errno);
+    setenv("DM_SAVE", p, 1); // NX2A_PRIVATE_TRANSACTIONAL_SAVE_ROOT''')
+]);
+
+# 40. Android shared-storage FUSE may not support xattrs. If physical and guest
+# names already match, removing absent optional metadata must not fail file create.
+patch('NGR tolerate unsupported save-name xattrs', 'nxnative/dm/host/hle_fs.c', 'NX2A_XATTR_OPTIONAL_ON_ANDROID', [
+    ('''    if (!removexattr(hp, FS_GUEST_NAME, XATTR_NOFOLLOW) || errno == ENOATTR) return 0;''',
+     '''    if (!removexattr(hp, FS_GUEST_NAME, XATTR_NOFOLLOW) || errno == ENOATTR
+            || errno == ENOTSUP || errno == EOPNOTSUPP) return 0; // NX2A_XATTR_OPTIONAL_ON_ANDROID''')
+]);
+
+# 41. Record only genuinely slow host reads. Event-driven (>25 ms), no per-read
+# log I/O during normal streaming.
+patch('NGR slow host read latency diagnostics', 'nxnative/dm/host/hle_fs.c', 'NX2A_SLOW_PREAD_DIAGNOSTICS', [
+    ('''        ssize_t r = pread((int)h, (uint8_t *)buf + got, sz - got, off + got);''',
+     '''        uint64_t nx2a_read_started = now_ns();
+        ssize_t r = pread((int)h, (uint8_t *)buf + got, sz - got, off + got);
+        uint64_t nx2a_read_elapsed = now_ns() - nx2a_read_started;
+        if (nx2a_read_elapsed >= 25000000ull)
+            LOG("[io] slow pread fd=%d offset=%#llx requested=%zu returned=%zd elapsed=%.3f ms errno=%d",
+                (int)h, (unsigned long long)(off + got), sz - got, r,
+                nx2a_read_elapsed / 1000000.0, r < 0 ? errno : 0); // NX2A_SLOW_PREAD_DIAGNOSTICS''')
+]);
+
+
+# 42. Metro's video decoder is the dominant competing CPU worker in the new
+# trace (about 7 CPU seconds in its first 34 seconds), while AudioOut's producer
+# queue collapses to zero. Keep decode work at Utility QoS; existing lock-owner
+# priority inheritance can temporarily raise it when a higher-QoS game thread
+# is blocked on a decoder-owned lock.
+patch('NGR Metro video decoder Utility QoS', 'nxnative/dm/android/front_android.c', 'NX2A_METRO_VIDEO_DECODER_QOS', [
+    ('''        setenv("DM_QOS_UTILITY_NAMES", "uEngine :: PhysX simulator;uEngine :: Secondary", 1);''',
+     '''        setenv("DM_QOS_UTILITY_NAMES", "uEngine :: PhysX simulator;uEngine :: Secondary;video-decoder", 1); // NX2A_METRO_VIDEO_DECODER_QOS''')
+]);
+
+# 43. Android's FICLONE ioctl may return EACCES on app-private filesystems
+# even though ordinary file creation/writes are permitted. Treat that result
+# like an unsupported reflink and fall back to the transactional byte copy.
+# Do not weaken permissions or bypass the save commit/atomic swap.
+patch('NGR Android FICLONE EACCES byte-copy fallback', 'nxnative/dm/android/compat/darwin_compat.c', 'NX2A_FICLONE_EACCES_FALLBACK', [
+    ("""    if (ce != EOPNOTSUPP && ce != ENOTTY && ce != EXDEV && ce != EINVAL && ce != ENOSYS && ce != EPERM) {""",
+     """    if (ce != EOPNOTSUPP && ce != ENOTTY && ce != EXDEV && ce != EINVAL && ce != ENOSYS && ce != EPERM && ce != EACCES) { // NX2A_FICLONE_EACCES_FALLBACK
+"""),
+    ("""    if (!atomic_exchange(&clone_mode_logged, 1))
+        __android_log_print(ANDROID_LOG_WARN, "NGRRuntime", "[fs] Android save clone: FICLONE unsupported (errno=%d); byte-copy fallback active", ce);""",
+     """    if (!atomic_exchange(&clone_mode_logged, 1))
+        __android_log_print(ANDROID_LOG_WARN, "NGRRuntime", "[fs] Android save clone: FICLONE unavailable (errno=%d); byte-copy fallback active", ce); // NX2A_FICLONE_EACCES_FALLBACK""")
+]);
+
+
+# 44. The transaction creates save.new as a sibling of DM_SAVE. A previous
+# commit/import can leave the per-game root with read-only owner bits; mkdir()
+# then returns EACCES before clonefile reaches its child-copy fallback. Restore
+# owner rwx on the private game/save roots before exposing DM_SAVE.
+patch('NGR restore writable private save roots', 'nxnative/dm/android/front_android.c', 'NX2A_PRIVATE_SAVE_ROOT_PERMISSIONS', [
+    ('''    snprintf(p, sizeof p, "%s/save", ngr_private_root);
+    if (mkdir(p, 0700) && errno != EEXIST) LOG("[save] cannot create private transactional save root %s: errno=%d", p, errno);
+    setenv("DM_SAVE", p, 1); // NX2A_PRIVATE_TRANSACTIONAL_SAVE_ROOT''',
+     '''    if (chmod(ngr_private_root, 0700) && errno != ENOENT)
+        LOG("[save] cannot restore private game root permissions %s: errno=%d", ngr_private_root, errno);
+    snprintf(p, sizeof p, "%s/save", ngr_private_root);
+    if (mkdir(p, 0700) && errno != EEXIST)
+        LOG("[save] cannot create private transactional save root %s: errno=%d", p, errno);
+    if (chmod(p, 0700))
+        LOG("[save] cannot restore private save root permissions %s: errno=%d", p, errno);
+    if (access(p, R_OK | W_OK | X_OK))
+        LOG("[RED] private save root is not readable/writable/traversable %s: errno=%d", p, errno);
+    setenv("DM_SAVE", p, 1); // NX2A_PRIVATE_TRANSACTIONAL_SAVE_ROOT NX2A_PRIVATE_SAVE_ROOT_PERMISSIONS''')
+]);
+
+# 45. Imported/older committed saves can contain owner-unreadable entries.
+# clonefile() must be able to enumerate source directories and open source
+# files before it can create the writable transactional copy. Restore only the
+# app-owner read/execute bits when EACCES proves they are missing.
+patch('NGR recover owner-readable committed save entries', 'nxnative/dm/android/compat/darwin_compat.c', 'NX2A_SAVE_SOURCE_OWNER_READ', [
+    ('''    int in = open(src, O_RDONLY | O_CLOEXEC); if (in < 0) return -1;''',
+     '''    int in = open(src, O_RDONLY | O_CLOEXEC);
+    if (in < 0 && errno == EACCES && chmod(src, (mode & 07777) | S_IRUSR) == 0)
+        in = open(src, O_RDONLY | O_CLOEXEC); // NX2A_SAVE_SOURCE_OWNER_READ
+    if (in < 0) return -1;'''),
+    ('''    DIR *d = opendir(src); if (!d) { int e = errno; __android_log_print(ANDROID_LOG_ERROR, "NGRRuntime", "[fs] clonefile opendir failed src=%s errno=%d", src, e); errno = e; return -1; }''',
+     '''    DIR *d = opendir(src);
+    if (!d && errno == EACCES &&
+            chmod(src, (st.st_mode & 07777) | S_IRUSR | S_IXUSR) == 0)
+        d = opendir(src); // NX2A_SAVE_SOURCE_OWNER_READ
+    if (!d) { int e = errno; __android_log_print(ANDROID_LOG_ERROR, "NGRRuntime", "[fs] clonefile opendir failed src=%s errno=%d", src, e); errno = e; return -1; }''')
+]);
+
+
+# 46. Correct masked colour clears for every bound attachment and numeric class.
+# Vulkan fragment outputs are statically typed and statically located. Each
+# shader variant writes all eight locations; the pipeline write mask enables
+# only the requested attachment. This keeps mixed float/UINT/SINT MRTs valid.
+# build.py compiles every maskclear_*.frag into the matching SPIR-V header.
+patch('NGR masked clear all attachments and numeric formats', 'nxnative/dm/android/gfx_vk_exec.c', 'NX2A_MASKED_CLEAR_ALL_ATTACHMENTS', [
+    ("""#include "maskclear_frag.spv.h"
+#include "flatdbg_frag.spv.h"
+typedef struct { uint32_t ncol, cfmt[8], dfmt, samples, mask; } mckey;
+static struct { VkPipelineLayout pl; VkShaderModule vs, fs; int bad; mckey k[32]; VkPipeline p[32]; int n; } g_mc;
+static VkPipeline mc_pipeline(uint32_t mask) {
+    mckey k; memset(&k, 0, sizeof k); k.ncol = (uint32_t)S.ncol; for (int i = 0; i < S.ncol && i < 8; i++) k.cfmt[i] = (uint32_t)S.cfmt[i];
+    k.dfmt = (uint32_t)S.dfmt; k.samples = S.samples ? S.samples : 1; k.mask = mask;""",
+     """#include "maskclear_frag.spv.h"
+#include "maskclear_uint_frag.spv.h"
+#include "maskclear_sint_frag.spv.h"
+#include "flatdbg_frag.spv.h"
+typedef struct { uint32_t ncol, cfmt[8], dfmt, samples, mask, index, kind; } mckey;
+static struct { VkPipelineLayout pl; VkShaderModule vs, fs[3]; int bad; mckey k[64]; VkPipeline p[64]; int n; } g_mc;
+static VkPipeline mc_pipeline(uint32_t mask, uint32_t index, uint32_t kind) {
+    mckey k; memset(&k, 0, sizeof k); k.ncol = (uint32_t)S.ncol; for (int i = 0; i < S.ncol && i < 8; i++) k.cfmt[i] = (uint32_t)S.cfmt[i];
+    k.dfmt = (uint32_t)S.dfmt; k.samples = S.samples ? S.samples : 1; k.mask = mask; k.index = index; k.kind = kind; // NX2A_MASKED_CLEAR_ALL_ATTACHMENTS"""),
+    ("""        fi.codeSize = sizeof maskclear_frag_spv; fi.pCode = maskclear_frag_spv;
+        if (vkCreatePipelineLayout(V.dev, &li, NULL, &g_mc.pl) || vkCreateShaderModule(V.dev, &vi, NULL, &g_mc.vs) || vkCreateShaderModule(V.dev, &fi, NULL, &g_mc.fs)) { g_mc.bad = 1; return VK_NULL_HANDLE; }
+    }
+    VkPipelineShaderStageCreateInfo ss[2] = {{VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO, NULL, 0, VK_SHADER_STAGE_VERTEX_BIT, g_mc.vs, "main", NULL},
+                                             {VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO, NULL, 0, VK_SHADER_STAGE_FRAGMENT_BIT, g_mc.fs, "main", NULL}};""",
+     """        fi.codeSize = sizeof maskclear_frag_spv; fi.pCode = maskclear_frag_spv;
+        if (vkCreatePipelineLayout(V.dev, &li, NULL, &g_mc.pl) || vkCreateShaderModule(V.dev, &vi, NULL, &g_mc.vs) ||
+            vkCreateShaderModule(V.dev, &fi, NULL, &g_mc.fs[0])) { g_mc.bad = 1; return VK_NULL_HANDLE; }
+        fi.codeSize = sizeof maskclear_uint_frag_spv; fi.pCode = maskclear_uint_frag_spv;
+        if (vkCreateShaderModule(V.dev, &fi, NULL, &g_mc.fs[1])) { g_mc.bad = 1; return VK_NULL_HANDLE; }
+        fi.codeSize = sizeof maskclear_sint_frag_spv; fi.pCode = maskclear_sint_frag_spv;
+        if (vkCreateShaderModule(V.dev, &fi, NULL, &g_mc.fs[2])) { g_mc.bad = 1; return VK_NULL_HANDLE; }
+    }
+    VkPipelineShaderStageCreateInfo ss[2] = {{VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO, NULL, 0, VK_SHADER_STAGE_VERTEX_BIT, g_mc.vs, "main", NULL},
+                                             {VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO, NULL, 0, VK_SHADER_STAGE_FRAGMENT_BIT, g_mc.fs[k.kind], "main", NULL}};"""),
+    ("""    cba[0].colorWriteMask = mask & 0xf;   // NVN's mask bits R G B A are Vulkan's""",
+     """    cba[index].colorWriteMask = mask & 0xf;   // NX2A_MASKED_CLEAR_ALL_ATTACHMENTS: write only the selected NVN attachment"""),
+    ("""    const vkfmt_t *f = vk_fmt(S.rt_col[c->index].d.format);
+    if (c->index != 0 || (f && f->is_int)) return 0;
+    VkPipeline p = mc_pipeline(c->mask); if (!p) return 0;""",
+     """    if (c->index < 0 || c->index >= 8) return 0;
+    const vkfmt_t *f = vk_fmt(S.rt_col[c->index].d.format);
+    uint32_t kind = f && f->is_int ? (f->is_sint ? 2u : 1u) : 0u;
+    VkPipeline p = mc_pipeline(c->mask, (uint32_t)c->index, kind); if (!p) return 0; // NX2A_MASKED_CLEAR_ALL_ATTACHMENTS""")
+]);
+
+# Generate three statically typed MRT fragment shaders. Every location is
+# declared so any of the eight NVN colour attachments can be selected by mask.
+
+# 47. Use one shader per attachment and numeric class: outputs at inactive
+# locations can otherwise conflict with mixed-type MRT attachment formats.
+_mc_inc = "\n".join(f'#include "maskclear_f{i}_frag.spv.h"' for i in range(24))
+_mc_ptrs = ", ".join(f"maskclear_f{i}_frag_spv" for i in range(24))
+_mc_sizes = ", ".join(f"sizeof maskclear_f{i}_frag_spv" for i in range(24))
+_patch_old = """#include "maskclear_frag.spv.h"
+#include "maskclear_uint_frag.spv.h"
+#include "maskclear_sint_frag.spv.h"
+#include "flatdbg_frag.spv.h"
+typedef struct { uint32_t ncol, cfmt[8], dfmt, samples, mask, index, kind; } mckey;
+static struct { VkPipelineLayout pl; VkShaderModule vs, fs[3]; int bad; mckey k[64]; VkPipeline p[64]; int n; } g_mc;"""
+_patch_new = _mc_inc + '\n#include "flatdbg_frag.spv.h"\ntypedef struct { uint32_t ncol, cfmt[8], dfmt, samples, mask, index, kind; } mckey;\nstatic const uint32_t *mc_fs_spv[24] = {' + _mc_ptrs + '};\nstatic const size_t mc_fs_size[24] = {' + _mc_sizes + '};\nstatic struct { VkPipelineLayout pl; VkShaderModule vs, fs[24]; int bad; mckey k[64]; VkPipeline p[64]; int n; } g_mc;'
+_module_old = """        fi.codeSize = sizeof maskclear_frag_spv; fi.pCode = maskclear_frag_spv;
+        if (vkCreatePipelineLayout(V.dev, &li, NULL, &g_mc.pl) || vkCreateShaderModule(V.dev, &vi, NULL, &g_mc.vs) ||
+            vkCreateShaderModule(V.dev, &fi, NULL, &g_mc.fs[0])) { g_mc.bad = 1; return VK_NULL_HANDLE; }
+        fi.codeSize = sizeof maskclear_uint_frag_spv; fi.pCode = maskclear_uint_frag_spv;
+        if (vkCreateShaderModule(V.dev, &fi, NULL, &g_mc.fs[1])) { g_mc.bad = 1; return VK_NULL_HANDLE; }
+        fi.codeSize = sizeof maskclear_sint_frag_spv; fi.pCode = maskclear_sint_frag_spv;
+        if (vkCreateShaderModule(V.dev, &fi, NULL, &g_mc.fs[2])) { g_mc.bad = 1; return VK_NULL_HANDLE; }"""
+_module_new = """        if (vkCreatePipelineLayout(V.dev, &li, NULL, &g_mc.pl) || vkCreateShaderModule(V.dev, &vi, NULL, &g_mc.vs)) { g_mc.bad = 1; return VK_NULL_HANDLE; }
+        for (uint32_t i = 0; i < 24; i++) {
+            fi.codeSize = mc_fs_size[i]; fi.pCode = mc_fs_spv[i];
+            if (vkCreateShaderModule(V.dev, &fi, NULL, &g_mc.fs[i])) { g_mc.bad = 1; return VK_NULL_HANDLE; }
+        }"""
+patch('NGR masked clear typed shader per attachment', 'nxnative/dm/android/gfx_vk_exec.c', 'NX2A_MASKED_CLEAR_TYPED_SHADER_PER_ATTACHMENT', [
+    (_patch_old, _patch_new),
+    (_module_old, _module_new),
+    ("""g_mc.fs[k.kind], "main", NULL}};""",
+     """g_mc.fs[k.kind * 8 + k.index], "main", NULL}}; // NX2A_MASKED_CLEAR_TYPED_SHADER_PER_ATTACHMENT""")
+])
+
+# Generate exact location/type shader variants; build.py compiles these into SPIR-V.
+_shader_dir = repo / 'nxnative/dm/android/shaders'
+_shader_dir.mkdir(parents=True, exist_ok=True)
+for _kind, _type, _expr in ((0, 'vec4', 'p.c'), (1, 'uvec4', 'uvec4(max(p.c, vec4(0.0)))'), (2, 'ivec4', 'ivec4(p.c)')):
+    for _index in range(8):
+        _body = f"""#version 450
+layout(push_constant) uniform P {{ vec4 c; }} p;
+layout(location = {_index}) out {_type} o;
+void main() {{ o = {_expr}; }}
+"""
+        (_shader_dir / f'maskclear_f{_kind * 8 + _index}.frag').write_text(_body)
+print('NGR masked clear shader variants: generated 24 location/type outputs')
+
+
+# 48. Cache all practical attachment/mask/type combinations; do not regress to
+# full clears after a small number of different MRT layouts have been seen.
+patch('NGR masked clear pipeline cache capacity', 'nxnative/dm/android/gfx_vk_exec.c', 'NX2A_MASKED_CLEAR_CACHE_512', [
+    ("""mckey k[64]; VkPipeline p[64]; int n; } g_mc;""",
+     """mckey k[512]; VkPipeline p[512]; int n; } g_mc; // NX2A_MASKED_CLEAR_CACHE_512"""),
+    ("""if (g_mc.bad || g_mc.n == 32) return VK_NULL_HANDLE;""",
+     """if (g_mc.bad || g_mc.n == 512) return VK_NULL_HANDLE; // NX2A_MASKED_CLEAR_CACHE_512""")
+]);
+
+
+# 50. The builder's raw storage-class query is distinct from GetStorageClass.
+# The host has no separate raw storage class; the matching texture getter in
+# this porter returns 1, which NVN callers test as a boolean-like capability.
+patch('NGR NVN texture builder raw storage class getter', 'nxnative/dm/gfx/nvn/hle_nvn.c', 'NX2A_TEXTURE_BUILDER_RAW_STORAGE_CLASS', [
+    ("""NVN(nvnTextureBuilderGetStorageClass, NVNstorageClass, const NVNtextureBuilder *b) { (void)b; return 0; }""",
+     """NVN(nvnTextureBuilderGetStorageClass, NVNstorageClass, const NVNtextureBuilder *b) { (void)b; return 0; }
+NVN_NOPROTO(nvnTextureBuilderGetRawStorageClass, int, const NVNtextureBuilder *b) { (void)b; return 1; } // NX2A_TEXTURE_BUILDER_RAW_STORAGE_CLASS""")
+]);
+
+# 51. Alias warnings are opt-in and rate-limited. Keep the stale-read watermark
+# updated even when tracing is off; when enabled, include sample count and target
+# so an MSAA/resolve alias can be distinguished from a layout reinterpretation.
+patch('NGR opt-in texture alias metadata trace', 'nxnative/dm/android/gfx_vk_tex.c', 'NX2A_ALIAS_TRACE_METADATA', [
+    ("""static void alias_check(vkimg_t *im) {   // im is about to be sampled
+    for (int i = 0; i < im->novl; i++) {
+        vkimg_t *o = im->ovl[i]; if (o->wseq <= im->wseq || o->wseq <= im->rseen) continue;
+        im->rseen = o->wseq;
+        static int n; if (n++ < 200) VKLOG("[alias] stale read: %ux%u fmt %#x levels %u at %+lld..%+lld sampled, but %ux%u fmt %#x levels %u at %+lld..%+lld rendered over its memory later",
+            im->w, im->h, im->nvn_format, im->levels, (long long)im->off, (long long)(im->off + im->size), o->w, o->h, o->nvn_format, o->levels, (long long)o->off, (long long)(o->off + o->size));
+    }
+}""",
+     """static void alias_check(vkimg_t *im) {   // im is about to be sampled
+    static int trace = -1, n;
+    if (trace < 0) { const char *e = getenv("DM_VK_ALIAS_TRACE"); trace = e && atoi(e) > 0; }
+    for (int i = 0; i < im->novl; i++) {
+        vkimg_t *o = im->ovl[i]; if (o->wseq <= im->wseq || o->wseq <= im->rseen) continue;
+        im->rseen = o->wseq;
+        if (trace && n++ < 16) VKLOG("[alias] stale read: %ux%u fmt %#x samples %u target %u flags %#x levels %u at %+lld..%+lld sampled; %ux%u fmt %#x samples %u target %u flags %#x levels %u at %+lld..%+lld rendered later",
+            im->w, im->h, im->nvn_format, im->samples, im->target, im->flags, im->levels, (long long)im->off, (long long)(im->off + im->size),
+            o->w, o->h, o->nvn_format, o->samples, o->target, o->flags, o->levels, (long long)o->off, (long long)(o->off + o->size));
+    }
+} // NX2A_ALIAS_TRACE_METADATA""")
+]);
+
+
+
+# 52. Indexed draws may span two zero-copy memory-pool chunks. A VkBuffer
+# represents only one chunk, so binding the first chunk and drawing the whole
+# range reads past that VkBuffer. Copy the aligned byte range GPU-to-GPU into
+# this submission's scratch index buffer, with global memory barriers. This
+# preserves GPU-written index data; no CPU shadow/readback is assumed.
+patch('NGR GPU copy for indexed ranges crossing pool chunks', 'nxnative/dm/android/gfx_vk_exec.c', 'NX2A_INDEX_CHUNK_COPY', [
+    ("""static void draw_idx(const p_draw_idx *d) {""",
+     """// NX2A_INDEX_CHUNK_COPY: the source may have been written by an earlier GPU draw/dispatch.
+static int vk_index_range_scratch(uint64_t addr, uint64_t size, VkBuffer *out, VkDeviceSize *out_off) {
+    if (!size || addr > UINT64_MAX - size || size > (64ull << 20)) return 0;
+    uint64_t start = addr & ~3ull, raw_end = addr + size;
+    if (raw_end > UINT64_MAX - 3) return 0;
+    uint64_t end = (raw_end + 3) & ~3ull;
+    vkpool_t *first = vk_pool_of(addr, 1);
+    if (!first || start < first->base || end > first->end || end <= start) return 0;
+    // Validate the entire source before recording any copies.
+    for (uint64_t cur = start; cur < end;) {
+        vkpool_t *p = vk_pool_of(cur, 1);
+        if (!p || p->base != first->base || p->end != first->end || p->hi <= cur) return 0;
+        uint64_t n = p->hi - cur; if (n > end - cur) n = end - cur;
+        if ((cur & 3) || (n & 3)) return 0;   // vkCmdCopyBuffer's four-byte alignment
+        cur += n;
+    }
+    vk_end_pass_land();
+    VkBuffer dst; VkDeviceSize dst_off;
+    (void)vk_scratch(end - start, 4, &dst, &dst_off);
+    VkCommandBuffer cb = vk_cmd();
+    vk_img_barrier_all(cb);   // order earlier shader/storage writes before the transfer
+    for (uint64_t cur = start; cur < end;) {
+        vkpool_t *p = vk_pool_of(cur, 1);
+        uint64_t n = p->hi - cur; if (n > end - cur) n = end - cur;
+        VkBuffer src; VkDeviceSize src_off;
+        if (!vk_buf_at(cur, n, &src, &src_off)) return 0;   // guard concurrent pool teardown
+        VkBufferCopy r = {src_off, dst_off + (cur - start), n};
+        vkCmdCopyBuffer(cb, src, dst, 1, &r);
+        cur += n;
+    }
+    vk_img_barrier_all(cb);   // transfer writes precede the next pass's index reads
+    *out = dst;
+    *out_off = dst_off + (addr - start);   // preserve an unaligned UINT8/UINT16 index start
+    return 1;
+}
+static void draw_idx(const p_draw_idx *d) {"""),
+    ("""    g_draw_binst = d->ind ? 0 : (uint32_t)d->base_instance;   // before prepare_draw (see draw)
+    if (!prepare_draw(prim == 7 ? 4 : prim, 1)) return;
+    VkCommandBuffer cb = vk_cmd();""",
+     """    g_draw_binst = d->ind ? 0 : (uint32_t)d->base_instance;   // before prepare_draw (see draw)
+    VkIndexType it = d->itype == 0 ? VK_INDEX_TYPE_UINT8_EXT : d->itype == 1 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32;
+    uint32_t isz = d->itype == 0 ? 1 : d->itype == 1 ? 2 : 4;
+    VkBuffer ib; VkDeviceSize io;
+    if (!vk_buf_at(d->ibuf, 1, &ib, &io)) { VKRED_ONCE(56, "index buffer outside the memory pools"); return; }
+    if (!d->ind && d->count > 0) {
+        vkpool_t *ip = vk_pool_of(d->ibuf, 1);
+        uint64_t in = (uint64_t)(uint32_t)d->count * isz;
+        if (ip && in <= UINT64_MAX - d->ibuf && d->ibuf + in > ip->hi && ip->hi < ip->end) {
+            vk_cross(3, d->ibuf, in, ip);
+            static int trace = -1; static unsigned traced;
+            if (trace < 0) { const char *e = getenv("DM_VK_INDEX_TRACE"); trace = e && atoi(e) > 0; }
+            if (trace && traced < 16) {
+                traced++;
+                VKLOG("[index-cross] draw %u addr %#llx bytes %#llx count %d type %d prim %d instances %u base_vertex %d chunk_end %#llx pool %llu shaders %016llx/%016llx path %s",
+                    traced, (unsigned long long)d->ibuf, (unsigned long long)in, d->count, d->itype, prim,
+                    (unsigned)(d->instances ? d->instances : 1), d->base_vertex, (unsigned long long)ip->hi,
+                    (unsigned long long)ip->serial, (unsigned long long)(S.sh[0] ? S.sh[0]->key : 0),
+                    (unsigned long long)(S.sh[1] ? S.sh[1]->key : 0), prim == 7 ? "quad-cpu" : "gpu-copy");
+            }
+            // NVN quads are CPU-converted from the original index pointer below;
+            // leave that special path separate until its GPU readback is handled.
+            if (prim != 7 && !(dbg_draw() & 1) && !vk_index_range_scratch(d->ibuf, in, &ib, &io)) {
+                VKRED_ONCE(98, "cross-chunk index range could not be copied safely; draw skipped");
+                return;
+            }
+        }
+    }
+    if (!prepare_draw(prim == 7 ? 4 : prim, 1)) return;
+    VkCommandBuffer cb = vk_cmd();"""),
+    ("""    VkIndexType it = d->itype == 0 ? VK_INDEX_TYPE_UINT8_EXT : d->itype == 1 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32;
+    uint32_t isz = d->itype == 0 ? 1 : d->itype == 1 ? 2 : 4;
+    VkBuffer ib; VkDeviceSize io;
+    if (!vk_buf_at(d->ibuf, 1, &ib, &io)) { VKRED_ONCE(56, "index buffer outside the memory pools"); return; }
+    if (!d->ind) { vkpool_t *ip = vk_pool_of(d->ibuf, 1); uint64_t in = (uint64_t)d->count * isz; if (ip && d->ibuf + in > ip->hi && ip->hi < ip->end) vk_cross(3, d->ibuf, in, ip); }""",
+     """    /* NX2A_INDEX_CHUNK_COPY: ib/io were resolved and, for a crossing direct draw, copied before prepare_draw. */""")
+]);
+
+
+patch('NGR opt-in texture swizzle-to-view trace', 'nxnative/dm/android/gfx_vk_tex.c', 'NX2A_SWIZZLE_VIEW_TRACE', [
+    ("""    VkComponentMapping swz = sample_swizzle(&f->swz,t,vw,as_attachment);
+    VkFormat fmt = f->vk;""",
+     """    VkComponentMapping swz = sample_swizzle(&f->swz,t,vw,as_attachment);
+    // NX2A_SWIZZLE_VIEW_TRACE: bounded descriptor metadata, no image readback or per-draw logging.
+    {
+        static int trace = -1; static unsigned n;
+        if (trace < 0) { const char *e = getenv("DM_VK_SWIZZLE_TRACE"); trace = e && atoi(e) > 0; }
+        if (trace && n < 64) {
+            int tr = t->set_swz ? (int)(t->swz & 7) : -1;
+            int tg = t->set_swz ? (int)((t->swz >> 3) & 7) : -1;
+            int tb = t->set_swz ? (int)((t->swz >> 6) & 7) : -1;
+            int ta = t->set_swz ? (int)((t->swz >> 9) & 7) : -1;
+            int vr = vw && vw->set_swizzle ? vw->swz[0] : -1;
+            int vg = vw && vw->set_swizzle ? vw->swz[1] : -1;
+            int vb = vw && vw->set_swizzle ? vw->swz[2] : -1;
+            int va = vw && vw->set_swizzle ? vw->swz[3] : -1;
+            n++;
+            VKLOG("[swizzle] #%u serial %llu pool %p+%#llx %ux%u fmt %#x target %d levels %u tex_set %d (%d,%d,%d,%d) view_set %d (%d,%d,%d,%d) view_fmt %d levels %u+%u result %d,%d,%d,%d attachment %d",
+                n, (unsigned long long)t->serial, (void *)t->pool, (unsigned long long)t->off,
+                t->d.width, t->d.height, t->d.format, t->d.target, t->d.levels, t->set_swz,
+                tr, tg, tb, ta, vw ? vw->set_swizzle : 0, vr, vg, vb, va,
+                vw && vw->set_format ? vw->format : -1,
+                vw && vw->set_levels ? vw->base_level : 0,
+                vw && vw->set_levels ? vw->nlevels : t->d.levels,
+                (int)swz.r, (int)swz.g, (int)swz.b, (int)swz.a, as_attachment);
+        }
+    }
+    VkFormat fmt = f->vk;""")
+]);
+
+
+# 55. Bounded, opt-in tracing of first-use texture contents and descriptor binds.
+# It records the decision path without changing texture uploads or view semantics.
+patch('NGR bounded texture first-use trace', 'nxnative/dm/android/gfx_vk_tex.c', 'NX2A_TEX_FIRST_TRACE', [
+    ("""    int nvn_ft_written(const tex_t *);
+    if (t->mem && lin_copy(im, t, f)) {}
+    else if (t->mem && (packaged_tex(t) || (first && (nvn_ft_written(t) || cpu_content_tex(t, f))))) {
+""",
+     """    int nvn_ft_written(const tex_t *);
+    int linear_upload = t->mem && lin_copy(im, t, f);
+    int is_packaged = 0, ft_written = 0, cpu_written = 0;
+    if (!linear_upload && t->mem) {
+        is_packaged = packaged_tex(t);
+        if (!is_packaged && first) {
+            ft_written = nvn_ft_written(t);
+            if (!ft_written) cpu_written = cpu_content_tex(t, f);
+        }
+    }
+    static int tex_trace = -1; /* NX2A_TEX_FIRST_TRACE: bounded first-use source trace */ if (tex_trace < 0) { const char *e = getenv("DM_VK_TEX_TRACE"); tex_trace = e && atoi(e) != 0; }
+    static unsigned tex_trace_n;
+    if (first && tex_trace && tex_trace_n < 96) {
+        const char *src = linear_upload ? "linear" : is_packaged ? "packaged" : ft_written ? "ft-written" : cpu_written ? "cpu-content" : "no-upload";
+        tex_trace_n++;
+        VKLOG("[tex-first] serial=%llu pool=%p off=%#llx mem=%p size=%#llx fmt=%#x vk=%d target=%u dims=%ux%u levels=%u flags=%#x pool_flags=%#x layout=%d mem_present=%d compressed=%d dec=%d source=%s",
+              (unsigned long long)t->serial, (const void *)t->pool, (unsigned long long)t->off, (const void *)t->mem,
+              (unsigned long long)t->L.size, t->d.format, f->vk, t->d.target, t->d.width, t->d.height, t->d.levels,
+              t->d.flags, t->pool ? t->pool->flags : 0, t->has_layout, t->mem != NULL, f->compressed, f->dec, src);
+    }
+    if (linear_upload) {}
+    else if (t->mem && (is_packaged || (first && (ft_written || cpu_written)))) {
+""")
+]);
+
+patch('NGR bounded texture descriptor trace', 'nxnative/dm/android/gfx_vk_exec.c', 'NX2A_TEX_BIND_TRACE', [
+    ("""    int num = 0;
+    if (tid && g_var_now != 3 && vk_tex_by_id(tid, &v, &t) && t) {
+        vkimg_t *im = NULL; ii->imageView = vk_tex_view(t, v, b->dim, b->flags & 1, 0, &im); if (storage && im) im->gpu_w = 1;
+""",
+     """    int num = 0;
+    static int ngr_tex_trace = -1; /* NX2A_TEX_BIND_TRACE: bounded descriptor trace */ if (ngr_tex_trace < 0) { const char *e = getenv("DM_VK_TEX_TRACE"); ngr_tex_trace = e && atoi(e) != 0; }
+    int found_tex = tid && g_var_now != 3 && vk_tex_by_id(tid, &v, &t) && t;
+    if (found_tex) {
+        vkimg_t *im = NULL; ii->imageView = vk_tex_view(t, v, b->dim, b->flags & 1, 0, &im); if (storage && im) im->gpu_w = 1;
+        static unsigned ngr_tex_bind_n;
+        if (ngr_tex_trace && t->d.width >= 16 && t->d.height >= 16 && ngr_tex_bind_n < 96) {
+            ngr_tex_bind_n++;
+            VKLOG("[tex-bind] stage=%d shader=%#llx binding=%u handle=%#llx id=%d serial=%llu pool=%p off=%#llx size=%#llx fmt=%#x target=%d dims=%ux%u levels=%u flags=%#x tex_swz=%#x view_swz=%d/%d,%d,%d,%d image=%p vkfmt=%d gpu_w=%d view=%p storage=%d",
+                  st, (unsigned long long)(S.sh[st] ? S.sh[st]->key : 0), b->binding, (unsigned long long)h, tid,
+                  (unsigned long long)t->serial, (const void *)t->pool, (unsigned long long)t->off, (unsigned long long)t->L.size,
+                  t->d.format, t->d.target, t->d.width, t->d.height, t->d.levels, t->d.flags,
+                  t->set_swz ? t->swz : 0xffffffffu, v && v->set_swizzle,
+                  v ? v->swz[0] : -1, v ? v->swz[1] : -1, v ? v->swz[2] : -1, v ? v->swz[3] : -1,
+                  (void *)im, im ? im->fmt : 0, im ? (int)im->gpu_w : -1, (void *)ii->imageView, storage);
+        }
+"""),
+    ("""    if (num && !storage) ii->sampler = samp_for(st, b, h, 1);
+    if (!ii->imageView) {
+""",
+     """    if (!found_tex && tid && g_var_now != 3 && ngr_tex_trace) {
+        static unsigned ngr_tex_miss_n;
+        if (ngr_tex_miss_n < 32) { ngr_tex_miss_n++; VKLOG("[tex-bind-miss] stage=%d shader=%#llx binding=%u handle=%#llx id=%d dim=%u flags=%#x storage=%d",
+            st, (unsigned long long)(S.sh[st] ? S.sh[st]->key : 0), b->binding, (unsigned long long)h, tid, b->dim, b->flags, storage); }
+    }
+    if (num && !storage) ii->sampler = samp_for(st, b, h, 1);
+    if (!ii->imageView) {
+""")
+]);
+
+
+# 56. A 4x MSAA 640x360 render target and its 1280x720 single-sample
+# RGBA8_SRGB alias occupy the same NVN memory. Separate Vulkan images do not
+# see each other's writes. Resolve the observed 4x -> 1x alias before sampling.
+# This is deliberately limited to the exact format/sample/2x relationship in
+# Metro's trace; other alias layouts remain visible in the diagnostic log.
+patch('NGR resolve 4x MSAA texture aliases before sampling', 'nxnative/dm/android/gfx_vk.h', 'NX2A_ALIAS_MSAA_RESOLVE', [
+    ("""    uint64_t wseq, rseen;             // when it was last rendered to (gfx_vk_tex.c g_wseq); the newest overlapping write already reported""",
+     """    VkImage alias_resolve_tmp; VkDeviceMemory alias_resolve_mem; void *alias_resolve_sub;
+    uint32_t alias_resolve_w, alias_resolve_h; VkFormat alias_resolve_fmt; // NX2A_ALIAS_MSAA_RESOLVE
+    uint64_t wseq, rseen;             // when it was last rendered to (gfx_vk_tex.c g_wseq); the newest overlapping write already reported""")
+]);
+
+patch('NGR resolve 4x MSAA texture aliases before sampling', 'nxnative/dm/android/gfx_vk_tex.c', 'NX2A_ALIAS_MSAA_RESOLVE', [
+    ("""static void alias_check(vkimg_t *im) {   // im is about to be sampled
+    static int trace = -1, n;
+    if (trace < 0) { const char *e = getenv("DM_VK_ALIAS_TRACE"); trace = e && atoi(e) > 0; }
+    for (int i = 0; i < im->novl; i++) {
+        vkimg_t *o = im->ovl[i]; if (o->wseq <= im->wseq || o->wseq <= im->rseen) continue;
+        im->rseen = o->wseq;
+        if (trace && n++ < 16) VKLOG("[alias] stale read: %ux%u fmt %#x samples %u target %u flags %#x levels %u at %+lld..%+lld sampled; %ux%u fmt %#x samples %u target %u flags %#x levels %u at %+lld..%+lld rendered later",
+            im->w, im->h, im->nvn_format, im->samples, im->target, im->flags, im->levels, (long long)im->off, (long long)(im->off + im->size),
+            o->w, o->h, o->nvn_format, o->samples, o->target, o->flags, o->levels, (long long)o->off, (long long)(o->off + o->size));
+    }
+} // NX2A_ALIAS_TRACE_METADATA""",
+     """static void alias_resolve_tmp_drop(vkimg_t *im) {
+    if (!im->alias_resolve_tmp) return;
+    if (im->alias_resolve_sub) vk_defer_free_image_sub(im->alias_resolve_tmp, im->alias_resolve_sub);
+    else vk_defer_free_image(im->alias_resolve_tmp, im->alias_resolve_mem);
+    im->alias_resolve_tmp = VK_NULL_HANDLE; im->alias_resolve_mem = VK_NULL_HANDLE; im->alias_resolve_sub = NULL;
+    im->alias_resolve_w = im->alias_resolve_h = 0; im->alias_resolve_fmt = VK_FORMAT_UNDEFINED;
+}
+static int alias_resolve_tmp_ensure(vkimg_t *im, const vkimg_t *src, VkCommandBuffer cb) {
+    if (im->alias_resolve_tmp && im->alias_resolve_w == src->w && im->alias_resolve_h == src->h && im->alias_resolve_fmt == src->fmt) return 1;
+    alias_resolve_tmp_drop(im);
+    VkImageCreateInfo ci = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO, NULL, 0, VK_IMAGE_TYPE_2D, src->fmt,
+        {src->w, src->h, 1}, 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL,
+        VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, VK_SHARING_MODE_EXCLUSIVE, 0, NULL, VK_IMAGE_LAYOUT_UNDEFINED};
+    VkImage tmp = VK_NULL_HANDLE;
+    if (vkCreateImage(V.dev, &ci, NULL, &tmp)) return 0;
+    VkMemoryRequirements req; vkGetImageMemoryRequirements(V.dev, tmp, &req);
+    VkDeviceSize moff = 0; void *sub = NULL;
+    VkDeviceMemory mem = vk_image_memory(&req, vk_mem_type(req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT), &moff, &sub);
+    if (!mem) { vkDestroyImage(V.dev, tmp, NULL); return 0; }
+    VkResult br = vkBindImageMemory(V.dev, tmp, mem, moff);
+    if (br) { if (sub) vk_defer_free_image_sub(tmp, sub); else vk_defer_free_image(tmp, mem); return 0; }
+    im->alias_resolve_tmp = tmp; im->alias_resolve_mem = mem; im->alias_resolve_sub = sub;
+    im->alias_resolve_w = src->w; im->alias_resolve_h = src->h; im->alias_resolve_fmt = src->fmt;
+    VkImageMemoryBarrier b = {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, NULL, 0,
+        VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL,
+        VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, tmp, {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
+    vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &b);
+    return 1;
+}
+static int alias_sync_msaa_upscale(vkimg_t *im, vkimg_t *src) {
+    if (!vk_sub_open() || !src || src == im || src->nvn_format != 0x38 || im->nvn_format != 0x38 ||
+        src->fmt != VK_FORMAT_R8G8B8A8_SRGB || im->fmt != src->fmt ||
+        src->samples != 4 || im->samples != 1 || src->target != 5 || im->target != 1 ||
+        src->levels != 1 || im->levels != 1 || src->layers != 1 || im->layers != 1 || src->d != 1 || im->d != 1 ||
+        src->aspect != VK_IMAGE_ASPECT_COLOR_BIT || im->aspect != VK_IMAGE_ASPECT_COLOR_BIT ||
+        src->w < 16 || src->h < 16 || src->w > UINT32_MAX / 2 || src->h > UINT32_MAX / 2 ||
+        src->w * 2 != im->w || src->h * 2 != im->h ||
+        !(src->usage & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) || !(im->usage & VK_IMAGE_USAGE_TRANSFER_DST_BIT)) return 0;
+    VkFormatProperties fp; vkGetPhysicalDeviceFormatProperties(V.pd, src->fmt, &fp);
+    if (!(fp.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_SRC_BIT) || !(fp.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT)) return 0;
+    vk_end_pass_land();
+    VkCommandBuffer cb = vk_cmd();
+    if (!alias_resolve_tmp_ensure(im, src, cb)) return 0;
+    vk_img_barrier_all(cb);
+    VkImageResolve rr = {{VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1}, {0, 0, 0},
+                         {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1}, {0, 0, 0}, {src->w, src->h, 1}};
+    vkCmdResolveImage(cb, src->img, VK_IMAGE_LAYOUT_GENERAL, im->alias_resolve_tmp, VK_IMAGE_LAYOUT_GENERAL, 1, &rr);
+    vk_img_barrier_all(cb);
+    VkImageBlit br = {{VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1}, {{0, 0, 0}, {(int32_t)src->w, (int32_t)src->h, 1}},
+                      {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1}, {{0, 0, 0}, {(int32_t)im->w, (int32_t)im->h, 1}}};
+    vkCmdBlitImage(cb, im->alias_resolve_tmp, VK_IMAGE_LAYOUT_GENERAL, im->img, VK_IMAGE_LAYOUT_GENERAL, 1, &br, VK_FILTER_NEAREST);
+    vk_img_barrier_all(cb);
+    im->wseq = src->wseq; im->rseen = src->wseq; im->gpu_w = 1;
+    static int logged; if (logged++ < 16) VKLOG("[alias-sync] resolved 4x MSAA %ux%u -> %ux%u RGBA8_SRGB alias before sample", src->w, src->h, im->w, im->h);
+    return 1;
+}
+static void alias_check(vkimg_t *im) {   // im is about to be sampled
+    static int trace = -1, n;
+    if (trace < 0) { const char *e = getenv("DM_VK_ALIAS_TRACE"); trace = e && atoi(e) > 0; }
+    vkimg_t *latest = NULL;
+    for (int i = 0; i < im->novl; i++) {
+        vkimg_t *o = im->ovl[i];
+        if (o->wseq > im->wseq && o->wseq > im->rseen && (!latest || o->wseq > latest->wseq)) latest = o;
+    }
+    if (!latest) return;
+    if (alias_sync_msaa_upscale(im, latest)) return;
+    im->rseen = latest->wseq;
+    if (trace && n++ < 16) VKLOG("[alias] stale read not synchronized: %ux%u fmt %#x samples %u target %u at %+lld..%+lld; newer alias %ux%u fmt %#x samples %u target %u at %+lld..%+lld",
+        im->w, im->h, im->nvn_format, im->samples, im->target, (long long)im->off, (long long)(im->off + im->size),
+        latest->w, latest->h, latest->nvn_format, latest->samples, latest->target, (long long)latest->off, (long long)(latest->off + latest->size));
+} // NX2A_ALIAS_TRACE_METADATA // NX2A_ALIAS_MSAA_RESOLVE"""),
+    ("""static void img_drop(vkimg_t *im) { vk_lrz_forget(im); if (im->lin_mem) nvn_dirty_release(im->lin_mem, im->lin_len); if (im->packaged && !im->pkg_released && im->pkg_mem) nvn_dirty_release(im->pkg_mem, im->pkg_len); g_img_n--; g_img_bytes -= im->size > 0 ? (uint64_t)im->size : 0; alias_unlink(im); vk_tex_view_drop_all(im); if (im->sub) vk_defer_free_image_sub(im->img, im->sub); else vk_defer_free_image(im->img, im->mem); free(im); }""",
+     """static void img_drop(vkimg_t *im) { vk_lrz_forget(im); if (im->lin_mem) nvn_dirty_release(im->lin_mem, im->lin_len); if (im->packaged && !im->pkg_released && im->pkg_mem) nvn_dirty_release(im->pkg_mem, im->pkg_len); g_img_n--; g_img_bytes -= im->size > 0 ? (uint64_t)im->size : 0; alias_unlink(im); alias_resolve_tmp_drop(im); vk_tex_view_drop_all(im); if (im->sub) vk_defer_free_image_sub(im->img, im->sub); else vk_defer_free_image(im->img, im->mem); free(im); } // NX2A_ALIAS_MSAA_RESOLVE""")
+]);
+
+patch('NGR enable bounded texture trace with alias trace', 'nxnative/dm/android/gfx_vk_exec.c', 'NX2A_ALIAS_AUTO_TEX_TRACE', [
+    ("""static int ngr_tex_trace = -1; /* NX2A_TEX_BIND_TRACE: bounded descriptor trace */ if (ngr_tex_trace < 0) { const char *e = getenv("DM_VK_TEX_TRACE"); ngr_tex_trace = e && atoi(e) != 0; }""",
+     """static int ngr_tex_trace = -1; /* NX2A_TEX_BIND_TRACE: bounded descriptor trace */ if (ngr_tex_trace < 0) { const char *a = getenv("DM_VK_ALIAS_TRACE"); if (a && atoi(a) > 0 && !getenv("DM_VK_TEX_TRACE")) setenv("DM_VK_TEX_TRACE", "1", 0); const char *e = getenv("DM_VK_TEX_TRACE"); ngr_tex_trace = e && atoi(e) != 0; } // NX2A_ALIAS_AUTO_TEX_TRACE""")
+]);
+
+
+# A rewritten module is not reusable without its mandatory layout sidecar. The host
+# opens <module>.fixups.tsv before mapping every .patched.bin; stale partial caches
+# otherwise produce a runtime abort (FATAL open ...fixups.tsv).
+patch('NGR rewrite sidecar cache validation', 'nxnative/scripts/build_ipa_from_nsp.py', 'NX2A_REWRITE_FIXUPS_CACHE', [
+    ("""    if all((out / f'{m}.patched.bin').is_file() for m in names) and reused(kf, key) is not None:
+""",
+     """    if all((out / f'{m}.patched.bin').is_file() and (out / f'{m}.fixups.tsv').is_file() for m in names) and reused(kf, key) is not None:  # NX2A_REWRITE_FIXUPS_CACHE
+""")
+]);
+
+# Never publish a data pack containing rewritten binaries without their mandatory
+# loader layout metadata. This also catches partial/stale rewrite directories early.
+patch('NGR data-pack rewritten-module metadata validation', 'porter/datapack.py', 'NX2A_DATAPACK_FIXUPS_VALIDATION', [
+    ("""    package = package or profile.package
+    tmp = dst.with_name(dst.name + '.partial')
+""",
+     """    package = package or profile.package
+    # NX2A_DATAPACK_FIXUPS_VALIDATION: reject incomplete rewritten-module sidecars.
+    if patched:
+        _patched_dir = Path(patched)
+        _missing_fixups = [p.name[:-len('.patched.bin')] + '.fixups.tsv'
+                           for p in sorted(_patched_dir.glob('*.patched.bin'))
+                           if not (_patched_dir / (p.name[:-len('.patched.bin')] + '.fixups.tsv')).is_file()]
+        if _missing_fixups:
+            raise RuntimeError('rewritten module metadata is incomplete; missing ' + ', '.join(_missing_fixups) + '; rerun the Android module rewrite')
+    tmp = dst.with_name(dst.name + '.partial')
+""")
+]);
+
+
+# 57. BC/ASTC storage remains CPU-authored even when the NVN descriptor carries
+# IMAGE or COMPRESSIBLE. Those formats cannot be render targets; excluding them
+# left the Vulkan image at zero, so particle sprites and material textures sampled
+# alpha 0. Include CPU-decoded BC formats too (f->dec).
+patch('NGR first-use upload for compressed COMPRESSIBLE textures', 'nxnative/dm/android/gfx_vk_tex.c', 'NX2A_STORAGE_FIRST_USE_COMPRESSED', [
+    ("""    if (!on || !t->pool || t->has_layout || !(f->compressed || t->d.target == 2) || t->d.samples > 1) return 0;
+    if (t->pool->flags & NVN_MEMORY_POOL_FLAGS_VIRTUAL) return 0;
+    if (t->d.flags & (NVN_TEXTURE_FLAGS_IMAGE | NVN_TEXTURE_FLAGS_COMPRESSIBLE | NVN_TEXTURE_FLAGS_LINEAR | NVN_TEXTURE_FLAGS_LINEAR_RENDER_TARGET | NVN_TEXTURE_FLAGS_SPARSE)) return 0;""",
+     """    int guest_comp = f->compressed || f->dec; // NX2A_STORAGE_FIRST_USE_COMPRESSED
+    if (!on || !t->pool || t->has_layout || !(guest_comp || t->d.target == 2) || t->d.samples > 1) return 0;
+    if (t->pool->flags & NVN_MEMORY_POOL_FLAGS_VIRTUAL) return 0;
+    // BC/ASTC (including CPU-decoded BC) cannot be rendered into: IMAGE and COMPRESSIBLE
+    // do not make their initial pool bytes GPU-authored.
+    if (t->d.flags & ((guest_comp ? 0 : (NVN_TEXTURE_FLAGS_IMAGE | NVN_TEXTURE_FLAGS_COMPRESSIBLE)) | NVN_TEXTURE_FLAGS_LINEAR | NVN_TEXTURE_FLAGS_LINEAR_RENDER_TARGET | NVN_TEXTURE_FLAGS_SPARSE)) return 0;""")
+]);
+
+# Accept both NVN RGBX8_SRGB and RGBA8_SRGB encodings for the known Metro
+# 4x-MSAA -> 1x 2x-resolution render-target alias.
+patch('NGR accept both sRGB NVN aliases for Metro MSAA resolve', 'nxnative/dm/android/gfx_vk_tex.c', 'NX2A_ALIAS_SRGB_FORMATS', [
+    ("""    if (!vk_sub_open() || !src || src == im || src->nvn_format != 0x38 || im->nvn_format != 0x38 ||
+        src->fmt != VK_FORMAT_R8G8B8A8_SRGB || im->fmt != src->fmt ||""",
+     """    if (!vk_sub_open() || !src || src == im ||
+        (src->nvn_format != 0x37 && src->nvn_format != 0x38) ||
+        (im->nvn_format != 0x37 && im->nvn_format != 0x38) ||
+        src->nvn_format != im->nvn_format ||
+        src->fmt != VK_FORMAT_R8G8B8A8_SRGB || im->fmt != src->fmt || // NX2A_ALIAS_SRGB_FORMATS""")
 ]);
 
 sys.exit(1 if failed else 0)

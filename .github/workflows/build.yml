@@ -5,7 +5,7 @@ concurrency:
   group: build
   cancel-in-progress: false
 on:
-  push: { branches: [main, feature/ngr-universal-library] }
+  push: { branches: [main, feature/ngr-universal-library, feature/metro-save-manager] }
   pull_request: { branches: [main] }
   workflow_dispatch: {}
   schedule:
@@ -52,7 +52,7 @@ jobs:
           if [ "${{ github.event_name }}" = "push" ] && git cat-file -e "${{ github.event.before }}^{commit}" 2>/dev/null; then
             other=$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" | grep -Ev '^(app/src/main/assets/nx2a/payload/|docs/|tests/|README\.md$|tools/make_prebuilt\.sh$|\.github/workflows/)' || true)
             [ -z "$other" ] && build=false
-            if [ "${{ github.ref }}" = "refs/heads/feature/ngr-universal-library" ]; then build=true; fi
+            if [ "${{ github.ref }}" = "refs/heads/feature/ngr-universal-library" ] || [ "${{ github.ref }}" = "refs/heads/feature/metro-save-manager" ]; then build=true; fi
             echo "changed outside the payload: ${other:-nothing}"
           fi
           echo "build=$build" >> "$GITHUB_OUTPUT"
@@ -75,15 +75,15 @@ jobs:
           /tmp/test_profile_json
       - name: Verify NGR patch set against the pinned porter
         run: |
-          upstream_sha=e9bd2b764608facf841e39292d868ee657eaf634
+          upstream_sha="$(python3 -c 'import json; print(json.load(open("app/src/main/assets/nx2a/payload/payload.json"))["porter_sha"])')"
           git init /tmp/nx2a-upstream
           git -C /tmp/nx2a-upstream remote add origin https://github.com/shirai91/nx2android.git
           git -C /tmp/nx2a-upstream fetch --depth 1 origin "$upstream_sha"
           git -C /tmp/nx2a-upstream checkout --detach FETCH_HEAD
           python3 app/src/main/assets/nx2a/payload/apply_patches.py /tmp/nx2a-upstream
           python3 app/src/main/assets/nx2a/payload/apply_patches.py /tmp/nx2a-upstream
-          grep -q 'NX2A_FRIENDS_OFFLINE_PRESENCE' /tmp/nx2a-upstream/nxnative/dm/host/hle_friends.c
-          grep -q 'mem_alias.*0x138000000' /tmp/nx2a-upstream/nxnative/dm/games/0100CD701434C000/game.tsv
+          grep -q 'NX2A_ALIAS_MSAA_RESOLVE' /tmp/nx2a-upstream/nxnative/dm/android/gfx_vk_tex.c
+          grep -q 'NX2A_INDEX_CHUNK_COPY' /tmp/nx2a-upstream/nxnative/dm/android/gfx_vk_exec.c
       - name: Check WebView JavaScript syntax
         run: |
           python3 - <<'PY'
@@ -116,9 +116,28 @@ jobs:
         run: |
           yes | sdkmanager --licenses >/dev/null 2>&1 || true
           gradle --no-daemon assembleRelease
+      - name: Compile patched NVN Vulkan backend and SPIR-V shaders
+        if: steps.chg.outputs.build == 'true'
+        run: |
+          SDK="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          NDK="$SDK/ndk/27.2.12479018"
+          test -x "$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/clang"
+          test -x "$NDK/shader-tools/linux-x86_64/glslc"
+          PROFILE_DIR=/tmp/nx2a-upstream/nxnative/dm/games/0100D4900E82C000
+          mkdir -p "$PROFILE_DIR"
+          cp app/src/main/assets/nx2a/payload/profiles/0100D4900E82C000.game.tsv "$PROFILE_DIR/game.tsv"
+          python3 /tmp/nx2a-upstream/nxnative/dm/android/build.py \
+            --game 0100D4900E82C000 --ndk "$NDK" --lib --release --jobs 4
+          test -s /tmp/nx2a-upstream/nxnative/dm/android/out/0100D4900E82C000-release/libdmhost.so
+          mkdir -p artifacts/metro2033redux
+          cp /tmp/nx2a-upstream/nxnative/dm/android/out/0100D4900E82C000-release/libdmhost.so artifacts/metro2033redux/libdmhost.so
+          printf 'Game profile: 0100D4900E82C000\\nPorter commit: %s\\nPayload version: %s\\n' "$upstream_sha" "$(python3 -c 'import json; print(json.load(open("app/src/main/assets/nx2a/payload/payload.json"))["version"])')" > artifacts/metro2033redux/BUILD_INFO.txt
       - uses: actions/upload-artifact@v4
         if: steps.chg.outputs.build == 'true'
         with: { name: nx2android-apk, path: 'app/build/outputs/apk/release/*.apk' }
+      - uses: actions/upload-artifact@v4
+        if: steps.chg.outputs.build == 'true'
+        with: { name: nvn-backend-build-check, path: 'artifacts/metro2033redux/*' }
       - name: Publish the APK as the latest release
         if: steps.chg.outputs.build == 'true' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         env:
