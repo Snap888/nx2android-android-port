@@ -263,6 +263,7 @@ static void img_drop(vkimg_t *im) { vk_lrz_forget(im); if (im->lin_mem) nvn_dirt
             patched_tex = tex.read_text(encoding="utf-8")
             for marker in (
                 "NX2A_ALIAS_MSAA_RESOLVE",
+                "NX2A_ALIAS_TRACE_METADATA",
                 "alias_resolve_tmp",
                 "alias_sync_msaa_upscale",
                 "vkCmdResolveImage",
