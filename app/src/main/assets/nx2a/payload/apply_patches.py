@@ -509,7 +509,7 @@ static void on_resume(ANativeActivity *a) { if (g_quit) { act_finish(a); return;
 
 patch('NGR overlay exit labels', 'nxnative/dm/android/gfx_vk_present.c', 'NX2A_NGR_EXIT_LABEL', [
 ("static const char *const OVM_LABELS[OVM_N] = {\"Show gamepad\", \"Opacity\", \"Edit layout\", \"Rumble\", \"Show FPS\", \"Mode\", \"Export save\", \"Import save\", \"Resume\", \"Exit game\", \"\"};",
- "static const char *const OVM_LABELS[OVM_N] = {\"Show gamepad\", \"Opacity\", \"Edit layout\", \"Rumble\", \"Show FPS\", \"Mode\", \"Export save\", \"Import save\", \"Face buttons\", \"Resume\", \"Exit game\", \"\"};"),
+ "static const char *const OVM_LABELS[OVM_N] = {\"Show gamepad\", \"Opacity\", \"Edit layout\", \"Rumble\", \"Show FPS\", \"Mode\", \"Export save\", \"Import save\", \"Resume\", \"Exit game\", \"\"};"),
 ("if (it == OVM_RESUME) { cv_rrect(cv, r[0], r[1], r[0] + rw, r[1] + 1, 0.5f, C_LINE); cv_text(cv, r[0] + (rw - cv_text_w(\"Resume\", is)) / 2, cy, \"Resume\", is, C_ACCENT); continue; }",
  "if (it == OVM_RESUME || it == OVM_EXIT) { const char *word = OVM_LABELS[it]; cv_rrect(cv, r[0], r[1], r[0] + rw, r[1] + 1, 0.5f, C_LINE); cv_text(cv, r[0] + (rw - cv_text_w(word, is)) / 2, cy, word, is, C_ACCENT); continue; }"),
 ])
