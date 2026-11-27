@@ -314,9 +314,9 @@ static void img_drop(vkimg_t *im) { vk_lrz_forget(im); if (im->lin_mem) nvn_dirt
             source = Path(tmp) / "nxnative/scripts/build_ipa_from_nsp.py"
             source.parent.mkdir(parents=True)
             source.write_text(
-                "def rewrite(out, names, kf, key):\\n"
-                "    if all((out / f'{m}.patched.bin').is_file() for m in names) and reused(kf, key) is not None:\\n"
-                "        return\\n",
+                "def rewrite(out, names, kf, key):\n"
+                "    if all((out / f'{m}.patched.bin').is_file() for m in names) and reused(kf, key) is not None:\n"
+                "        return\n",
                 encoding="utf-8",
             )
             env = dict(os.environ, NX2A_PATCH_ONLY="NGR rewrite sidecar cache validation")
@@ -341,9 +341,9 @@ static void img_drop(vkimg_t *im) { vk_lrz_forget(im); if (im->lin_mem) nvn_dirt
             source = Path(tmp) / "porter/datapack.py"
             source.parent.mkdir(parents=True)
             source.write_text(
-                "def build(dst, *, profile, patched, version):\\n"
-                "    package = package or profile.package\\n"
-                "    tmp = dst.with_name(dst.name + '.partial')\\n",
+                "def build(dst, *, profile, patched, version):\n"
+                "    package = package or profile.package\n"
+                "    tmp = dst.with_name(dst.name + '.partial')\n",
                 encoding="utf-8",
             )
             env = dict(os.environ, NX2A_PATCH_ONLY="NGR data-pack rewritten-module metadata validation")
