@@ -123,11 +123,14 @@ jobs:
           NDK="$SDK/ndk/27.2.12479018"
           test -x "$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/clang"
           test -x "$NDK/shader-tools/linux-x86_64/glslc"
+          PROFILE_DIR=/tmp/nx2a-upstream/nxnative/dm/games/0100D4900E82C000
+          mkdir -p "$PROFILE_DIR"
+          cp app/src/main/assets/nx2a/payload/profiles/0100D4900E82C000.game.tsv "$PROFILE_DIR/game.tsv"
           python3 /tmp/nx2a-upstream/nxnative/dm/android/build.py \
-            --game 0100CD701434C000 --ndk "$NDK" --lib --release --jobs 4
-          test -s /tmp/nx2a-upstream/nxnative/dm/android/out/0100CD701434C000-release/libdmhost.so
+            --game 0100D4900E82C000 --ndk "$NDK" --lib --release --jobs 4
+          test -s /tmp/nx2a-upstream/nxnative/dm/android/out/0100D4900E82C000-release/libdmhost.so
           mkdir -p artifacts/metro2033redux
-          cp /tmp/nx2a-upstream/nxnative/dm/android/out/0100CD701434C000-release/libdmhost.so artifacts/metro2033redux/libdmhost.so
+          cp /tmp/nx2a-upstream/nxnative/dm/android/out/0100D4900E82C000-release/libdmhost.so artifacts/metro2033redux/libdmhost.so
           printf 'Game profile: 0100D4900E82C000\\nPorter commit: %s\\nPayload version: %s\\n' "$upstream_sha" "$(python3 -c 'import json; print(json.load(open("app/src/main/assets/nx2a/payload/payload.json"))["version"])')" > artifacts/metro2033redux/BUILD_INFO.txt
       - uses: actions/upload-artifact@v4
         if: steps.chg.outputs.build == 'true'
