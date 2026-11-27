@@ -2028,4 +2028,33 @@ patch('NGR data-pack rewritten-module metadata validation', 'porter/datapack.py'
 """)
 ]);
 
+
+# 57. BC/ASTC storage remains CPU-authored even when the NVN descriptor carries
+# IMAGE or COMPRESSIBLE. Those formats cannot be render targets; excluding them
+# left the Vulkan image at zero, so particle sprites and material textures sampled
+# alpha 0. Include CPU-decoded BC formats too (f->dec).
+patch('NGR first-use upload for compressed COMPRESSIBLE textures', 'nxnative/dm/android/gfx_vk_tex.c', 'NX2A_STORAGE_FIRST_USE_COMPRESSED', [
+    ("""    if (!on || !t->pool || t->has_layout || !(f->compressed || t->d.target == 2) || t->d.samples > 1) return 0;
+    if (t->pool->flags & NVN_MEMORY_POOL_FLAGS_VIRTUAL) return 0;
+    if (t->d.flags & (NVN_TEXTURE_FLAGS_IMAGE | NVN_TEXTURE_FLAGS_COMPRESSIBLE | NVN_TEXTURE_FLAGS_LINEAR | NVN_TEXTURE_FLAGS_LINEAR_RENDER_TARGET | NVN_TEXTURE_FLAGS_SPARSE)) return 0;""",
+     """    int guest_comp = f->compressed || f->dec; // NX2A_STORAGE_FIRST_USE_COMPRESSED
+    if (!on || !t->pool || t->has_layout || !(guest_comp || t->d.target == 2) || t->d.samples > 1) return 0;
+    if (t->pool->flags & NVN_MEMORY_POOL_FLAGS_VIRTUAL) return 0;
+    // BC/ASTC (including CPU-decoded BC) cannot be rendered into: IMAGE and COMPRESSIBLE
+    // do not make their initial pool bytes GPU-authored.
+    if (t->d.flags & ((guest_comp ? 0 : (NVN_TEXTURE_FLAGS_IMAGE | NVN_TEXTURE_FLAGS_COMPRESSIBLE)) | NVN_TEXTURE_FLAGS_LINEAR | NVN_TEXTURE_FLAGS_LINEAR_RENDER_TARGET | NVN_TEXTURE_FLAGS_SPARSE)) return 0;""")
+]);
+
+# Accept both NVN RGBX8_SRGB and RGBA8_SRGB encodings for the known Metro
+# 4x-MSAA -> 1x 2x-resolution render-target alias.
+patch('NGR accept both sRGB NVN aliases for Metro MSAA resolve', 'nxnative/dm/android/gfx_vk_tex.c', 'NX2A_ALIAS_SRGB_FORMATS', [
+    ("""    if (!vk_sub_open() || !src || src == im || src->nvn_format != 0x38 || im->nvn_format != 0x38 ||
+        src->fmt != VK_FORMAT_R8G8B8A8_SRGB || im->fmt != src->fmt ||""",
+     """    if (!vk_sub_open() || !src || src == im ||
+        (src->nvn_format != 0x37 && src->nvn_format != 0x38) ||
+        (im->nvn_format != 0x37 && im->nvn_format != 0x38) ||
+        src->nvn_format != im->nvn_format ||
+        src->fmt != VK_FORMAT_R8G8B8A8_SRGB || im->fmt != src->fmt || // NX2A_ALIAS_SRGB_FORMATS""")
+]);
+
 sys.exit(1 if failed else 0)
