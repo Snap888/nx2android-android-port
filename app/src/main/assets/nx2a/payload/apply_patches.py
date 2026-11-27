@@ -477,42 +477,6 @@ patch('NGR build complete native runtime', 'porter/pipeline.py', 'NX2A_NGR_ADREN
 ])
 
 
-# 9b. The in-game pause/settings menu must provide an explicit way back to NGR.
-# Back opens this menu; the last row now ends the NativeActivity instead of leaving
-# the player trapped with only Resume available.
-patch('NGR overlay exit row', 'nxnative/dm/android/overlay_layout.h', 'NX2A_NGR_EXIT_ROW', [
-("OVM_RESUME, OVM_TAB, OVM_N", "OVM_RESUME, OVM_EXIT, OVM_TAB, OVM_N"),
-("#define OVM_ROWS (OVM_PER_TAB + 2)", "#define OVM_ROWS (OVM_PER_TAB + 3)"),
-("static inline int ov_menu_item(int tab, int row) { return row == 0 ? OVM_TAB : row == OVM_ROWS - 1 ? OVM_RESUME : row > 0 && row < OVM_ROWS - 1 ? OVM_TAB_ITEMS[tab & 1][row - 1] : -1; }",
- "static inline int ov_menu_item(int tab, int row) { return row == 0 ? OVM_TAB : row == OVM_ROWS - 2 ? OVM_RESUME : row == OVM_ROWS - 1 ? OVM_EXIT : row > 0 && row < OVM_ROWS - 2 ? OVM_TAB_ITEMS[tab & 1][row - 1] : -1; }"),
-])
-
-patch('NGR overlay exit action', 'nxnative/dm/android/front_android.c', 'NX2A_NGR_EXIT_ACTION', [
-("static void on_resume(ANativeActivity *a) { if (g_quit) { act_finish(a); return; } go_foreground(); }",
- """static void act_finish_async(void) {   // menu/input thread: NGR's Java shim marshals Activity.finish() onto Android's UI thread
-    if (!g_act || !g_act->vm) return;
-    JavaVM *vm = g_act->vm; JNIEnv *E = NULL; int attached = 0;
-    jint state = (*vm)->GetEnv(vm, (void **)&E, JNI_VERSION_1_6);
-    if (state == JNI_EDETACHED) { if ((*vm)->AttachCurrentThread(vm, &E, NULL) != JNI_OK) { LOG("[RED] cannot attach exit request to Java VM"); return; } attached = 1; }
-    else if (state != JNI_OK) { LOG("[RED] cannot obtain JNI environment for exit request"); return; }
-    jclass cls = (*E)->GetObjectClass(E, g_act->clazz);
-    jmethodID method = cls ? (*E)->GetMethodID(E, cls, "finishFromNative", "()V") : NULL;
-    if (method) (*E)->CallVoidMethod(E, g_act->clazz, method);
-    if ((*E)->ExceptionCheck(E)) { (*E)->ExceptionDescribe(E); (*E)->ExceptionClear(E); }
-    if (!method) { LOG("[RED] finishFromNative is unavailable; using ANativeActivity_finish fallback"); ANativeActivity_finish(g_act); }
-    if (attached) (*vm)->DetachCurrentThread(vm);
-}
-static void on_resume(ANativeActivity *a) { if (g_quit) { act_finish(a); return; } go_foreground(); }"""),
-("static void menu_do(int item) {\n    if (item == OVM_OVERLAY)",
- "static void menu_do(int item) {\n    if (item == OVM_EXIT) { LOG(\"[menu] Exit game selected\"); g_quit = 1; act_finish_async(); return; }\n    if (item == OVM_OVERLAY)"),
-])
-
-patch('NGR overlay exit labels', 'nxnative/dm/android/gfx_vk_present.c', 'NX2A_NGR_EXIT_LABEL', [
-("static const char *const OVM_LABELS[OVM_N] = {\"Show gamepad\", \"Opacity\", \"Edit layout\", \"Rumble\", \"Show FPS\", \"Mode\", \"Export save\", \"Import save\", \"Face buttons\", \"Resume\", \"\"};",
- "static const char *const OVM_LABELS[OVM_N] = {\"Show gamepad\", \"Opacity\", \"Edit layout\", \"Rumble\", \"Show FPS\", \"Mode\", \"Export save\", \"Import save\", \"Resume\", \"Exit game\", \"\"};"),
-("if (it == OVM_RESUME) { cv_rrect(cv, r[0], r[1], r[0] + rw, r[1] + 1, 0.5f, C_LINE); cv_text(cv, r[0] + (rw - cv_text_w(\"Resume\", is)) / 2, cy, \"Resume\", is, C_ACCENT); continue; }",
- "if (it == OVM_RESUME || it == OVM_EXIT) { const char *word = OVM_LABELS[it]; cv_rrect(cv, r[0], r[1], r[0] + rw, r[1] + 1, 0.5f, C_LINE); cv_text(cv, r[0] + (rw - cv_text_w(word, is)) / 2, cy, word, is, C_ACCENT); continue; }"),
-])
 
 
 # 10. every device path in env.txt (DLC, sysdata, fonts, FPS tables) resolves inside this game's NGR folder.
