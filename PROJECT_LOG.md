@@ -1129,3 +1129,28 @@
 3. If source=no-upload, use first-use metadata to isolate the gating reason; if IDs are missing, audit texture-pool registration/handle decode; if bindings exist, correlate format/swizzle/image bytes with shader key and sampler.
 4. Keep the next trace run short. All tracing is opt-in and bounded; do not enable verbose/per-frame logging.
 5. After texture path is identified, investigate the known (2,3,4,0) swizzle only for the correlated texture. Keep alias and shadow-depth issues separate.
+
+## 2026-11-27 — Metro texture alias coherence (payload 229)
+
+### Fresh device log reviewed
+- Current gameplay capture: session 9383b4fd4e8540ed5d6e, 2026-11-27 09:12; Turnip Adreno 740, Vulkan 1.4, BC and ASTC supported.
+- Shader bundle: 854/854 shaders loaded; prewarm: 359/359 graphics pipelines. At present 600, replay reports 600 draws and zero skips for no program / no target / no pipeline. This does not prove every later draw succeeds, but it does not support a global shader-compilation failure.
+- Confirmed overlapping NVN storage: the same pool byte range is sampled as 1280x720, NVN format 0x38 (VK_FORMAT_R8G8B8A8_SRGB), single-sample target 1, after being rendered as 640x360, same format, 4x MSAA target 5. The Vulkan backend keeps separate device-local VkImages for different NVN descriptions; upstream gfx_vk_tex.c explicitly notes that one image cannot see another image's writes over the same NVN memory. The existing alias trace was reporting this stale-read condition.
+- The repeated indexed range at 0x718fa89afc (798 uint16 indices, base vertex 50734) is handled by the GPU scratch-copy path (path gpu-copy). Do not rework this path based on the current log.
+- No shader/pipeline failure was correlated with the absent fire or textures. The far-only-visible laser sight remains uncorrelated and is not yet proven to be the same defect.
+
+### Implemented
+- New patch NX2A_ALIAS_MSAA_RESOLVE: for the exact observed 4x MSAA 640x360 -> single-sample 1280x720 RGBA8_SRGB alias, resolve into a cached single-sample temporary image and nearest-blit into the stale sampled alias before use.
+- The fallback is deliberately narrow: NVN format 0x38, same Vulkan sRGB format, 4 samples -> 1, 2x width and height, one mip/layer, color aspect. Other alias configurations remain logged, not silently modified.
+- Temporary image memory is deferred-freed with the existing Vulkan lifetime machinery; the temporary is cached per destination image.
+- When DM_VK_ALIAS_TRACE=1 is set, bounded DM_VK_TEX_TRACE first-use and descriptor traces are now automatically enabled (existing caps remain 96 first-use, 96 binds, 32 misses).
+- Added patcher tests for MSAA alias patch application/idempotence and alias-triggered texture trace.
+- Payload manifest version: 229. Patcher SHA-256: 5f2eb7a3e8077cce4ea75ceae7ddd305fd23d837a39211362f638068acfad9de.
+- Commits: b8c3fdaa (alias sync implementation), 6d7d6894 (preserve prior alias trace marker for idempotence), 22cc210e (test idempotence), 345902fc (payload checksum/version).
+- CI run 45951526428 is building the APK and compiling the patched Vulkan backend; device correctness is not yet verified.
+
+### Important limitation / next test
+- MSAA resolve + nearest 2x blit is a visual reconstruction of the observed alias, not a bit-exact recreation of the Switch's raw per-sample memory reinterpretation. It should make the newer target's colour data visible to the older alias, but the Adreno device test must confirm whether the mapping is sufficient.
+- Install the payload-229 APK, rebuild the Metro Data Pack, and verify a new log contains [alias-sync] records and no repeated stale-read records for this exact pair.
+- Because alias trace now enables texture tracing automatically, inspect [tex-first], [tex-bind] and [tex-bind-miss] on the same short run. This will show whether missing fire/particles are actually bound to valid images and whether their first-use source was no-upload.
+- For the laser sight, next isolate the correlated shader/texture descriptor and sampler LOD. Do not change global maxLod, mip bias, culling, or depth state without that correlation.
