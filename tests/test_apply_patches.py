@@ -226,5 +226,86 @@ class ApplyPatchesTests(unittest.TestCase):
             self.assertEqual(second.returncode, 0, second.stdout + second.stderr)
             self.assertIn("already", second.stdout)
 
+
+    def test_msaa_alias_sync_patch_is_applied_and_idempotent(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            header = Path(tmp) / "nxnative/dm/android/gfx_vk.h"
+            tex = Path(tmp) / "nxnative/dm/android/gfx_vk_tex.c"
+            header.parent.mkdir(parents=True)
+            tex.parent.mkdir(parents=True)
+            header.write_text(
+                "    uint64_t wseq, rseen;             // when it was last rendered to (gfx_vk_tex.c g_wseq); the newest overlapping write already reported\n",
+                encoding="utf-8",
+            )
+            tex.write_text(
+                """static void alias_check(vkimg_t *im) {   // im is about to be sampled
+    static int trace = -1, n;
+    if (trace < 0) { const char *e = getenv("DM_VK_ALIAS_TRACE"); trace = e && atoi(e) > 0; }
+    for (int i = 0; i < im->novl; i++) {
+        vkimg_t *o = im->ovl[i]; if (o->wseq <= im->wseq || o->wseq <= im->rseen) continue;
+        im->rseen = o->wseq;
+        if (trace && n++ < 16) VKLOG("[alias] stale read: %ux%u fmt %#x samples %u target %u flags %#x levels %u at %+lld..%+lld sampled; %ux%u fmt %#x samples %u target %u flags %#x levels %u at %+lld..%+lld rendered later",
+            im->w, im->h, im->nvn_format, im->samples, im->target, im->flags, im->levels, (long long)im->off, (long long)(im->off + im->size),
+            o->w, o->h, o->nvn_format, o->samples, o->target, o->flags, o->levels, (long long)o->off, (long long)(o->off + o->size));
+    }
+} // NX2A_ALIAS_TRACE_METADATA
+static void img_drop(vkimg_t *im) { vk_lrz_forget(im); if (im->lin_mem) nvn_dirty_release(im->lin_mem, im->lin_len); if (im->packaged && !im->pkg_released && im->pkg_mem) nvn_dirty_release(im->pkg_mem, im->pkg_len); g_img_n--; g_img_bytes -= im->size > 0 ? (uint64_t)im->size : 0; alias_unlink(im); vk_tex_view_drop_all(im); if (im->sub) vk_defer_free_image_sub(im->img, im->sub); else vk_defer_free_image(im->img, im->mem); free(im); }
+""",
+                encoding="utf-8",
+            )
+            env = dict(os.environ, NX2A_PATCH_ONLY="NGR resolve 4x MSAA texture aliases before sampling")
+            first = subprocess.run(
+                [sys.executable, str(PATCHER), tmp],
+                capture_output=True, text=True, env=env, check=False,
+            )
+            self.assertEqual(first.returncode, 0, first.stdout + first.stderr)
+            patched_header = header.read_text(encoding="utf-8")
+            patched_tex = tex.read_text(encoding="utf-8")
+            for marker in (
+                "NX2A_ALIAS_MSAA_RESOLVE",
+                "alias_resolve_tmp",
+                "alias_sync_msaa_upscale",
+                "vkCmdResolveImage",
+                "vkCmdBlitImage",
+                "VK_FORMAT_R8G8B8A8_SRGB",
+                "src->w * 2 != im->w",
+            ):
+                self.assertIn(marker, patched_header + patched_tex)
+            self.assertIn("alias_resolve_tmp_drop(im)", patched_tex)
+
+            second = subprocess.run(
+                [sys.executable, str(PATCHER), tmp],
+                capture_output=True, text=True, env=env, check=False,
+            )
+            self.assertEqual(second.returncode, 0, second.stdout + second.stderr)
+            self.assertIn("already", second.stdout)
+
+    def test_alias_trace_enables_bounded_texture_binding_trace(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            exe = Path(tmp) / "nxnative/dm/android/gfx_vk_exec.c"
+            exe.parent.mkdir(parents=True)
+            exe.write_text(
+                'static int ngr_tex_trace = -1; /* NX2A_TEX_BIND_TRACE: bounded descriptor trace */ if (ngr_tex_trace < 0) { const char *e = getenv("DM_VK_TEX_TRACE"); ngr_tex_trace = e && atoi(e) != 0; }',
+                encoding="utf-8",
+            )
+            env = dict(os.environ, NX2A_PATCH_ONLY="NGR enable bounded texture trace with alias trace")
+            first = subprocess.run(
+                [sys.executable, str(PATCHER), tmp],
+                capture_output=True, text=True, env=env, check=False,
+            )
+            self.assertEqual(first.returncode, 0, first.stdout + first.stderr)
+            patched = exe.read_text(encoding="utf-8")
+            self.assertIn("DM_VK_ALIAS_TRACE", patched)
+            self.assertIn('setenv("DM_VK_TEX_TRACE", "1", 0)', patched)
+            self.assertIn("NX2A_ALIAS_AUTO_TEX_TRACE", patched)
+
+            second = subprocess.run(
+                [sys.executable, str(PATCHER), tmp],
+                capture_output=True, text=True, env=env, check=False,
+            )
+            self.assertEqual(second.returncode, 0, second.stdout + second.stderr)
+            self.assertIn("already", second.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()
