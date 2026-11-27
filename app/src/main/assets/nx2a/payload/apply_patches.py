@@ -698,7 +698,7 @@ static int ngr_sync_key_watched(uint64_t key) {
 """),
 ("""        pthread_mutex_lock(&G);
         // The order matters: first set the condition key = 1, then release the mutex. The SDK's InternalConditionVariable::Signal first reads the condition key in user mode, and does not issue svc 0x1D if it is 0;
-""", """        G_lock();
+""", """        pthread_mutex_lock(&G);
         if (ngr_sync_watch(t->handle)) {
             ngr_sync_track_key(key);
             LOG("[NGR_SYNC] cv-wait h=%#x lock=%#llx key=%#llx tag=%#x timeout_ns=%lld lockword=%#x keyword=%#x",
@@ -718,7 +718,7 @@ static int ngr_sync_key_watched(uint64_t key) {
         pthread_mutex_lock(&G);
         for (thr_t *w; (cnt <= 0 || n < cnt) && (w = pick(2, key)); n++) lock_acquire_for(w, w->waddr, w->wtag);   // In kernel order; once turned into a lock wait or woken it is no longer kind 2
 """, """        uint64_t key = regs[0]; int cnt = (int)regs[1], n = 0;
-        G_lock();
+        pthread_mutex_lock(&G);
         int ngr_tracked_signal = ngr_sync_key_watched(key);
         if (ngr_tracked_signal && g_ngr_sync_signal_logs < 256)
             LOG("[NGR_SYNC] cv-signal key=%#llx count=%d", (unsigned long long)key, cnt);
