@@ -2029,4 +2029,3 @@ patch('NGR data-pack rewritten-module metadata validation', 'porter/datapack.py'
 ]);
 
 sys.exit(1 if failed else 0)
-sys.exit(1 if failed else 0)
