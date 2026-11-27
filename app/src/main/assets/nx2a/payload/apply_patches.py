@@ -694,7 +694,7 @@ static int ngr_sync_key_watched(uint64_t key) {
             if (ov) pthread_override_qos_class_end_np(ov); }
 """),
 ("""    case 0x1B: G_lock(); lock_handoff(regs[0]); pthread_mutex_unlock(&G); regs[0] = 0; return 1;
-""", """    case 0x1B: { thr_t *t = cur(); if (ngr_sync_trace_enabled() && ngr_sync_watch(t->handle)) LOG("[NGR_SYNC] unlock h=%#x addr=%#llx word=%#x", t->handle, (unsigned long long)regs[0], ld32(regs[0])); G_lock(); lock_handoff(regs[0]); pthread_mutex_unlock(&G); regs[0] = 0; return 1; }
+""", """    case 0x1B: { thr_t *t = cur(); if (ngr_sync_watch(t->handle)) LOG("[NGR_SYNC] unlock h=%#x addr=%#llx word=%#x", t->handle, (unsigned long long)regs[0], ld32(regs[0])); G_lock(); lock_handoff(regs[0]); pthread_mutex_unlock(&G); regs[0] = 0; return 1; }
 """),
 ("""        pthread_mutex_lock(&G);
         // The order matters: first set the condition key = 1, then release the mutex. The SDK's InternalConditionVariable::Signal first reads the condition key in user mode, and does not issue svc 0x1D if it is 0;
