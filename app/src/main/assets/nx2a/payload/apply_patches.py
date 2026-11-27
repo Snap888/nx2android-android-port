@@ -2016,6 +2016,7 @@ patch('NGR data-pack rewritten-module metadata validation', 'porter/datapack.py'
     tmp = dst.with_name(dst.name + '.partial')
 """,
      """    package = package or profile.package
+    # NX2A_DATAPACK_FIXUPS_VALIDATION: reject incomplete rewritten-module sidecars.
     if patched:
         _patched_dir = Path(patched)
         _missing_fixups = [p.name[:-len('.patched.bin')] + '.fixups.tsv'
