@@ -149,10 +149,20 @@ def _sync_impl(force=False, log=print):
         if not sha or (sha == pinned and sha == target and msgs):
             break
         if not force and complete() and have == sha:
-            # A complete checkout without a matching patch stamp may already
-            # contain partially/applied patches. Never patch it in place:
-            # rebuild from a clean archive so patches are applied exactly once.
-            log(f'porter {sha[:9]} has no valid patch stamp; rebuilding from a clean archive')
+            # Reuse a complete checkout when its patch set validates. The
+            # installer writes the stamp after its single clean patch pass.
+            try:
+                patch()
+                return True, ' ; '.join(msgs + ['porter ready (' + have[:9] + ')'])
+            except Exception as e:
+                m = f'porter {sha[:9]} NGR patches are invalid: {e}'
+                log(m); msgs.append(m)
+                if mode() == 'good' or not (sha == target and track and pinned != target):
+                    try: STATUS.write_text(' ; '.join(msgs) + '\\n')
+                    except OSError: pass
+                    return False, ' ; '.join(msgs)
+                # Moving upstream no longer matches our patches: fall back to
+                # the pinned known-good source instead of retrying main.
 
         log(f'downloading the porter ({sha[:9]})')
         try:
