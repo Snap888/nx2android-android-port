@@ -231,8 +231,8 @@ class ApplyPatchesTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             header = Path(tmp) / "nxnative/dm/android/gfx_vk.h"
             tex = Path(tmp) / "nxnative/dm/android/gfx_vk_tex.c"
-            header.parent.mkdir(parents=True)
-            tex.parent.mkdir(parents=True)
+            header.parent.mkdir(parents=True, exist_ok=True)
+            tex.parent.mkdir(parents=True, exist_ok=True)
             header.write_text(
                 "    uint64_t wseq, rseen;             // when it was last rendered to (gfx_vk_tex.c g_wseq); the newest overlapping write already reported\n",
                 encoding="utf-8",
