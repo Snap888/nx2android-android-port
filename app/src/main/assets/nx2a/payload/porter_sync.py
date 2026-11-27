@@ -161,8 +161,10 @@ def _sync_impl(force=False, log=print):
                     try: STATUS.write_text(' ; '.join(msgs) + '\\n')
                     except OSError: pass
                     return False, ' ; '.join(msgs)
-                # Moving upstream no longer matches our patches: fall back to
-                # the pinned known-good source instead of retrying main.
+                # Moving upstream no longer matches our patches: skip
+                # installing this invalid tree and try the pinned revision.
+                if sha == target and track and pinned != target:
+                    continue
 
         log(f'downloading the porter ({sha[:9]})')
         try:
