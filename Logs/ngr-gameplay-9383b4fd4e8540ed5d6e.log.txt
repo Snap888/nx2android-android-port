@@ -1,0 +1,319 @@
+NGR gameplay diagnostic log
+Game ID: 9383b4fd4e8540ed5d6e
+
+===== Game stdout/stderr + runtime timeline =====
+2026-11-27 21:10:26.095 [I] pid=30530 ============================================================
+2026-11-27 21:10:26.095 [I] pid=30530 NGR launch session started: game_id=9383b4fd4e8540ed5d6e sdk=35 abi=arm64-v8a
+2026-11-27 21:10:26.095 [I] pid=30530 NativeActivity paths: internal=/data/user/0/unknown.none.nx2android/files external=/storage/emulated/0/Android/data/unknown.none.nx2android/files
+2026-11-27 21:10:26.095 [I] pid=30530 [NGR storage] using game data in place: /storage/emulated/0/Download/0ut/Metro2033Redux-data
+2026-11-27 21:10:26.098 [I] pid=30530 [config] env.txt: DM_PRESENT_INTERVAL=display
+2026-11-27 21:10:26.098 [I] pid=30530 [config] env.txt: DM_VK_DRIVER=libvulkan_freedreno.so
+2026-11-27 21:10:26.100 [I] pid=30530 [NGR profile] no profile.json; using the compiled game profile (legacy payload)
+2026-11-27 21:10:26.103 [I] pid=30530 removed 7 stale staged native libraries before refreshing runtime
+2026-11-27 21:10:26.163 [I] pid=30530 staged 7 native libraries in private app storage
+2026-11-27 21:10:26.163 [I] pid=30530 [NGR save] no public save directory supplied; private fallback active
+2026-11-27 21:10:26.163 [I] pid=30530 [scheduler] Metro 2033 guard enabled (PhysX/Secondary Utility QoS, audio/main priority inheritance, 50k progressing yields/s then scheduler handoff every 256 excess yields)
+2026-11-27 21:10:26.163 [I] pid=30530 [scheduler] Metro 2033 performance profile: verbose NVN/filesystem, per-lock tracing and watchdog thread dumps disabled
+2026-11-27 21:10:26.163 [I] pid=30530 [stage 1/8] payload validated; game_dir=/storage/emulated/0/Download/0ut/Metro2033Redux-data private_dir=/data/user/0/unknown.none.nx2android/files/games/9383b4fd4e8540ed5d6e
+2026-11-27 21:10:26.163 [I] pid=30530 [stage 2/8] native libraries staged; runtime=/data/user/0/unknown.none.nx2android/files/games/9383b4fd4e8540ed5d6e/libdmhost.so
+2026-11-27 21:10:26.163 [I] pid=30530 [stage 3/8] preloading companion dependencies
+2026-11-27 21:10:26.163 [I] pid=30530 [stage 3/8] dlopen companion begin: libadrenotools.so flags=GLOBAL
+2026-11-27 21:10:26.165 [I] pid=30530 preloaded game dependency libadrenotools.so handle=0xc722f64ee65d62fb
+2026-11-27 21:10:26.165 [I] pid=30530 [stage 3/8] leaving libfile_redirect_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-27 21:10:26.165 [I] pid=30530 [stage 3/8] leaving libgsl_alloc_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-27 21:10:26.165 [I] pid=30530 [stage 3/8] leaving libhook_impl.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-27 21:10:26.165 [I] pid=30530 [stage 3/8] leaving libmain_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-27 21:10:26.165 [I] pid=30530 [stage 3/8] leaving libvulkan_freedreno.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-27 21:10:26.165 [I] pid=30530 [stage 3/8] leaving libfile_redirect_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-27 21:10:26.165 [I] pid=30530 [stage 3/8] leaving libgsl_alloc_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-27 21:10:26.165 [I] pid=30530 [stage 3/8] leaving libhook_impl.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-27 21:10:26.165 [I] pid=30530 [stage 3/8] leaving libmain_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-27 21:10:26.165 [I] pid=30530 [stage 3/8] leaving libvulkan_freedreno.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+2026-11-27 21:10:26.165 [I] pid=30530 preloaded 1 companion game libraries
+2026-11-27 21:10:26.165 [I] pid=30530 [stage 3/8] dependency preload finished: 1 companion libraries
+2026-11-27 21:10:26.165 [I] pid=30530 [stage 4/8] inspecting main runtime ELF before dlopen: /data/user/0/unknown.none.nx2android/files/games/9383b4fd4e8540ed5d6e/libdmhost.so
+2026-11-27 21:10:26.165 [I] pid=30530 [ELF preflight] type=3 machine=183 entry=0x0 phnum=11
+2026-11-27 21:10:26.165 [I] pid=30530 [ELF preflight] DT_INIT=0x0 INIT_ARRAY=0x1f56f8 INIT_ARRAYSZ=48
+2026-11-27 21:10:26.165 [I] pid=30530 [ELF preflight] DT_RELA=0x12730 RELASZ=134688 RELAENT=24 DT_RELR=0x0 RELRSZ=0 RELRENT=8
+2026-11-27 21:10:26.165 [I] pid=30530 [ELF preflight] DT_RELA mapped file offset=0x12730 entries=5612
+2026-11-27 21:10:26.166 [I] pid=30530 [ELF preflight] init_array[0] relocation: type=1027 symbol=0 addend=0x1ec964
+2026-11-27 21:10:26.166 [I] pid=30530 [ELF preflight] init_array[0] slot=0x1f56f8 raw=0x0 relocation=present
+2026-11-27 21:10:26.166 [I] pid=30530 [ELF preflight] init_array[1] relocation: type=1027 symbol=0 addend=0x1ecfbc
+2026-11-27 21:10:26.166 [I] pid=30530 [ELF preflight] init_array[1] slot=0x1f5700 raw=0x0 relocation=present
+2026-11-27 21:10:26.166 [I] pid=30530 [ELF preflight] init_array[2] relocation: type=1027 symbol=0 addend=0xb7bdc
+2026-11-27 21:10:26.166 [I] pid=30530 [ELF preflight] init_array[2] slot=0x1f5708 raw=0x0 relocation=present
+2026-11-27 21:10:26.166 [I] pid=30530 [ELF preflight] init_array[3] relocation: type=1027 symbol=0 addend=0xcfb54
+2026-11-27 21:10:26.166 [I] pid=30530 [ELF preflight] init_array[3] slot=0x1f5710 raw=0x0 relocation=present
+2026-11-27 21:10:26.166 [I] pid=30530 [ELF preflight] init_array[4] relocation: type=1027 symbol=0 addend=0xff3cc
+2026-11-27 21:10:26.166 [I] pid=30530 [ELF preflight] init_array[4] slot=0x1f5718 raw=0x0 relocation=present
+2026-11-27 21:10:26.166 [I] pid=30530 [ELF preflight] init_array[5] relocation: type=1027 symbol=0 addend=0x15b6ac
+2026-11-27 21:10:26.166 [I] pid=30530 [ELF preflight] init_array[5] slot=0x1f5720 raw=0x0 relocation=present
+2026-11-27 21:10:26.166 [I] pid=30530 [stage 4/8] main runtime dlopen begin: /data/user/0/unknown.none.nx2android/files/games/9383b4fd4e8540ed5d6e/libdmhost.so (RTLD_LAZY|RTLD_LOCAL)
+[dm] [nvn] null device: 537 names, 418 implemented (404 semantic + 14 empty, 290 of them on the large host stack), the other 119 go to the red-reporting stub
+2026-11-27 21:10:26.168 [I] pid=30530 [stage 4/8] main runtime dlopen succeeded: handle=0x97a313cf82211ec1
+2026-11-27 21:10:26.168 [I] pid=30530 [stage 5/8] resolved ANativeActivity_onCreate at 0x7a09f45c68
+2026-11-27 21:10:26.168 [I] pid=30530 [stage 6/8] dispatching NativeActivity_onCreate to libdmhost.so; activity=0x7a8f708b50 env=0xb400007aef6da410 clazz=0x69ca assetManager=0x7a3f752290 internal=/data/user/0/unknown.none.nx2android/files external=/storage/emulated/0/Android/data/unknown.none.nx2android/files sdk=35
+2026-11-27 21:10:26.178 [I] pid=30530 [stage 7/8] game NativeActivity_onCreate returned; game runtime initialization continues asynchronously
+2026-11-27 21:10:26.178 [I] pid=30530 [activity] lifecycle and Surface tracing installed
+2026-11-27 21:10:26.178 [I] pid=30530 [stage 8/8] dispatcher handoff complete; window lifecycle events will be captured from this point
+2026-11-27 21:10:26.180 [I] pid=30530 [activity] onStart begin
+2026-11-27 21:10:26.180 [I] pid=30530 [activity] onStart returned
+2026-11-27 21:10:26.181 [I] pid=30530 [activity] onResume begin
+2026-11-27 21:10:26.181 [I] pid=30530 [activity] onResume returned
+2026-11-27 21:10:26.195 [I] pid=30530 [window] created window=0x7a6f740f80 size=2448x1080
+2026-11-27 21:10:26.195 [I] pid=30530 [window] created callback returned
+2026-11-27 21:10:26.195 [I] pid=30530 [window] resized window=0x7a6f740f80 size=2448x1080
+2026-11-27 21:10:26.195 [I] pid=30530 [window] resized callback returned
+2026-11-27 21:10:26.196 [I] pid=30530 [activity] onContentRectChanged begin rect=0,0-2448,1080
+2026-11-27 21:10:26.196 [I] pid=30530 [activity] onContentRectChanged returned
+2026-11-27 21:10:26.196 [I] pid=30530 [window] redraw requested window=0x7a6f740f80
+2026-11-27 21:10:26.196 [I] pid=30530 [window] redraw callback returned
+2026-11-27 21:10:26.207 [I] pid=30530 [window] redraw requested window=0x7a6f740f80
+2026-11-27 21:10:26.207 [I] pid=30530 [window] redraw callback returned
+2026-11-27 21:10:26.247 [I] pid=30530 [window] focus changed focused=1
+2026-11-27 21:10:26.247 [I] pid=30530 [window] focus callback returned
+2026-11-27 21:10:26.258 [I] pid=30530 [window] resized window=0x7a6f740f80 size=2448x1080
+2026-11-27 21:10:26.258 [I] pid=30530 [window] resized callback returned
+
+
+===== Native host stderr / game log =====
+[dm] [scheduler] Metro patch v2: PhysX/Secondary/main named back-off; non-progressing yield back-off=250us after 500us
+[dm] NX2A host on Android: files /storage/emulated/0/Download/0ut/Metro2033Redux-data, RomFS /storage/emulated/0/Download/0ut/Metro2033Redux-data/RomFS, saves /data/user/0/unknown.none.nx2android/files
+[dm] [NGR host] detached host thread created; stack=16 MB
+[dm] [NGR host] thread entered; root=/storage/emulated/0/Download/0ut/Metro2033Redux-data mods=/storage/emulated/0/Download/0ut/Metro2033Redux-data/mods
+[dm] [NGR host] entering dm host main
+[dm] [NGR boot] loading 3 guest modules from /storage/emulated/0/Download/0ut/Metro2033Redux-data/mods; profile=0100CD701434C000
+[dm] FATAL open /storage/emulated/0/Download/0ut/Metro2033Redux-data/mods/subsdk0.fixups.tsv
+[dm] [haptics] device vibrator: yes, on/off only
+[dm] CRASH sig=6 addr=0x2c1100007742 pc=libc.so+0x5cb50(abort+0xac) lr=libc.so+0x5cb20(abort+0x7c) sp=0x7a05e2c780 thread 0x79db 'none.nx2android'
+x0=0 x1=0x79db x2=0x6 x3=0x7a05e2c7a0 x4=0x40 x5=0x40
+x6=0x40 x7=0x7f7f7f7f7f7f7f7f x8=0xf0 x9=0x7cb1b2d438 x10=0xffffff80fffffb9f x11=0
+x12=0x10 x13=0xffffffff x14=0 x15=0 x16=0x7cb1bdffe0 x17=0x7cb1bcad40
+x18=0x7a04c14000 x19=0x7742 x20=0x79db x21=0xffffffff x22=0x3 x23=0x7a0a8e1598
+x24=0x7a05e2d540 x25=0x7a05e2dcf0 x26=0x7ccbd80a70 x27=0x7ce0466a80 x28=0x7ccbd80000 
+[dm] *x3: 0 0xffffffff 0x2c1100007742 0 0 0
+[dm] *x9: 0x10000000 0 0 0 0xd7c4501414d4c 0x1b3e2a362e13231f
+[dm] *x16: libc.so+0xc0d40(getuid+0) libc.so+0x842d0(getauxval+0) libc.so+0x83be0(syscall+0) 0 libc.so+0x574c0 libc.so+0x747e4(strtol+0)
+[dm] *x17: 0xd28015c8d503245f 0xb140041fd4000001 0x54fffd88da809400 0xd503201fd65f03c0 0xd2801608d503245f 0xb140041fd4000001
+[dm] *x18: 0 0 0 0 0 0
+[dm] *x23: 0x306b6473627573 0 0 0 0 0
+[dm] *x24: libdmhost.so+0x5ee08 0 0 0 0 0
+[dm] *x25: 0x7a0b1fb730 0x7a03e19730 0x7742000079db 0x7a00000000 0x7a04e2e000 0xfffcf0
+[dm] *x26: 0 0x7ccbd80ac0 libc.so+0x246f0 0x7a05e2dcf0 0 0
+[dm] *x27: 0x7cdb9e9210 0x7ce1752d20 0 0 libEGL.so+0x3e6b8 0x5a6e040fdb570ca9
+[dm] *x28: 0 0 0 0 0 0
+[dm] bt: libdmhost.so+0xf40e8 libdmhost.so+0xf3104 libdmhost.so+0xf5600 libdmhost.so+0xf5010 libdmhost.so+0x11aa44 libc.so+0x6db0c libc.so+0x5ff70 0x3cf20000000000
+[dm] fp=0x7a05e2c820  0x100 bytes below sp:
+[dm]   ffffff00fffffb9f 5a6e040fdb570ca9 7a05e2c6e0 18697cb90e4af4
+[dm]   b 2 0 7cb1b7d4d0
+[dm]   7ccbd80a70 7a05e2dcf0 fffffffffffffb9f 5a6e040fdb570ca9
+[dm]   7a05e2c750 7cb90e4bec 7a05e2dcf0 5c
+[dm]   7a05e2d540 7a0a8e1598 3 7a05e2d530
+[dm]   7a05e2da18 7ccbd80a80 642d787564655233 73646f6d2f617461
+[dm]   400 5a6e040fdb570ca9 7a05e2c820 7cb1b66ae4
+[dm]   3 7a05e2d530 7a05e2da18 7cb1be1258
+[dm] stack scan sp=0x7a05e2c780: [-232]libsigchain.so+0x7af4 [-200]libc.so+0x734d0(sigprocmask64+0) [-152]libsigchain.so+0x7bec(sigprocmask64+0x84) [-120]libdmhost.so+0xab3598 [-40]libc.so+0x5cae4(abort+0x40) [-8]libc.so+0xd7258(stderr+0) [+168]libdmhost.so+0xf40e8 [+200]libc.so+0xd7258(stderr+0) [+776]libc.so+0xbafd4 [+824]libc.so+0xbb4d0 [+840]libc.so+0xd7548 [+856]libc.so+0xd71b0(__sF+0x130) [+1576]libdmhost.so+0xf3104 [+1624]libdmhost.so+0xab3598 [+1752]libc.so+0xbb4ac [+1776]libdmhost.so+0x6b304 [+2008]libc.so+0xbafd4 [+2056]libc.so+0xbb4d0 [+2184]libc.so+0x627c4(android_fdsan_close_with_tag+0x6c) [+2264]libc.so+0x63384(close+0x18) [+2344]libdmhost.so+0x115964 [+2360]libdmhost.so+0x115904 [+2736]libdmhost.so+0x53c20[dm] front end: shaking the device shakes the controller (threshold 1.50 G)
+ [+3080]libc.so+0x7e3cc(fprintf+0xac) [+3128]libc.so+0x7e3e4(fprintf+0xc4) [+3136]libc.so+0xd7258(stderr+0) [+3312]libdmhost.so+0x6b304[dm] front end: the device's gyroscope (icm4x6xx Gyroscope Non-wakeup) moves the controller's six-axis sensor
+ [+3320]libc.so+0x6da44 [+3336]libc.so+0x7c5f8 [+3352]libc.so+0x7cd20 [+3416]libdmhost.so+0xf5600 [+3472]libc.so+0xd7258(stderr+0) [+3520]libdmhost.so+0x5ee08 [+4056]libc.so+0x7fb4c(snprintf+0x114)
+[dm] handle table use 0 / 4096, threads created so far 0
+[dm] same-core preemption yields 0, total 0.0 ms, hit the cap 0 times
+[dm] [perf] temperatures for the counter: 26 chip zones readable, battery from the battery intent
+[dm] host thread 0x7742 'none.nx2android': libc.so+0xc152c libbinder.so+0x4bec4(_ZN7android14IPCThreadState14talkWithDriverEb+0xf8) libbinder.so+0x4d204(_ZN7android14IPCThreadState15waitForResponseEPNS_6ParcelEPi+0x50) libbinder.so+0x4cf4c(_ZN7android14IPCThreadState8transactEijRKNS_6ParcelEPS1_j+0xc0) libbinder.so+0x61f28(_ZN7android8BpBinder8transactEjRKNS_6ParcelEPS1_j+0xb0) libandroid_runtime.so+0x1a4938
+[dm] host thread 0x7746 'Signal Catcher': libc.so+0xc1f2c libart.so+0x65432c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x7747 'perfetto_hprof_': libc.so+0xc1228(read+0x8) libc.so+0x6db0c libc.so+0x5ff70
+[dm] front end: display rotation 90 degrees: motion axes follow it
+[dm] hid: the device's motion moves player 1's six-axis sensor (gyroscope + accelerometer)
+[dm] host thread 0x7748 'Jit thread pool': libc.so+0x83c00(syscall+0x20) libart.so+0x65da70 libart.so+0x654ebc libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x7749 'HeapTaskDaemon': libc.so+0x83c00(syscall+0x20) libart.so+0x307090 boot.oat+0x31c3c4 0x79d97975f4
+[dm] host thread 0x774a 'ReferenceQueueD': libc.so+0x83c00(syscall+0x20) libart.so+0x4412f0(_ZN3art7Monitor4WaitEPNS_6ThreadENS_6ObjPtrINS_6mirror6ObjectEEElibNS_11ThreadStateE+0x1c50)
+[dm] host thread 0x774b 'FinalizerDaemon': libc.so+0x83c00(syscall+0x20) libart.so+0x4412f0(_ZN3art7Monitor4WaitEPNS_6ThreadENS_6ObjPtrINS_6mirror6ObjectEEElibNS_11ThreadStateE+0x1c50)
+[dm] host thread 0x774c 'FinalizerWatchd': libc.so+0x83c00(syscall+0x20) libart.so+0x4412f0(_ZN3art7Monitor4WaitEPNS_6ThreadENS_6ObjPtrINS_6mirror6ObjectEEElibNS_11ThreadStateE+0x1c50) boot.oat+0x31c2ac 0x79d94795f4
+[dm] host thread 0x774d 'binder:30530_1': libc.so+0xc152c libbinder.so+0x4bec4(_ZN7android14IPCThreadState14talkWithDriverEb+0xf8) libbinder.so+0x4c204(_ZN7android14IPCThreadState20getAndExecuteCommandEv+0x1c) libbinder.so+0x4cbc0(_ZN7android14IPCThreadState14joinThreadPoolEb+0x70) libbinder.so+0x55214 libutils.so+0x10040(_ZN7android6Thread11_threadLoopEPv+0x1a4) libandroid_runtime.so+0xf2748(_ZN7android14AndroidRuntime15javaThreadShellEPv+0x98) libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x774e 'binder:30530_2': libc.so+0xc152c libbinder.so+0x4bec4(_ZN7android14IPCThreadState14talkWithDriverEb+0xf8) libbinder.so+0x4c204(_ZN7android14IPCThreadState20getAndExecuteCommandEv+0x1c) libbinder.so+0x4cbc0(_ZN7android14IPCThreadState14joinThreadPoolEb+0x70) libbinder.so+0x55214 libutils.so+0x10040(_ZN7android6Thread11_threadLoopEPv+0x1a4) libandroid_runtime.so+0xf2748(_ZN7android14AndroidRuntime15javaThreadShellEPv+0x98) libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x7752 'binder:30530_3': libc.so+0xc152c libbinder.so+0x4bec4(_ZN7android14IPCThreadState14talkWithDriverEb+0xf8) libbinder.so+0x4c204(_ZN7android14IPCThreadState20getAndExecuteCommandEv+0x1c) libbinder.so+0x4cbc0(_ZN7android14IPCThreadState14joinThreadPoolEb+0x70) libbinder.so+0x55214 libutils.so+0x10040(_ZN7android6Thread11_threadLoopEPv+0x1a4) libandroid_runtime.so+0xf2748(_ZN7android14AndroidRuntime15javaThreadShellEPv+0x98) libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x7754 'Profile Saver': libc.so+0x83c04(syscall+0x24) libart.so+0x552954 libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x7759 'RenderThread': libc.so+0xc250c libutils.so+0x11ba4(_ZN7android6Looper8pollOnceEiPiS1_PPv+0x80) libhwui.so+0x268418 libhwui.so+0x2b3c20 libutils.so+0x10040(_ZN7android6Thread11_threadLoopEPv+0x1a4) libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x7761 'queued-work-loo': libc.so+0xc250c libutils.so+0x11ba4(_ZN7android6Looper8pollOnceEiPiS1_PPv+0x80) libandroid_runtime.so+0x190abc
+[dm] host thread 0x7766 'CleanupReferenc': libc.so+0x83c00(syscall+0x20) libart.so+0x4412f0(_ZN3art7Monitor4WaitEPNS_6ThreadENS_6ObjPtrINS_6mirror6ObjectEEElibNS_11ThreadStateE+0x1c50) boot.oat+0x31c2ac
+[dm] host thread 0x7767 'Chrome_ProcessL': libc.so+0xc250c libutils.so+0x11ba4(_ZN7android6Looper8pollOnceEiPiS1_PPv+0x80) libandroid_runtime.so+0x190abc
+[dm] host thread 0x7769 'PerfettoTrace': libc.so+0xc250c libwebviewchromium.so+0x1c59054 libwebviewchromium.so+0x1c58ba8 libwebviewchromium.so+0x1c58afc libwebviewchromium.so+0x1c56198 libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x776a 'ThreadPoolServi': libc.so+0xc250c libwebviewchromium.so+0x1c59054 libwebviewchromium.so+0x1c58ba8 libwebviewchromium.so+0x1c9a204 libwebviewchromium.so+0x1c56198 libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x776b 'ThreadPoolForeg': libc.so+0x83c04(syscall+0x24) libc.so+0x6ced4(pthread_cond_timedwait+0x8c) libwebviewchromium.so+0x1c97ec8 libwebviewchromium.so+0x1c94840 libwebviewchromium.so+0x1c9408c libwebviewchromium.so+0x1c93fcc libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x776c 'ThreadPoolPrese': libc.so+0x83c04(syscall+0x24) libc.so+0x6ced4(pthread_cond_timedwait+0x8c) libwebviewchromium.so+0x1c97ec8 libwebviewchromium.so+0x1c94840 libwebviewchromium.so+0x1c9408c libwebviewchromium.so+0x1c93fcc libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x776d 'ThreadPoolAudio': libc.so+0x83c04(syscall+0x24) libc.so+0x6ced4(pthread_cond_timedwait+0x8c) libwebviewchromium.so+0x1c97ec8 libwebviewchromium.so+0x1c94840 libwebviewchromium.so+0x1c9408c libwebviewchromium.so+0x1c93fcc libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x776e 'ThreadPoolForeg': libc.so+0x83c04(syscall+0x24) libc.so+0x6ced4(pthread_cond_timedwait+0x8c) libwebviewchromium.so+0x1c97ec8 libwebviewchromium.so+0x1c94840 libwebviewchromium.so+0x1c9408c libwebviewchromium.so+0x1c93fcc libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x7771 'ThreadPoolForeg': libc.so+0x83c04(syscall+0x24) libc.so+0x6ced4(pthread_cond_timedwait+0x8c) libwebviewchromium.so+0x1c97ec8 libwebviewchromium.so+0x1c94840 libwebviewchromium.so+0x1c9408c libwebviewchromium.so+0x1c93fcc libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x7772 'Chrome_IOThread': libc.so+0xc250c libwebviewchromium.so+0x1c59054 libwebviewchromium.so+0x1c58ba8 libwebviewchromium.so+0x1c58afc libwebviewchromium.so+0x30164f0 libwebviewchromium.so+0x1c56198 libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x7773 'MemoryInfra': libc.so+0x83c00(syscall+0x20) libc.so+0x6ce10(pthread_cond_wait+0x50) libwebviewchromium.so+0x1c980e4 libwebviewchromium.so+0x1f32dc4 libwebviewchromium.so+0x1e39448 libwebviewchromium.so+0x1c59054 libwebviewchromium.so+0x1c58ba8 libwebviewchromium.so+0x1c58afc libwebviewchromium.so+0x1c56198 libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x7779 'AudioThread': libc.so+0x83c00(syscall+0x20) libc.so+0x6ce10(pthread_cond_wait+0x50) libwebviewchromium.so+0x1c980e4 libwebviewchromium.so+0x1f32dc4 libwebviewchromium.so+0x1e39448 libwebviewchromium.so+0x1c59054 libwebviewchromium.so+0x1c58ba8 libwebviewchromium.so+0x1c58afc libwebviewchromium.so+0x1c56198 libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x777a 'ThreadPoolForeg': libc.so+0x83c04(syscall+0x24) libc.so+0x6ced4(pthread_cond_timedwait+0x8c) libwebviewchromium.so+0x1c97ec8 libwebviewchromium.so+0x1c94840 libwebviewchromium.so+0x1c9408c libwebviewchromium.so+0x1c93fcc libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x777b 'VideoCaptureThr': libc.so+0x83c00(syscall+0x20) libc.so+0x6ce10(pthread_cond_wait+0x50) libwebviewchromium.so+0x1c980e4 libwebviewchromium.so+0x1f32dc4 libwebviewchromium.so+0x1e39448 libwebviewchromium.so+0x1c59054 libwebviewchromium.so+0x1c58ba8 libwebviewchromium.so+0x1c58afc libwebviewchromium.so+0x1c56198 libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x777c 'ThreadPoolForeg': libc.so+0x83c04(syscall+0x24) libc.so+0x6ced4(pthread_cond_timedwait+0x8c) libwebviewchromium.so+0x1c97ec8 libwebviewchromium.so+0x1c94840 libwebviewchromium.so+0x1c9408c libwebviewchromium.so+0x1c93fcc libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x777d 'ThreadPoolForeg': libc.so+0x83c04(syscall+0x24) libc.so+0x6ced4(pthread_cond_timedwait+0x8c) libwebviewchromium.so+0x1c97ec8 libwebviewchromium.so+0x1c94840 libwebviewchromium.so+0x1c9408c libwebviewchromium.so+0x1c93fcc libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x777f 'NetworkService': libc.so+0xc250c libwebviewchromium.so+0x1c59054 libwebviewchromium.so+0x1c58ba8 libwebviewchromium.so+0x1c58afc libwebviewchromium.so+0x1c56198 libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x7780 'GoogleApiHandle': libc.so+0xc250c libutils.so+0x11ba4(_ZN7android6Looper8pollOnceEiPiS1_PPv+0x80) libandroid_runtime.so+0x190abc
+[dm] host thread 0x7781 'CookieMonsterCl': libc.so+0x83c00(syscall+0x20) libc.so+0x6ce10(pthread_cond_wait+0x50) libwebviewchromium.so+0x1c980e4 libwebviewchromium.so+0x1f32dc4 libwebviewchromium.so+0x1e39448 libwebviewchromium.so+0x1c59054 libwebviewchromium.so+0x1c58ba8 libwebviewchromium.so+0x1c58afc libwebviewchromium.so+0x1c56198 libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x7782 'CookieMonsterBa': libc.so+0x83c00(syscall+0x20) libc.so+0x6ce10(pthread_cond_wait+0x50) libwebviewchromium.so+0x1c980e4 libwebviewchromium.so+0x1f32dc4 libwebviewchromium.so+0x1e39448 libwebviewchromium.so+0x1c59054 libwebviewchromium.so+0x1c58ba8 libwebviewchromium.so+0x1c58afc libwebviewchromium.so+0x1c56198 libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x7784 'ThreadPoolSingl': libc.so+0x83c04(syscall+0x24) libc.so+0x6ced4(pthread_cond_timedwait+0x8c) libwebviewchromium.so+0x1c97ec8 libwebviewchromium.so+0x1c94840 libwebviewchromium.so+0x1e365f0 libwebviewchromium.so+0x1c93ff8 libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x7785 'VizWebView': libc.so+0x83c00(syscall+0x20) libc.so+0x6ce10(pthread_cond_wait+0x50) libwebviewchromium.so+0x1c980e4 libwebviewchromium.so+0x1f32dc4 libwebviewchromium.so+0x1e39448 libwebviewchromium.so+0x1c59054 libwebviewchromium.so+0x1c58ba8 libwebviewchromium.so+0x1c58afc libwebviewchromium.so+0x1c56198 libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x7792 'ThreadPoolSingl': libc.so+0x83c04(syscall+0x24) libc.so+0x6ced4(pthread_cond_timedwait+0x8c) libwebviewchromium.so+0x1c97ec8 libwebviewchromium.so+0x1c94840 libwebviewchromium.so+0x31a9e54 libwebviewchromium.so+0x1c94074 libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x7794 'CameraAvailabil': libc.so+0xc250c libutils.so+0x11ba4(_ZN7android6Looper8pollOnceEiPiS1_PPv+0x80) libandroid_runtime.so+0x190abc
+[dm] host thread 0x7796 'binder:30530_4': libc.so+0xc152c libbinder.so+0x4bec4(_ZN7android14IPCThreadState14talkWithDriverEb+0xf8) libbinder.so+0x4c204(_ZN7android14IPCThreadState20getAndExecuteCommandEv+0x1c) libbinder.so+0x4cbc0(_ZN7android14IPCThreadState14joinThreadPoolEb+0x70) libbinder.so+0x55214 libutils.so+0x10040(_ZN7android6Thread11_threadLoopEPv+0x1a4) libandroid_runtime.so+0xf2748(_ZN7android14AndroidRuntime15javaThreadShellEPv+0x98) libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x77a0 'process reaper': libc.so+0xc2728(wait4+0x8)
+[dm] host thread 0x77a1 'nx2a-pump': libc.so+0xc1228(read+0x8)
+[dm] host thread 0x77a2 'VsyncReceiver': libc.so+0xc250c libutils.so+0x11ba4(_ZN7android6Looper8pollOnceEiPiS1_PPv+0x80) libandroid.so+0x1d554(ALooper_pollOnce+0x6c) libpenguin_impl.so+0xa540 libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x77a6 'SurfaceSyncGrou': libc.so+0xc250c libutils.so+0x11ba4(_ZN7android6Looper8pollOnceEiPiS1_PPv+0x80) libandroid_runtime.so+0x190abc
+[dm] host thread 0x77a8 'hwuiTask0': libc.so+0x83c00(syscall+0x20) libc.so+0x6ce10(pthread_cond_wait+0x50) libc++.so+0xb0a5c(_ZNSt3__118condition_variable4waitERNS_11unique_lockINS_5mutexEEE+0x1c) libhwui.so+0x2706e4 libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x77a9 'hwuiTask1': libc.so+0x83c00(syscall+0x20) libc.so+0x6ce10(pthread_cond_wait+0x50) libc++.so+0xb0a5c(_ZNSt3__118condition_variable4waitERNS_11unique_lockINS_5mutexEEE+0x1c) libhwui.so+0x2706e4 libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x77ad 'binder:30530_4': libc.so+0x83c00(syscall+0x20) libc.so+0x6ce10(pthread_cond_wait+0x50) libc++.so+0xb0a5c(_ZNSt3__118condition_variable4waitERNS_11unique_lockINS_5mutexEEE+0x1c) libgui.so+0xb44f8 libgui.so+0xb4770 libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x77c3 'nx2a-watch': libc.so+0x83c04(syscall+0x24) libart.so+0x43fa38(_ZN3art7Monitor4WaitEPNS_6ThreadENS_6ObjPtrINS_6mirror6ObjectEEElibNS_11ThreadStateE+0x398)
+[dm] host thread 0x77c4 'OkHttp Connecti': libc.so+0x83c04(syscall+0x24) libart.so+0x43fa38(_ZN3art7Monitor4WaitEPNS_6ThreadENS_6ObjPtrINS_6mirror6ObjectEEElibNS_11ThreadStateE+0x398)
+[dm] host thread 0x77c5 'Okio Watchdog': libc.so+0x83c00(syscall+0x20) libart.so+0x4412f0(_ZN3art7Monitor4WaitEPNS_6ThreadENS_6ObjPtrINS_6mirror6ObjectEEElibNS_11ThreadStateE+0x1c50) boot.oat+0x31c2ac 0x794239a5f4
+[dm] host thread 0x77ce 'Chrome_InProcGp': libc.so+0x83c04(syscall+0x24) libc.so+0x6ced4(pthread_cond_timedwait+0x8c) libwebviewchromium.so+0x1c97ec8 libwebviewchromium.so+0x1f32dc4 libwebviewchromium.so+0x1e39448 libwebviewchromium.so+0x1c59054 libwebviewchromium.so+0x1c58ba8 libwebviewchromium.so+0x1c58afc libwebviewchromium.so+0x1c56198 libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x77cf 'Chrome_ChildIOT': libc.so+0xc250c libwebviewchromium.so+0x1c59054 libwebviewchromium.so+0x1c58ba8 libwebviewchromium.so+0x1cda9c0 libwebviewchromium.so+0x1c56198 libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x77d0 'JavaBridge': libc.so+0xc250c libutils.so+0x11ba4(_ZN7android6Looper8pollOnceEiPiS1_PPv+0x80) libandroid_runtime.so+0x190abc
+[dm] host thread 0x77d1 'AudioPortEventH': libc.so+0xc250c libutils.so+0x11ba4(_ZN7android6Looper8pollOnceEiPiS1_PPv+0x80) libandroid_runtime.so+0x190abc
+[dm] host thread 0x77d2 'SAFE_BROWSING_A': libc.so+0xc250c libutils.so+0x11ba4(_ZN7android6Looper8pollOnceEiPiS1_PPv+0x80) libandroid_runtime.so+0x190abc
+[dm] host thread 0x77e2 'ThreadPoolSingl': libc.so+0x83c04(syscall+0x24) libc.so+0x6ced4(pthread_cond_timedwait+0x8c) libwebviewchromium.so+0x1c97ec8 libwebviewchromium.so+0x1c94840 libwebviewchromium.so+0x1e365f0 libwebviewchromium.so+0x1c93ff8 libwebviewchromium.so+0x1c4ba9c libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x79d3 'binder:30530_5': libc.so+0xc152c libbinder.so+0x4bec4(_ZN7android14IPCThreadState14talkWithDriverEb+0xf8) libbinder.so+0x4c204(_ZN7android14IPCThreadState20getAndExecuteCommandEv+0x1c) libbinder.so+0x4cbc0(_ZN7android14IPCThreadState14joinThreadPoolEb+0x70) libbinder.so+0x55214 libutils.so+0x10040(_ZN7android6Thread11_threadLoopEPv+0x1a4) libandroid_runtime.so+0xf2748(_ZN7android14AndroidRuntime15javaThreadShellEPv+0x98) libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x79d7 'Thread-3': libc.so+0x83c00(syscall+0x20) libc.so+0x6ce10(pthread_cond_wait+0x50) libdmhost.so+0x171368 libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x79d8 'Thread-4': libc.so+0xc1ccc(nanosleep+0xc) libdmhost.so+0x119550 libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x79d9 'Thread-6': libc.so+0xc1ccc(nanosleep+0xc) libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x79da 'Thread-5': libc.so+0xc250c libutils.so+0x11ba4(_ZN7android6Looper8pollOnceEiPiS1_PPv+0x80) libandroid.so+0x1d554(ALooper_pollOnce+0x6c) libdmhost.so+0x11a520 libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x79dc 'none.nx2android': libc.so+0xc1ccc(nanosleep+0xc) libdmhost.so+0xb0eb0 libc.so+0x6db0c libc.so+0x5ff70
+[dm] host thread 0x79dd 'none.nx2android': libc.so+0xc1f2c libdmhost.so+0xca008 libc.so+0x6db0c libc.so+0x5ff70
+
+
+===== RomFS ReadFile trace (DM_FSLOG) =====
+
+
+===== Per-game environment overrides =====
+# Written by nx2android's porter for Metro 2033 Redux (0100D4900E82C000); KEY=VALUE per line, read by the app at launch
+DM_LANG=en-US
+DM_FPS_TARGET=60
+DM_FPS_LOCKS=/sdcard/Android/data/unknown.none.nx2android/files/games/9383b4fd4e8540ed5d6e/fpslock.tsv
+DM_PRESENT_INTERVAL=display
+DM_SHARED_FONT_EXT=/sdcard/Android/data/unknown.none.nx2android/files/games/9383b4fd4e8540ed5d6e/nintendo_ext.ttf
+DM_VK_DRIVER=libvulkan_freedreno.so
+
+
+===== Game data manifest =====
+{
+  "title_id": "0100D4900E82C000",
+  "name": "Metro 2033 Redux",
+  "package": "unknown.none.nx2android",
+  "version": "v0",
+  "display": "1.0.0",
+  "language": "en-US",
+  "requires": [],
+  "profile_h": "0984d09387dcc83ac599d4c1b7ca7637d00c5d0de46480ebaf4820f7049400eb",
+  "game_id": "9383b4fd4e8540ed5d6e",
+  "files": 93,
+  "bytes": 6771950100,
+  "dlc": [],
+  "sysdata": [],
+  "made": "2026-11-27 17:38:47"
+}
+
+===== Compiled game profile metadata =====
+[not present]
+
+
+===== Crash / linker / NativeActivity Logcat =====
+11-27 21:09:54.920 30530 30530 D ADPFLog : getCurrentThermalStatus(), caller:11281,[unknown.none.nx2android]
+11-27 21:09:54.921 30530 30571 D ADPFLog : addThermalStatusListener(listener), caller:11281,[unknown.none.nx2android]
+11-27 21:09:54.921 30530 30571 D ADPFLog : addThermalStatusListener(executor, listener), caller:11281,[unknown.none.nx2android]
+11-27 21:10:24.713 30530 30530 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-27 21:10:24.713 30530 30530 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
+11-27 21:10:25.770 30530 30530 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-27 21:10:25.770 30530 30530 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
+11-27 21:10:26.091 30530 30530 I NGRRuntime: NgrGameActivity.onCreate entered; process=30530
+11-27 21:10:26.095 30530 30530 D nativeloader: Load /data/app/~~cl5RP-WLUVWdElGo2YVe1A==/unknown.none.nx2android-8lP_1NHql1Aizz1avfsYag==/lib/arm64/libngrhost.so using ns clns-7 from class loader (caller=<unknown>): ok
+11-27 21:10:26.095 30530 30530 I NGRRuntime: ============================================================
+11-27 21:10:26.095 30530 30530 I NGRRuntime: NGR launch session started: game_id=9383b4fd4e8540ed5d6e sdk=35 abi=arm64-v8a
+11-27 21:10:26.095 30530 30530 I NGRRuntime: NativeActivity paths: internal=/data/user/0/unknown.none.nx2android/files external=/storage/emulated/0/Android/data/unknown.none.nx2android/files
+11-27 21:10:26.095 30530 30530 I NGRRuntime: [NGR storage] using game data in place: /storage/emulated/0/Download/0ut/Metro2033Redux-data
+11-27 21:10:26.098 30530 30530 I NGRRuntime: [config] env.txt: DM_PRESENT_INTERVAL=display
+11-27 21:10:26.098 30530 30530 I NGRRuntime: [config] env.txt: DM_VK_DRIVER=libvulkan_freedreno.so
+11-27 21:10:26.100 30530 30530 I NGRRuntime: [NGR profile] no profile.json; using the compiled game profile (legacy payload)
+11-27 21:10:26.103 30530 30530 I NGRRuntime: removed 7 stale staged native libraries before refreshing runtime
+11-27 21:10:26.163 30530 30530 I NGRRuntime: staged 7 native libraries in private app storage
+11-27 21:10:26.163 30530 30530 I NGRRuntime: [NGR save] no public save directory supplied; private fallback active
+11-27 21:10:26.163 30530 30530 I NGRRuntime: [scheduler] Metro 2033 guard enabled (PhysX/Secondary Utility QoS, audio/main priority inheritance, 50k progressing yields/s then scheduler handoff every 256 excess yields)
+11-27 21:10:26.163 30530 30530 I NGRRuntime: [scheduler] Metro 2033 performance profile: verbose NVN/filesystem, per-lock tracing and watchdog thread dumps disabled
+11-27 21:10:26.163 30530 30530 I NGRRuntime: [stage 1/8] payload validated; game_dir=/storage/emulated/0/Download/0ut/Metro2033Redux-data private_dir=/data/user/0/unknown.none.nx2android/files/games/9383b4fd4e8540ed5d6e
+11-27 21:10:26.163 30530 30530 I NGRRuntime: [stage 2/8] native libraries staged; runtime=/data/user/0/unknown.none.nx2android/files/games/9383b4fd4e8540ed5d6e/libdmhost.so
+11-27 21:10:26.163 30530 30530 I NGRRuntime: [stage 3/8] preloading companion dependencies
+11-27 21:10:26.163 30530 30530 I NGRRuntime: [stage 3/8] dlopen companion begin: libadrenotools.so flags=GLOBAL
+11-27 21:10:26.165 30530 30530 I NGRRuntime: preloaded game dependency libadrenotools.so handle=0xc722f64ee65d62fb
+11-27 21:10:26.165 30530 30530 I NGRRuntime: [stage 3/8] leaving libfile_redirect_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+11-27 21:10:26.165 30530 30530 I NGRRuntime: [stage 3/8] leaving libgsl_alloc_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+11-27 21:10:26.165 30530 30530 I NGRRuntime: [stage 3/8] leaving libhook_impl.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+11-27 21:10:26.165 30530 30530 I NGRRuntime: [stage 3/8] leaving libmain_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+11-27 21:10:26.165 30530 30530 I NGRRuntime: [stage 3/8] leaving libvulkan_freedreno.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+11-27 21:10:26.165 30530 30530 I NGRRuntime: [stage 3/8] leaving libfile_redirect_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+11-27 21:10:26.165 30530 30530 I NGRRuntime: [stage 3/8] leaving libgsl_alloc_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+11-27 21:10:26.165 30530 30530 I NGRRuntime: [stage 3/8] leaving libhook_impl.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+11-27 21:10:26.165 30530 30530 I NGRRuntime: [stage 3/8] leaving libmain_hook.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+11-27 21:10:26.165 30530 30530 I NGRRuntime: [stage 3/8] leaving libvulkan_freedreno.so for AdrenoTools isolated linker namespace; do not preload into app namespace
+11-27 21:10:26.165 30530 30530 I NGRRuntime: preloaded 1 companion game libraries
+11-27 21:10:26.165 30530 30530 I NGRRuntime: [stage 3/8] dependency preload finished: 1 companion libraries
+11-27 21:10:26.165 30530 30530 I NGRRuntime: [stage 4/8] inspecting main runtime ELF before dlopen: /data/user/0/unknown.none.nx2android/files/games/9383b4fd4e8540ed5d6e/libdmhost.so
+11-27 21:10:26.165 30530 30530 I NGRRuntime: [ELF preflight] type=3 machine=183 entry=0x0 phnum=11
+11-27 21:10:26.165 30530 30530 I NGRRuntime: [ELF preflight] DT_INIT=0x0 INIT_ARRAY=0x1f56f8 INIT_ARRAYSZ=48
+11-27 21:10:26.165 30530 30530 I NGRRuntime: [ELF preflight] DT_RELA=0x12730 RELASZ=134688 RELAENT=24 DT_RELR=0x0 RELRSZ=0 RELRENT=8
+11-27 21:10:26.165 30530 30530 I NGRRuntime: [ELF preflight] DT_RELA mapped file offset=0x12730 entries=5612
+11-27 21:10:26.166 30530 30530 I NGRRuntime: [ELF preflight] init_array[0] relocation: type=1027 symbol=0 addend=0x1ec964
+11-27 21:10:26.166 30530 30530 I NGRRuntime: [ELF preflight] init_array[0] slot=0x1f56f8 raw=0x0 relocation=present
+11-27 21:10:26.166 30530 30530 I NGRRuntime: [ELF preflight] init_array[1] relocation: type=1027 symbol=0 addend=0x1ecfbc
+11-27 21:10:26.166 30530 30530 I NGRRuntime: [ELF preflight] init_array[1] slot=0x1f5700 raw=0x0 relocation=present
+11-27 21:10:26.166 30530 30530 I NGRRuntime: [ELF preflight] init_array[2] relocation: type=1027 symbol=0 addend=0xb7bdc
+11-27 21:10:26.166 30530 30530 I NGRRuntime: [ELF preflight] init_array[2] slot=0x1f5708 raw=0x0 relocation=present
+11-27 21:10:26.166 30530 30530 I NGRRuntime: [ELF preflight] init_array[3] relocation: type=1027 symbol=0 addend=0xcfb54
+11-27 21:10:26.166 30530 30530 I NGRRuntime: [ELF preflight] init_array[3] slot=0x1f5710 raw=0x0 relocation=present
+11-27 21:10:26.166 30530 30530 I NGRRuntime: [ELF preflight] init_array[4] relocation: type=1027 symbol=0 addend=0xff3cc
+11-27 21:10:26.166 30530 30530 I NGRRuntime: [ELF preflight] init_array[4] slot=0x1f5718 raw=0x0 relocation=present
+11-27 21:10:26.166 30530 30530 I NGRRuntime: [ELF preflight] init_array[5] relocation: type=1027 symbol=0 addend=0x15b6ac
+11-27 21:10:26.166 30530 30530 I NGRRuntime: [ELF preflight] init_array[5] slot=0x1f5720 raw=0x0 relocation=present
+11-27 21:10:26.166 30530 30530 I NGRRuntime: [stage 4/8] main runtime dlopen begin: /data/user/0/unknown.none.nx2android/files/games/9383b4fd4e8540ed5d6e/libdmhost.so (RTLD_LAZY|RTLD_LOCAL)
+11-27 21:10:26.168 30530 30530 I NGRRuntime: [stage 4/8] main runtime dlopen succeeded: handle=0x97a313cf82211ec1
+11-27 21:10:26.168 30530 30530 I NGRRuntime: [stage 5/8] resolved ANativeActivity_onCreate at 0x7a09f45c68
+11-27 21:10:26.168 30530 30530 I NGRRuntime: [stage 6/8] dispatching NativeActivity_onCreate to libdmhost.so; activity=0x7a8f708b50 env=0xb400007aef6da410 clazz=0x69ca assetManager=0x7a3f752290 internal=/data/user/0/unknown.none.nx2android/files external=/storage/emulated/0/Android/data/unknown.none.nx2android/files sdk=35
+11-27 21:10:26.178 30530 30530 I NGRRuntime: [stage 7/8] game NativeActivity_onCreate returned; game runtime initialization continues asynchronously
+11-27 21:10:26.178 30530 30530 I NGRRuntime: [activity] lifecycle and Surface tracing installed
+11-27 21:10:26.178 30530 30530 I NGRRuntime: [stage 8/8] dispatcher handoff complete; window lifecycle events will be captured from this point
+11-27 21:10:26.178 30530 30530 V Monotype: SetAppTypeFace- try to flip, app = unknown.none.nx2android
+11-27 21:10:26.179 30530 30530 I NGRRuntime: NgrGameActivity.onCreate completed; native host initialized
+11-27 21:10:26.180 30530 30530 I NGRRuntime: [activity] onStart begin
+11-27 21:10:26.180 30530 30530 I NGRRuntime: [activity] onStart returned
+11-27 21:10:26.181 30530 30530 I NGRRuntime: [activity] onResume begin
+11-27 21:10:26.181 30530 30530 I NGRRuntime: [activity] onResume returned
+11-27 21:10:26.194 30530 30530 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-27 21:10:26.194 30530 30530 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
+11-27 21:10:26.195 30530 30530 I NGRRuntime: [window] created window=0x7a6f740f80 size=2448x1080
+11-27 21:10:26.195 30530 30530 I NGRRuntime: [window] created callback returned
+11-27 21:10:26.195 30530 30530 I NGRRuntime: [window] resized window=0x7a6f740f80 size=2448x1080
+11-27 21:10:26.195 30530 30530 I NGRRuntime: [window] resized callback returned
+11-27 21:10:26.196 30530 30530 I NGRRuntime: [activity] onContentRectChanged begin rect=0,0-2448,1080
+11-27 21:10:26.196 30530 30530 I NGRRuntime: [activity] onContentRectChanged returned
+11-27 21:10:26.196 30530 30530 I NGRRuntime: [window] redraw requested window=0x7a6f740f80
+11-27 21:10:26.196 30530 30530 I NGRRuntime: [window] redraw callback returned
+11-27 21:10:26.207 30530 30530 I NGRRuntime: [window] redraw requested window=0x7a6f740f80
+11-27 21:10:26.207 30530 30530 I NGRRuntime: [window] redraw callback returned
+11-27 21:10:26.247 30530 30530 I NGRRuntime: [window] focus changed focused=1
+11-27 21:10:26.247 30530 30530 I NGRRuntime: [window] focus callback returned
+11-27 21:10:26.258 30530 30530 I NGRRuntime: [window] resized window=0x7a6f740f80 size=2448x1080
+11-27 21:10:26.258 30530 30530 I NGRRuntime: [window] resized callback returned
+11-27 21:10:26.559 30530 31207 W InteractionJankMonitor: Initializing without READ_DEVICE_CONFIG permission. enabled=false, interval=1, missedFrameThreshold=3, frameTimeThreshold=64, package=unknown.none.nx2android
+11-27 21:10:38.126 31393 31393 I libc    : SetHeapTaggingLevel: tag level set to 0
+11-27 21:10:38.163 31393 31393 D nativeloader: Configuring clns-7 for other apk /data/app/~~cl5RP-WLUVWdElGo2YVe1A==/unknown.none.nx2android-8lP_1NHql1Aizz1avfsYag==/base.apk. target_sdk_version=28, uses_libraries=, library_path=/data/app/~~cl5RP-WLUVWdElGo2YVe1A==/unknown.none.nx2android-8lP_1NHql1Aizz1avfsYag==/lib/arm64:/data/app/~~cl5RP-WLUVWdElGo2YVe1A==/unknown.none.nx2android-8lP_1NHql1Aizz1avfsYag==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/unknown.none.nx2android
+11-27 21:10:38.179 31393 31393 V Monotype: SetAppTypeFace- try to flip, app = unknown.none.nx2android
+11-27 21:10:38.241 31393 31393 I NGRRuntime: Application.onCreate process=unknown.none.nx2android
+11-27 21:10:38.269 31393 31412 D vulkan  : searching for layers in '/data/app/~~cl5RP-WLUVWdElGo2YVe1A==/unknown.none.nx2android-8lP_1NHql1Aizz1avfsYag==/lib/arm64'
+11-27 21:10:38.269 31393 31412 D vulkan  : searching for layers in '/data/app/~~cl5RP-WLUVWdElGo2YVe1A==/unknown.none.nx2android-8lP_1NHql1Aizz1avfsYag==/base.apk!/lib/arm64-v8a'
+11-27 21:10:38.270 31393 31393 V Monotype: SetAppTypeFace- try to flip, app = unknown.none.nx2android
+11-27 21:10:38.315 31393 31393 D ADPFLog : getCurrentThermalStatus(), caller:11281,[unknown.none.nx2android]
+11-27 21:10:38.315 31393 31429 D ADPFLog : addThermalStatusListener(listener), caller:11281,[unknown.none.nx2android]
+11-27 21:10:38.315 31393 31429 D ADPFLog : addThermalStatusListener(executor, listener), caller:11281,[unknown.none.nx2android]
+11-27 21:10:38.462 31393 31393 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-27 21:10:38.462 31393 31393 W libc    : Access denied finding property "vendor.gpp.create_frc_extension"
