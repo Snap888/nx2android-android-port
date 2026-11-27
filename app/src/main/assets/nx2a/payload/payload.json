@@ -4,7 +4,7 @@
  "porter_sha": "e9bd2b764608facf841e39292d868ee657eaf634",
  "files": {
   "adb_auto.py": "1bd9b7bc9fba898bc6acbb7eb29a3d4a2ee75427cafb98329ff8fe38ec2232a7",
-  "apply_patches.py": "f35254255d4a85591e447e2a6e98cee859be96c2c29161e5dde0506ef36214e1",
+  "apply_patches.py": "49383a80626766750da72030b82f25daeb2bb8190596536b7d5633adca030454",
   "dotnet_probe.py": "866983eb4aa53b567bf69e6574a93b00e315c2a85a2c536e95a123b9ded3e53a",
   "fast_tools.py": "665af40effe497d679cef624e0a0da81874900aa43e9fbfef07d172d7cc32070",
   "inner_setup.sh": "413d6980c1c0c129e90cb1892351dfc7a504b6a3919f78091703e4aba54cdd8c",
