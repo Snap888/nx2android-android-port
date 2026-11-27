@@ -121,43 +121,14 @@ jobs:
         run: |
           SDK="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
           NDK="$SDK/ndk/27.2.12479018"
-          # Metro 2033 Redux has no game.tsv in the pinned Porter yet. Use an
-          # existing profile only as a compile-time smoke-test configuration;
-          # this binary is NOT a Metro runtime and must not be shipped as one.
-          PROFILE_ID=0100CD701434C000
-          python3 /tmp/nx2a-upstream/nxnative/dm/games/game.py list | grep -q "^$PROFILE_ID"
           test -x "$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/clang"
           test -x "$NDK/shader-tools/linux-x86_64/glslc"
           python3 /tmp/nx2a-upstream/nxnative/dm/android/build.py \
-            --game "$PROFILE_ID" --ndk "$NDK" --lib --release --jobs 4
-          test -s "/tmp/nx2a-upstream/nxnative/dm/android/out/$PROFILE_ID-release/libdmhost.so"
-          mkdir -p artifacts/nvn-backend-build-check
-          cp "/tmp/nx2a-upstream/nxnative/dm/android/out/$PROFILE_ID-release/libdmhost.so" artifacts/nvn-backend-build-check/libdmhost.so
-          printf 'Compile-check profile: %s (Twelve Minutes)\\nPorter commit: %s\\nPayload version: %s\\n' "$PROFILE_ID" "$upstream_sha" "$(python3 -c 'import json; print(json.load(open("app/src/main/assets/nx2a/payload/payload.json"))["version"])')" > artifacts/nvn-backend-build-check/BUILD_INFO.txt
-      - uses: actions/upload-artifact@v4
-        if: steps.chg.outputs.build == 'true'
-        with: { name: nx2android-apk, path: 'app/build/outputs/apk/release/*.apk' }
-      - uses: actions/upload-artifact@v4
-        if: steps.chg.outputs.build == 'true'
-        with: { name: nvn-backend-build-check, path: 'artifacts/nvn-backend-build-check/*' }
-      - name: Publish the APK as the latest release
-        if: steps.chg.outputs.build == 'true' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          cp "$(ls app/build/outputs/apk/release/*.apk | head -1)" nx2android.apk
-          gh release delete latest --yes --cleanup-tag 2>/dev/null || true
-          { echo "Built from $GITHUB_SHA."; echo; echo '```'; tail -c 1500 "${SIGN_LOG:-/dev/null}" 2>/dev/null; echo '```'; } > "$RUNNER_TEMP/notes.md"
-          gh release create latest nx2android.apk --prerelease --target "$GITHUB_SHA" --title "nx2android (latest build)" --notes-file "$RUNNER_TEMP/notes.md"
-\\t'
-          test -x "$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/clang"
-          test -x "$NDK/shader-tools/linux-x86_64/glslc"
-          python3 /tmp/nx2a-upstream/nxnative/dm/android/build.py \
-            --game "$PROFILE_ID" --ndk "$NDK" --lib --release --jobs 4
-          test -s "/tmp/nx2a-upstream/nxnative/dm/android/out/$PROFILE_ID-release/libdmhost.so"
-          mkdir -p artifacts/nvn-backend-build-check
-          cp "/tmp/nx2a-upstream/nxnative/dm/android/out/$PROFILE_ID-release/libdmhost.so" artifacts/nvn-backend-build-check/libdmhost.so
-          printf 'Compile-check profile: %s (Twelve Minutes)\\nPorter commit: %s\\nPayload version: %s\\n' "$PROFILE_ID" "$upstream_sha" "$(python3 -c 'import json; print(json.load(open("app/src/main/assets/nx2a/payload/payload.json"))["version"])')" > artifacts/nvn-backend-build-check/BUILD_INFO.txt
+            --game 0100CD701434C000 --ndk "$NDK" --lib --release --jobs 4
+          test -s /tmp/nx2a-upstream/nxnative/dm/android/out/0100CD701434C000-release/libdmhost.so
+          mkdir -p artifacts/metro2033redux
+          cp /tmp/nx2a-upstream/nxnative/dm/android/out/0100D4900E82C000-release/libdmhost.so artifacts/metro2033redux/libdmhost.so
+          printf 'Game profile: 0100D4900E82C000\\nPorter commit: %s\\nPayload version: %s\\n' "$upstream_sha" "$(python3 -c 'import json; print(json.load(open("app/src/main/assets/nx2a/payload/payload.json"))["version"])')" > artifacts/metro2033redux/BUILD_INFO.txt
       - uses: actions/upload-artifact@v4
         if: steps.chg.outputs.build == 'true'
         with: { name: nx2android-apk, path: 'app/build/outputs/apk/release/*.apk' }
