@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Keeps /root/nx2android complete, at the pinned commit and patched. Safe to call often: it only downloads when files are missing or the pinned commit changed.
 The old tree is renamed aside before the new one goes in, so a failed step can never leave a half-deleted porter behind."""
-import hashlib, io, json, os, shutil, subprocess, sys, tarfile, time, urllib.request
+import fcntl, hashlib, io, json, os, shutil, subprocess, sys, tarfile, tempfile, time, urllib.request
 from pathlib import Path
 
 REPO = Path(os.environ.get('NX2A_REPO', Path.home() / 'nx2android'))
@@ -100,11 +100,11 @@ def patch():
 
 def _install(sha, log, must_patch):
     """Downloads sha, checks it is complete and that our patches still fit, then swaps it in. Raises on any problem and leaves the current tree untouched."""
-    tmp = REPO.with_name(REPO.name + '.new')
+    # Unique staging avoids collisions; sync() serializes the full transaction.
+    tmp = Path(tempfile.mkdtemp(prefix=REPO.name + '.new.', dir=str(REPO.parent)))
     try:
         url = (os.environ.get('NX2A_PORTER_URL') or 'https://codeload.github.com/shirai91/nx2android/tar.gz/{sha}').format(sha=sha)
         data = _download(url)
-        shutil.rmtree(tmp, ignore_errors=True); tmp.mkdir(parents=True)
         with tarfile.open(fileobj=io.BytesIO(data), mode='r:gz') as t:
             t.extractall(tmp, filter='data') if hasattr(tarfile, 'data_filter') else t.extractall(tmp)
         kids = list(tmp.iterdir())
@@ -126,7 +126,7 @@ def _install(sha, log, must_patch):
         shutil.rmtree(tmp, ignore_errors=True)
 
 
-def sync(force=False, log=print):
+def _sync_impl(force=False, log=print):
     """Use a verified local checkout for normal analysis/build; upstream polling is explicit."""
     if not force:
         cached, cached_sha = local_ready()
@@ -182,6 +182,24 @@ def sync(force=False, log=print):
     try: STATUS.write_text(' ; '.join(msgs) + '\n')
     except OSError: pass
     return False, ' ; '.join(msgs) or 'porter unavailable or patch validation failed'
+
+
+def sync(force=False, log=print):
+    """Serialize Porter sync/repair across launcher, GUI requests and updater.
+
+    Previously all callers shared /root/nx2android.new. Concurrent downloads
+    could delete or extract into the same directory, then race during rename,
+    reporting incomplete archives or FileExistsError despite successful HTTP
+    transfers. flock is released automatically if a process exits.
+    """
+    lock_path = REPO.with_name(REPO.name + '.sync.lock')
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open('a+') as lock:
+        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+        try:
+            return _sync_impl(force=force, log=log)
+        finally:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
 
 
 if __name__ == '__main__':
