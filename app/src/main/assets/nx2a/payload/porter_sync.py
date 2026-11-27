@@ -114,6 +114,8 @@ def _install(sha, log, must_patch):
         r = subprocess.run([sys.executable, str(HERE / 'apply_patches.py'), str(src)], capture_output=True, text=True)
         if r.returncode != 0: raise RuntimeError('our patches no longer fit this commit: ' + (r.stdout + r.stderr).strip().replace(chr(10), ' | ')[:1200])
         (src / '.nx2a_sha').write_text(sha)
+        patch_hash = hashlib.sha256((HERE / 'apply_patches.py').read_bytes()).hexdigest()
+        (src / '.nx2a_patched').write_text(sha + '\\n' + patch_hash + '\\n')
         old = None
         if REPO.exists():
             old = REPO.with_name(f'{REPO.name}.old{int(time.time())}'); REPO.rename(old)
@@ -164,20 +166,10 @@ def _sync_impl(force=False, log=print):
         log(f'downloading the porter ({sha[:9]})')
         try:
             _install(sha, log, must_patch=must)
-            patch()
-            return True, ' ; '.join(msgs + [f'porter {sha[:9]} installed and patched'])
+            return True, ' ; '.join(msgs + [f'porter {sha[:9]} installed and patched (single patch pass)'])
         except Exception as e:
             m = f'porter {sha[:9]} not installed: {e}'
             log(m); msgs.append(m)
-            if complete() and sha == target and track:
-                # The previous checkout may still be usable. Validate it before
-                # keeping it; otherwise continue to the pinned fallback.
-                try:
-                    patch()
-                    return True, ' ; '.join(msgs + [f'keeping {have[:9] or "the current porter"}'])
-                except Exception as previous_error:
-                    m = f'current porter patch validation also failed: {previous_error}'
-                    log(m); msgs.append(m)
 
     try: STATUS.write_text(' ; '.join(msgs) + '\n')
     except OSError: pass
