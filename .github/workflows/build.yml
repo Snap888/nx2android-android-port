@@ -127,14 +127,14 @@ jobs:
             --game 0100CD701434C000 --ndk "$NDK" --lib --release --jobs 4
           test -s /tmp/nx2a-upstream/nxnative/dm/android/out/0100CD701434C000-release/libdmhost.so
           mkdir -p artifacts/metro2033redux
-          cp /tmp/nx2a-upstream/nxnative/dm/android/out/0100D4900E82C000-release/libdmhost.so artifacts/metro2033redux/libdmhost.so
+          cp /tmp/nx2a-upstream/nxnative/dm/android/out/0100CD701434C000-release/libdmhost.so artifacts/metro2033redux/libdmhost.so
           printf 'Game profile: 0100D4900E82C000\\nPorter commit: %s\\nPayload version: %s\\n' "$upstream_sha" "$(python3 -c 'import json; print(json.load(open("app/src/main/assets/nx2a/payload/payload.json"))["version"])')" > artifacts/metro2033redux/BUILD_INFO.txt
       - uses: actions/upload-artifact@v4
         if: steps.chg.outputs.build == 'true'
         with: { name: nx2android-apk, path: 'app/build/outputs/apk/release/*.apk' }
       - uses: actions/upload-artifact@v4
         if: steps.chg.outputs.build == 'true'
-        with: { name: metro2033redux-native-runtime, path: 'artifacts/metro2033redux/*' }
+        with: { name: nvn-backend-build-check, path: 'artifacts/metro2033redux/*' }
       - name: Publish the APK as the latest release
         if: steps.chg.outputs.build == 'true' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         env:
