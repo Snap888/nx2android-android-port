@@ -1893,5 +1893,110 @@ patch('NGR bounded texture descriptor trace', 'nxnative/dm/android/gfx_vk_exec.c
 """)
 ]);
 
+
+# 56. A 4x MSAA 640x360 render target and its 1280x720 single-sample
+# RGBA8_SRGB alias occupy the same NVN memory. Separate Vulkan images do not
+# see each other's writes. Resolve the observed 4x -> 1x alias before sampling.
+# This is deliberately limited to the exact format/sample/2x relationship in
+# Metro's trace; other alias layouts remain visible in the diagnostic log.
+patch('NGR resolve 4x MSAA texture aliases before sampling', 'nxnative/dm/android/gfx_vk.h', 'NX2A_ALIAS_MSAA_RESOLVE', [
+    ("""    uint64_t wseq, rseen;             // when it was last rendered to (gfx_vk_tex.c g_wseq); the newest overlapping write already reported""",
+     """    VkImage alias_resolve_tmp; VkDeviceMemory alias_resolve_mem; void *alias_resolve_sub;
+    uint32_t alias_resolve_w, alias_resolve_h; VkFormat alias_resolve_fmt; // NX2A_ALIAS_MSAA_RESOLVE
+    uint64_t wseq, rseen;             // when it was last rendered to (gfx_vk_tex.c g_wseq); the newest overlapping write already reported""")
+]);
+
+patch('NGR resolve 4x MSAA texture aliases before sampling', 'nxnative/dm/android/gfx_vk_tex.c', 'NX2A_ALIAS_MSAA_RESOLVE', [
+    ("""static void alias_check(vkimg_t *im) {   // im is about to be sampled
+    static int trace = -1, n;
+    if (trace < 0) { const char *e = getenv("DM_VK_ALIAS_TRACE"); trace = e && atoi(e) > 0; }
+    for (int i = 0; i < im->novl; i++) {
+        vkimg_t *o = im->ovl[i]; if (o->wseq <= im->wseq || o->wseq <= im->rseen) continue;
+        im->rseen = o->wseq;
+        if (trace && n++ < 16) VKLOG("[alias] stale read: %ux%u fmt %#x samples %u target %u flags %#x levels %u at %+lld..%+lld sampled; %ux%u fmt %#x samples %u target %u flags %#x levels %u at %+lld..%+lld rendered later",
+            im->w, im->h, im->nvn_format, im->samples, im->target, im->flags, im->levels, (long long)im->off, (long long)(im->off + im->size),
+            o->w, o->h, o->nvn_format, o->samples, o->target, o->flags, o->levels, (long long)o->off, (long long)(o->off + o->size));
+    }
+} // NX2A_ALIAS_TRACE_METADATA""",
+     """static void alias_resolve_tmp_drop(vkimg_t *im) {
+    if (!im->alias_resolve_tmp) return;
+    if (im->alias_resolve_sub) vk_defer_free_image_sub(im->alias_resolve_tmp, im->alias_resolve_sub);
+    else vk_defer_free_image(im->alias_resolve_tmp, im->alias_resolve_mem);
+    im->alias_resolve_tmp = VK_NULL_HANDLE; im->alias_resolve_mem = VK_NULL_HANDLE; im->alias_resolve_sub = NULL;
+    im->alias_resolve_w = im->alias_resolve_h = 0; im->alias_resolve_fmt = VK_FORMAT_UNDEFINED;
+}
+static int alias_resolve_tmp_ensure(vkimg_t *im, const vkimg_t *src, VkCommandBuffer cb) {
+    if (im->alias_resolve_tmp && im->alias_resolve_w == src->w && im->alias_resolve_h == src->h && im->alias_resolve_fmt == src->fmt) return 1;
+    alias_resolve_tmp_drop(im);
+    VkImageCreateInfo ci = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO, NULL, 0, VK_IMAGE_TYPE_2D, src->fmt,
+        {src->w, src->h, 1}, 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL,
+        VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, VK_SHARING_MODE_EXCLUSIVE, 0, NULL, VK_IMAGE_LAYOUT_UNDEFINED};
+    VkImage tmp = VK_NULL_HANDLE;
+    if (vkCreateImage(V.dev, &ci, NULL, &tmp)) return 0;
+    VkMemoryRequirements req; vkGetImageMemoryRequirements(V.dev, tmp, &req);
+    VkDeviceSize moff = 0; void *sub = NULL;
+    VkDeviceMemory mem = vk_image_memory(&req, vk_mem_type(req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT), &moff, &sub);
+    if (!mem) { vkDestroyImage(V.dev, tmp, NULL); return 0; }
+    VkResult br = vkBindImageMemory(V.dev, tmp, mem, moff);
+    if (br) { if (sub) vk_defer_free_image_sub(tmp, sub); else vk_defer_free_image(tmp, mem); return 0; }
+    im->alias_resolve_tmp = tmp; im->alias_resolve_mem = mem; im->alias_resolve_sub = sub;
+    im->alias_resolve_w = src->w; im->alias_resolve_h = src->h; im->alias_resolve_fmt = src->fmt;
+    VkImageMemoryBarrier b = {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, NULL, 0,
+        VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL,
+        VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, tmp, {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
+    vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &b);
+    return 1;
+}
+static int alias_sync_msaa_upscale(vkimg_t *im, vkimg_t *src) {
+    if (!vk_sub_open() || !src || src == im || src->nvn_format != 0x38 || im->nvn_format != 0x38 ||
+        src->fmt != VK_FORMAT_R8G8B8A8_SRGB || im->fmt != src->fmt ||
+        src->samples != 4 || im->samples != 1 || src->target != 5 || im->target != 1 ||
+        src->levels != 1 || im->levels != 1 || src->layers != 1 || im->layers != 1 || src->d != 1 || im->d != 1 ||
+        src->aspect != VK_IMAGE_ASPECT_COLOR_BIT || im->aspect != VK_IMAGE_ASPECT_COLOR_BIT ||
+        src->w < 16 || src->h < 16 || src->w > UINT32_MAX / 2 || src->h > UINT32_MAX / 2 ||
+        src->w * 2 != im->w || src->h * 2 != im->h ||
+        !(src->usage & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) || !(im->usage & VK_IMAGE_USAGE_TRANSFER_DST_BIT)) return 0;
+    VkFormatProperties fp; vkGetPhysicalDeviceFormatProperties(V.pd, src->fmt, &fp);
+    if (!(fp.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_SRC_BIT) || !(fp.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT)) return 0;
+    vk_end_pass_land();
+    VkCommandBuffer cb = vk_cmd();
+    if (!alias_resolve_tmp_ensure(im, src, cb)) return 0;
+    vk_img_barrier_all(cb);
+    VkImageResolve rr = {{VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1}, {0, 0, 0},
+                         {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1}, {0, 0, 0}, {src->w, src->h, 1}};
+    vkCmdResolveImage(cb, src->img, VK_IMAGE_LAYOUT_GENERAL, im->alias_resolve_tmp, VK_IMAGE_LAYOUT_GENERAL, 1, &rr);
+    vk_img_barrier_all(cb);
+    VkImageBlit br = {{VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1}, {{0, 0, 0}, {(int32_t)src->w, (int32_t)src->h, 1}},
+                      {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1}, {{0, 0, 0}, {(int32_t)im->w, (int32_t)im->h, 1}}};
+    vkCmdBlitImage(cb, im->alias_resolve_tmp, VK_IMAGE_LAYOUT_GENERAL, im->img, VK_IMAGE_LAYOUT_GENERAL, 1, &br, VK_FILTER_NEAREST);
+    vk_img_barrier_all(cb);
+    im->wseq = src->wseq; im->rseen = src->wseq; im->gpu_w = 1;
+    static int logged; if (logged++ < 16) VKLOG("[alias-sync] resolved 4x MSAA %ux%u -> %ux%u RGBA8_SRGB alias before sample", src->w, src->h, im->w, im->h);
+    return 1;
+}
+static void alias_check(vkimg_t *im) {   // im is about to be sampled
+    static int trace = -1, n;
+    if (trace < 0) { const char *e = getenv("DM_VK_ALIAS_TRACE"); trace = e && atoi(e) > 0; }
+    vkimg_t *latest = NULL;
+    for (int i = 0; i < im->novl; i++) {
+        vkimg_t *o = im->ovl[i];
+        if (o->wseq > im->wseq && o->wseq > im->rseen && (!latest || o->wseq > latest->wseq)) latest = o;
+    }
+    if (!latest) return;
+    if (alias_sync_msaa_upscale(im, latest)) return;
+    im->rseen = latest->wseq;
+    if (trace && n++ < 16) VKLOG("[alias] stale read not synchronized: %ux%u fmt %#x samples %u target %u at %+lld..%+lld; newer alias %ux%u fmt %#x samples %u target %u at %+lld..%+lld",
+        im->w, im->h, im->nvn_format, im->samples, im->target, (long long)im->off, (long long)(im->off + im->size),
+        latest->w, latest->h, latest->nvn_format, latest->samples, latest->target, (long long)latest->off, (long long)(latest->off + latest->size));
+} // NX2A_ALIAS_MSAA_RESOLVE"""),
+    ("""static void img_drop(vkimg_t *im) { vk_lrz_forget(im); if (im->lin_mem) nvn_dirty_release(im->lin_mem, im->lin_len); if (im->packaged && !im->pkg_released && im->pkg_mem) nvn_dirty_release(im->pkg_mem, im->pkg_len); g_img_n--; g_img_bytes -= im->size > 0 ? (uint64_t)im->size : 0; alias_unlink(im); vk_tex_view_drop_all(im); if (im->sub) vk_defer_free_image_sub(im->img, im->sub); else vk_defer_free_image(im->img, im->mem); free(im); }""",
+     """static void img_drop(vkimg_t *im) { vk_lrz_forget(im); if (im->lin_mem) nvn_dirty_release(im->lin_mem, im->lin_len); if (im->packaged && !im->pkg_released && im->pkg_mem) nvn_dirty_release(im->pkg_mem, im->pkg_len); g_img_n--; g_img_bytes -= im->size > 0 ? (uint64_t)im->size : 0; alias_unlink(im); alias_resolve_tmp_drop(im); vk_tex_view_drop_all(im); if (im->sub) vk_defer_free_image_sub(im->img, im->sub); else vk_defer_free_image(im->img, im->mem); free(im); } // NX2A_ALIAS_MSAA_RESOLVE""")
+]);
+
+patch('NGR enable bounded texture trace with alias trace', 'nxnative/dm/android/gfx_vk_exec.c', 'NX2A_ALIAS_AUTO_TEX_TRACE', [
+    ("""static int ngr_tex_trace = -1; /* NX2A_TEX_BIND_TRACE: bounded descriptor trace */ if (ngr_tex_trace < 0) { const char *e = getenv("DM_VK_TEX_TRACE"); ngr_tex_trace = e && atoi(e) != 0; }""",
+     """static int ngr_tex_trace = -1; /* NX2A_TEX_BIND_TRACE: bounded descriptor trace */ if (ngr_tex_trace < 0) { const char *a = getenv("DM_VK_ALIAS_TRACE"); if (a && atoi(a) > 0 && !getenv("DM_VK_TEX_TRACE")) setenv("DM_VK_TEX_TRACE", "1", 0); const char *e = getenv("DM_VK_TEX_TRACE"); ngr_tex_trace = e && atoi(e) != 0; } // NX2A_ALIAS_AUTO_TEX_TRACE""")
+]);
+
 sys.exit(1 if failed else 0)
 sys.exit(1 if failed else 0)
