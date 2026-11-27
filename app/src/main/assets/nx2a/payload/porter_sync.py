@@ -115,7 +115,7 @@ def _install(sha, log, must_patch):
         if r.returncode != 0: raise RuntimeError('our patches no longer fit this commit: ' + (r.stdout + r.stderr).strip().replace(chr(10), ' | ')[:1200])
         (src / '.nx2a_sha').write_text(sha)
         patch_hash = hashlib.sha256((HERE / 'apply_patches.py').read_bytes()).hexdigest()
-        (src / '.nx2a_patched').write_text(sha + '\\n' + patch_hash + '\\n')
+        (src / '.nx2a_patched').write_text(sha + '\n' + patch_hash + '\n')
         old = None
         if REPO.exists():
             old = REPO.with_name(f'{REPO.name}.old{int(time.time())}'); REPO.rename(old)
