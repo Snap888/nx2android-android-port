@@ -1998,5 +1998,34 @@ patch('NGR enable bounded texture trace with alias trace', 'nxnative/dm/android/
      """static int ngr_tex_trace = -1; /* NX2A_TEX_BIND_TRACE: bounded descriptor trace */ if (ngr_tex_trace < 0) { const char *a = getenv("DM_VK_ALIAS_TRACE"); if (a && atoi(a) > 0 && !getenv("DM_VK_TEX_TRACE")) setenv("DM_VK_TEX_TRACE", "1", 0); const char *e = getenv("DM_VK_TEX_TRACE"); ngr_tex_trace = e && atoi(e) != 0; } // NX2A_ALIAS_AUTO_TEX_TRACE""")
 ]);
 
+
+# A rewritten module is not reusable without its mandatory layout sidecar. The host
+# opens <module>.fixups.tsv before mapping every .patched.bin; stale partial caches
+# otherwise produce a runtime abort (FATAL open ...fixups.tsv).
+patch('NGR rewrite sidecar cache validation', 'nxnative/scripts/build_ipa_from_nsp.py', 'NX2A_REWRITE_FIXUPS_CACHE', [
+    ("""    if all((out / f'{m}.patched.bin').is_file() for m in names) and reused(kf, key) is not None:
+""",
+     """    if all((out / f'{m}.patched.bin').is_file() and (out / f'{m}.fixups.tsv').is_file() for m in names) and reused(kf, key) is not None:  # NX2A_REWRITE_FIXUPS_CACHE
+""")
+]);
+
+# Never publish a data pack containing rewritten binaries without their mandatory
+# loader layout metadata. This also catches partial/stale rewrite directories early.
+patch('NGR data-pack rewritten-module metadata validation', 'porter/datapack.py', 'NX2A_DATAPACK_FIXUPS_VALIDATION', [
+    ("""    package = package or profile.package
+    tmp = dst.with_name(dst.name + '.partial')
+""",
+     """    package = package or profile.package
+    if patched:
+        _patched_dir = Path(patched)
+        _missing_fixups = [p.name[:-len('.patched.bin')] + '.fixups.tsv'
+                           for p in sorted(_patched_dir.glob('*.patched.bin'))
+                           if not (_patched_dir / (p.name[:-len('.patched.bin')] + '.fixups.tsv')).is_file()]
+        if _missing_fixups:
+            raise RuntimeError('rewritten module metadata is incomplete; missing ' + ', '.join(_missing_fixups) + '; rerun the Android module rewrite')
+    tmp = dst.with_name(dst.name + '.partial')
+""")
+]);
+
 sys.exit(1 if failed else 0)
 sys.exit(1 if failed else 0)
