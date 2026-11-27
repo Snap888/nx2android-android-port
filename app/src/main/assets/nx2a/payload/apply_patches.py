@@ -1988,7 +1988,7 @@ static void alias_check(vkimg_t *im) {   // im is about to be sampled
     if (trace && n++ < 16) VKLOG("[alias] stale read not synchronized: %ux%u fmt %#x samples %u target %u at %+lld..%+lld; newer alias %ux%u fmt %#x samples %u target %u at %+lld..%+lld",
         im->w, im->h, im->nvn_format, im->samples, im->target, (long long)im->off, (long long)(im->off + im->size),
         latest->w, latest->h, latest->nvn_format, latest->samples, latest->target, (long long)latest->off, (long long)(latest->off + latest->size));
-} // NX2A_ALIAS_MSAA_RESOLVE"""),
+} // NX2A_ALIAS_TRACE_METADATA // NX2A_ALIAS_MSAA_RESOLVE"""),
     ("""static void img_drop(vkimg_t *im) { vk_lrz_forget(im); if (im->lin_mem) nvn_dirty_release(im->lin_mem, im->lin_len); if (im->packaged && !im->pkg_released && im->pkg_mem) nvn_dirty_release(im->pkg_mem, im->pkg_len); g_img_n--; g_img_bytes -= im->size > 0 ? (uint64_t)im->size : 0; alias_unlink(im); vk_tex_view_drop_all(im); if (im->sub) vk_defer_free_image_sub(im->img, im->sub); else vk_defer_free_image(im->img, im->mem); free(im); }""",
      """static void img_drop(vkimg_t *im) { vk_lrz_forget(im); if (im->lin_mem) nvn_dirty_release(im->lin_mem, im->lin_len); if (im->packaged && !im->pkg_released && im->pkg_mem) nvn_dirty_release(im->pkg_mem, im->pkg_len); g_img_n--; g_img_bytes -= im->size > 0 ? (uint64_t)im->size : 0; alias_unlink(im); alias_resolve_tmp_drop(im); vk_tex_view_drop_all(im); if (im->sub) vk_defer_free_image_sub(im->img, im->sub); else vk_defer_free_image(im->img, im->mem); free(im); } // NX2A_ALIAS_MSAA_RESOLVE""")
 ]);
